@@ -60,7 +60,8 @@ sourceSets {
 }
 
 // QueryDSL 설정
-def querydslSrcDir = 'src/main/generated'
+def querydslSrcDir = 'build/generated'
+
 
 tasks.withType(JavaCompile) {
 	options.generatedSourceOutputDirectory = file(querydslSrcDir)
