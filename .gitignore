@@ -39,5 +39,5 @@ out/
 ### macOS ###
 .DS_Store
 
-### application.yml ###
-#/src/main/resources/application.yml
+### .env ###
+.env
