@@ -44,7 +44,6 @@ public class MusicSearchService {
                 String album = track.getAlbum() != null ? track.getAlbum().getName() : "Unknown Album";
                 String imageUrl = (track.getAlbum() != null && track.getAlbum().getImages() != null && track.getAlbum().getImages().length > 0)
                         ? track.getAlbum().getImages()[0].getUrl() : null;
-                // genre, year, duration 등은 필요에 따라 추가
                 // duration_ms를 mm:ss로 변환
                 String duration = null;
                 if (track.getDurationMs() != null) {

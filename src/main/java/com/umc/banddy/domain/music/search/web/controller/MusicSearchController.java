@@ -22,15 +22,6 @@ public class MusicSearchController {
         this.searchService = searchService;
     }
 
-//    @GetMapping("/track")
-//    public List<String> searchTrack(
-//            @RequestParam String q,
-//            @RequestParam(defaultValue = "10") int limit,
-//            @RequestParam(defaultValue = "0") int offset
-//    ) {
-//        return searchService.searchTracks(q, limit, offset);
-//    }
-
 
     @GetMapping("/track")
     public ApiResponse<List<TrackInfo>> searchTrack(
