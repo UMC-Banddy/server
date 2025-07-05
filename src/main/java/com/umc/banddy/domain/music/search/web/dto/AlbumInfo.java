@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public class AlbumInfo {
     private String name;
     private String artists;
-    private String albumType;
     private String releaseDate;
     private String imageUrl;
 }

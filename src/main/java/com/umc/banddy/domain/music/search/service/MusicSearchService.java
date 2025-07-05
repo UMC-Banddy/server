@@ -115,7 +115,7 @@ public class MusicSearchService {
                 String artistNames = (album.getArtists() != null && album.getArtists().length > 0)
                         ? Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(", "))
                         : "Unknown Artist";
-                String albumType = album.getAlbumType() != null ? album.getAlbumType().getType() : null;
+                //String albumType = album.getAlbumType() != null ? album.getAlbumType().getType() : null;
                 String releaseDate = album.getReleaseDate();
                 String imageUrl = (album.getImages() != null && album.getImages().length > 0)
                         ? album.getImages()[0].getUrl()
@@ -124,7 +124,6 @@ public class MusicSearchService {
                 results.add(AlbumInfo.builder()
                         .name(name)
                         .artists(artistNames)
-                        .albumType(albumType)
                         .releaseDate(releaseDate)
                         .imageUrl(imageUrl)
                         .build());
@@ -207,7 +206,6 @@ public class MusicSearchService {
                     albums.add(AlbumInfo.builder()
                             .name(name)
                             .artists(artistNames)
-                            .albumType(albumType)
                             .releaseDate(releaseDate)
                             .imageUrl(imageUrl)
                             .build());
