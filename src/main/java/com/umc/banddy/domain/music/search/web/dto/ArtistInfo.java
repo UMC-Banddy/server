@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ArtistInfo {
+    private String spotifyId;
     private String name;
     private String genres;
     private String imageUrl;

@@ -17,7 +17,17 @@ public enum ErrorStatus implements BaseErrorCode {
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
     // For test
-    TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트");
+    TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트"),
+
+    // Track
+    TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "TRACK4004", "트랙을 찾을 수 없습니다."),
+    TRACK_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "TRACK4000", "해당 트랙은 회원이 저장한 곡이 아닙니다."),
+    SPOTIFY_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "SPOTIFY4004", "Spotify에서 곡 정보를 찾을 수 없습니다."),
+
+    // Member
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다.");
+
+
 
 
     private final HttpStatus httpStatus;

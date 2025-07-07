@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AlbumInfo {
+    private String spotifyId;
     private String name;
     private String artists;
     private String releaseDate;
