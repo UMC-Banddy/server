@@ -22,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import se.michaelthelin.spotify.SpotifyApi;
 
 
+
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -98,14 +100,15 @@ public class TrackService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 3. 회원-곡 매핑(MemberTrack) 저장 (중복 저장 방지)
-        memberTrackRepository.findByMemberAndTrack(member, track)
+        MemberTrack memberTrack = memberTrackRepository.findByMemberAndTrack(member, track)
                 .orElseGet(() -> memberTrackRepository.save(
                         MemberTrack.builder().member(member).track(track).build()
                 ));
 
         // 4. 응답 DTO 반환
-        return TrackConverter.toTrackResultDto(track);
+        return TrackConverter.toTrackResultDto(track, memberTrack.getId());
     }
+
 
     /**
      * 곡 삭제 (회원-곡 매핑만 삭제)
@@ -136,7 +139,7 @@ public class TrackService {
         Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         return memberTrackRepository.findAllByMember(member).stream()
-                .map(mt -> TrackConverter.toTrackResultDto(mt.getTrack()))
+                .map(mt -> TrackConverter.toTrackResultDto(mt.getTrack(), mt.getId()))
                 .collect(Collectors.toList());
     }
 
@@ -151,10 +154,11 @@ public class TrackService {
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_FOUND));
         Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-        memberTrackRepository.findByMemberAndTrack(member, track)
+        MemberTrack memberTrack = memberTrackRepository.findByMemberAndTrack(member, track)
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_SAVED_BY_MEMBER));
-        return TrackConverter.toTrackResultDto(track);
+        return TrackConverter.toTrackResultDto(track, memberTrack.getId());
     }
+
 
     /**
      * 곡 저장/삭제 토글

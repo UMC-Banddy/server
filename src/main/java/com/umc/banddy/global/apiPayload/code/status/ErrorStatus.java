@@ -24,6 +24,10 @@ public enum ErrorStatus implements BaseErrorCode {
     TRACK_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "TRACK4000", "해당 트랙은 회원이 저장한 곡이 아닙니다."),
     SPOTIFY_RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "SPOTIFY4004", "Spotify에서 곡 정보를 찾을 수 없습니다."),
 
+    // Folder
+    FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
+
+
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다.");
 

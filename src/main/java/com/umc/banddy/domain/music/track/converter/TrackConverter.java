@@ -25,7 +25,7 @@ public class TrackConverter {
     }
 
     // Track 엔티티 -> TrackResponseDto.TrackResultDto 변환
-    public static TrackResponseDto.TrackResultDto toTrackResultDto(Track track) {
+    public static TrackResponseDto.TrackResultDto toTrackResultDto(Track track, Long memberTrackId) {
         return TrackResponseDto.TrackResultDto.builder()
                 .trackId(track.getId())
                 .spotifyId(track.getSpotifyId())
@@ -34,6 +34,7 @@ public class TrackConverter {
                 .album(track.getAlbum())
                 .duration(track.getDuration())
                 .imageUrl(track.getImageUrl())
+                .memberTrackId(memberTrackId)
                 .build();
     }
 }
