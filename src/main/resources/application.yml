@@ -6,9 +6,9 @@ spring:
     import: optional:file:./.env[.properties]
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/banddy
+    username: root
+    password: fire4284
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
