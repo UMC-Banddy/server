@@ -1,9 +1,8 @@
 package com.umc.banddy.domain.music.track.service;
 
-import com.umc.banddy.domain.music.Member;
-import com.umc.banddy.domain.music.MemberRepository;
+import com.umc.banddy.domain.member.Member;
+import com.umc.banddy.domain.member.MemberRepository;
 import com.umc.banddy.domain.music.search.service.MusicSearchService;
-import com.umc.banddy.domain.music.search.web.dto.TrackInfo;
 import com.umc.banddy.domain.music.track.converter.TrackConverter;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
@@ -15,6 +14,7 @@ import com.umc.banddy.domain.music.track.web.dto.TrackToggleResponseDto;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.apiPayload.exception.handler.TrackHandler;
+import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import com.umc.banddy.global.security.oauth.SpotifyTokenManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +36,7 @@ public class TrackService {
     private final MemberRepository memberRepository;
     private final MusicSearchService musicSearchService;
     private final SpotifyTokenManager spotifyTokenManager;
+    private final JwtTokenUtil jwtTokenUtil;
 
     // 하드코딩된 memberId (인증 연동 전 임시)
     private static final Long HARDCODED_MEMBER_ID = 1L;
@@ -88,16 +89,19 @@ public class TrackService {
      * 곡 저장 (spotifyId만 받음, 곡 정보는 Spotify API에서 직접 조회)
      */
     @Transactional
-    public TrackResponseDto.TrackResultDto saveTrack(TrackRequestDto.TrackSaveDto requestDto) {
+    public TrackResponseDto.TrackResultDto saveTrack(TrackRequestDto.TrackSaveDto requestDto, String token) {
         String spotifyId = requestDto.getSpotifyId().trim();
 
         // 1. 이미 저장된 곡이 있으면 사용, 없으면 Spotify API에서 조회 후 저장
         Track track = trackRepository.findBySpotifyId(spotifyId)
                 .orElseGet(() -> fetchAndSaveTrackFromSpotify(spotifyId));
 
-        // 2. 하드코딩된 회원 정보 조회
-        Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
+
+        // 2. 토큰에서 memberId 추출
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
 
         // 3. 회원-곡 매핑(MemberTrack) 저장 (중복 저장 방지)
         MemberTrack memberTrack = memberTrackRepository.findByMemberAndTrack(member, track)
@@ -114,10 +118,12 @@ public class TrackService {
      * 곡 삭제 (회원-곡 매핑만 삭제)
      */
     @Transactional
-    public void deleteTrack(Long trackId) {
+    public void deleteTrack(Long trackId, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_FOUND));
-        Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 회원이 저장한 곡인지 확인
@@ -128,15 +134,13 @@ public class TrackService {
     }
 
 
-
-
-
     /**
      * 내 저장곡 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<TrackResponseDto.TrackResultDto> getAllTracks() {
-        Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
+    public List<TrackResponseDto.TrackResultDto> getAllTracks(String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         return memberTrackRepository.findAllByMember(member).stream()
                 .map(mt -> TrackConverter.toTrackResultDto(mt.getTrack(), mt.getId()))
@@ -144,15 +148,15 @@ public class TrackService {
     }
 
 
-
     /**
      * 내 저장곡 중 특정 곡 상세 조회 (trackId로 조회)
      */
     @Transactional(readOnly = true)
-    public TrackResponseDto.TrackResultDto getTrackByTrackId(Long trackId) {
+    public TrackResponseDto.TrackResultDto getTrackByTrackId(Long trackId, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
         Track track = trackRepository.findById(trackId)
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_FOUND));
-        Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         MemberTrack memberTrack = memberTrackRepository.findByMemberAndTrack(member, track)
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_SAVED_BY_MEMBER));
@@ -164,13 +168,14 @@ public class TrackService {
      * 곡 저장/삭제 토글
      */
     @Transactional
-    public TrackToggleResponseDto toggleTrack(String spotifyId) {
+    public TrackToggleResponseDto toggleTrack(String spotifyId, String token) {
         // 1. 곡 정보 조회, 없으면 저장
         Track track = trackRepository.findBySpotifyId(spotifyId)
                 .orElseGet(() -> trackRepository.save(fetchAndSaveTrackFromSpotify(spotifyId)));
 
-        // 2. 하드코딩된 회원 정보 조회
-        Member member = memberRepository.findById(HARDCODED_MEMBER_ID)
+        // 2. 토큰에서 memberId 추출
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 3. 회원-곡 매핑(MemberTrack) 저장/삭제
@@ -190,6 +195,5 @@ public class TrackService {
                 .isSaved(isSaved)
                 .build();
     }
-
 
 }

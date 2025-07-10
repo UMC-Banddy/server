@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import com.umc.banddy.domain.member.Member;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -75,5 +76,12 @@ public class JwtTokenUtil {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public static String extractToken(HttpServletRequest request) {
+        String authorization = request.getHeader("Authorization");
+        return (authorization != null && authorization.startsWith("Bearer "))
+                ? authorization.substring(7)
+                : null;
     }
 }

@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.music.track.domain.mapping;
 
-import com.umc.banddy.domain.music.Member;
+import com.umc.banddy.domain.member.Member;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
