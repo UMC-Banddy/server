@@ -5,6 +5,9 @@ spring:
   config:
     import: optional:file:./.env[.properties]
 
+  jwt:
+    secret-key: ${JWT_SECRET_KEY}
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
