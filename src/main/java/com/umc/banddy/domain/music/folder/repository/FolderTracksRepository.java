@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface FolderTracksRepository extends JpaRepository<FolderTracks, Long> {
     List<FolderTracks> findAllByTrackFolder(TrackFolder trackFolder);
     Optional<FolderTracks> findByTrackFolderAndMemberTrack(TrackFolder trackFolder, MemberTrack memberTrack);
-    void deleteByTrackFolderAndMemberTrack(TrackFolder trackFolder, MemberTrack memberTrack);
+    void deleteByTrackFolderAndTrack(TrackFolder trackFolder, Track track);
+    Optional<FolderTracks> findByTrackFolderAndTrack(TrackFolder trackFolder, Track track);
+    //void deleteByTrackFolderAndMemberTrack(TrackFolder trackFolder, MemberTrack memberTrack);
 }
 

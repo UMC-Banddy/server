@@ -76,7 +76,4 @@ public class TrackController {
         TrackToggleResponseDto result = trackService.toggleTrack(requestDto.getSpotifyId(), token);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
-
-
-
 }
