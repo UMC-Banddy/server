@@ -8,12 +8,11 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class MyProfileResponse {
-
     private Long memberId;
     private String nickname;
     private String profileImageUrl;
-    private String introduction;
-    private List<String> hashtags;
+    private String bio;
+    private List<String> tags;
     private List<SavedTrack> savedTracks;
     private boolean soundOn;
 
