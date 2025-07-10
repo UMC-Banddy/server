@@ -22,4 +22,52 @@
 
 ### Commit Message
 - `[타입] 작업 내용` 형태로 작성합니다. (예: ‎⁠`feat: 로그인 API 엔드포인트 추가 (#3)`, `fix: 로그인 실패 시 에러 메시지 수정 (#3)`⁠)
-- 주요 타입: `feat`(기능), `fix`(버그 수정), `docs`(문서), `refactor`(리팩토링), `test`(테스트), `chore`(기타)
+- 주요 타입: `feat`(기능), `fix`(버그 수정), `docs`(문서), `refactor`(리팩토링), `test`(테스트), `chore`(기타)  
+
+
+## Developers
+<table>
+  <tr>
+    <!-- 사진 행 -->
+    <td align="center">
+      <a href="https://github.com/yjhss">
+        <img src="https://avatars.githubusercontent.com/yjhss" width="100px" alt="홍유진" />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/yeondub1121">
+        <img src="https://avatars.githubusercontent.com/yeondub1121" width="100px" alt="장연주" />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/J2H3233">
+        <img src="https://avatars.githubusercontent.com/J2H3233" width="100px" alt="전종현" />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/heexji">
+        <img src="https://avatars.githubusercontent.com/heexji" width="100px" alt="김희지" />
+      </a>
+    </td>
+  </tr>
+ <tr>
+    <td align="center"><b>하루/홍유진</b></td>
+    <td align="center"><b>연두/장연주</b></td>
+    <td align="center"><b>종현/전종현</b></td>
+    <td align="center"><b>헤리/김희지</b></td>
+
+  </tr>
+  <tr>
+    <td align="center">BE(Lead)</td>
+    <td align="center">BE</td>
+    <td align="center">BE</td>
+    <td align="center">BE</td>
+  </tr>
+
+  <tr>
+    <!-- 역할 행 -->
+    <td><div align="center">음악</div></td>
+    <td><div align="center">회원, 친구</div></td>
+    <td><div align="center">모집, 채팅</div></td>
+    <td><div align="center">밴드, 프로필</div></td>
+</table>
