@@ -25,4 +25,8 @@ public class Member {
 
     @Column(name = "profile_image_url")
     private String profileImageUrl;
+
+    public void updateProfileImage(String imageUrl) {
+        this.profileImageUrl = imageUrl;
+    }
 }
