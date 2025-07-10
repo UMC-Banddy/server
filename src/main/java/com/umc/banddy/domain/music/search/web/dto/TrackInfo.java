@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TrackInfo {
+    private String spotifyId;
     private String title;
     private String artist;
     private String album;

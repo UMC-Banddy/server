@@ -29,6 +29,68 @@ public class MusicSearchService {
         this.tokenManager = tokenManager;
     }
 
+
+    private TrackInfo toTrackInfo(Track track) {
+        String spotifyId = track.getId();
+        String title = track.getName();
+        String artist = track.getArtists().length > 0 ? track.getArtists()[0].getName() : "Unknown Artist";
+        String album = track.getAlbum() != null ? track.getAlbum().getName() : "Unknown Album";
+        String imageUrl = (track.getAlbum() != null && track.getAlbum().getImages() != null && track.getAlbum().getImages().length > 0)
+                ? track.getAlbum().getImages()[0].getUrl() : null;
+        String duration = null;
+        if (track.getDurationMs() != null) {
+            int totalSeconds = track.getDurationMs() / 1000;
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            duration = String.format("%d:%02d", minutes, seconds);
+        }
+        return TrackInfo.builder()
+                .spotifyId(spotifyId)
+                .title(title)
+                .artist(artist)
+                .album(album)
+                .duration(duration)
+                .imageUrl(imageUrl)
+                .build();
+    }
+
+    private ArtistInfo toArtistInfo(Artist artist) {
+        String spotifyId = artist.getId();
+        String name = artist.getName();
+        String genres = (artist.getGenres() != null && artist.getGenres().length > 0)
+                ? String.join(", ", artist.getGenres())
+                : null;
+        String imageUrl = (artist.getImages() != null && artist.getImages().length > 0)
+                ? artist.getImages()[0].getUrl()
+                : null;
+        return ArtistInfo.builder()
+                .spotifyId(spotifyId)
+                .name(name)
+                .genres(genres)
+                .imageUrl(imageUrl)
+                .build();
+    }
+
+    private AlbumInfo toAlbumInfo(AlbumSimplified album) {
+        String spotifyId = album.getId();
+        String name = album.getName();
+        String artistNames = (album.getArtists() != null && album.getArtists().length > 0)
+                ? Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(", "))
+                : "Unknown Artist";
+        String releaseDate = album.getReleaseDate();
+        String imageUrl = (album.getImages() != null && album.getImages().length > 0)
+                ? album.getImages()[0].getUrl()
+                : null;
+        return AlbumInfo.builder()
+                .spotifyId(spotifyId)
+                .name(name)
+                .artists(artistNames)
+                .releaseDate(releaseDate)
+                .imageUrl(imageUrl)
+                .build();
+    }
+
+
     public List<TrackInfo> searchTracks(String query, int limit, int offset) {
         try {
             SpotifyApi spotifyApi = tokenManager.getSpotifyApi();
@@ -37,36 +99,13 @@ public class MusicSearchService {
                     .offset(offset)
                     .build();
             Paging<Track> paging = request.execute();
-            List<TrackInfo> results = new ArrayList<>();
-            for (Track track : paging.getItems()) {
-                String title = track.getName();
-                String artist = track.getArtists().length > 0 ? track.getArtists()[0].getName() : "Unknown Artist";
-                String album = track.getAlbum() != null ? track.getAlbum().getName() : "Unknown Album";
-                String imageUrl = (track.getAlbum() != null && track.getAlbum().getImages() != null && track.getAlbum().getImages().length > 0)
-                        ? track.getAlbum().getImages()[0].getUrl() : null;
-                // duration_ms를 mm:ss로 변환
-                String duration = null;
-                if (track.getDurationMs() != null) {
-                    int totalSeconds = track.getDurationMs() / 1000;
-                    int minutes = totalSeconds / 60;
-                    int seconds = totalSeconds % 60;
-                    duration = String.format("%d:%02d", minutes, seconds);
-                }
-
-                results.add(TrackInfo.builder()
-                        .title(title)
-                        .artist(artist)
-                        .album(album)
-                        .duration(duration)
-                        .imageUrl(imageUrl)
-                        .build());
-            }
-            return results;
+            return Arrays.stream(paging.getItems())
+                    .map(this::toTrackInfo)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             return List.of(TrackInfo.builder().title("에러").artist(e.getMessage()).build());
         }
     }
-
 
     public List<ArtistInfo> searchArtists(String query, int limit, int offset) {
         try {
@@ -76,30 +115,13 @@ public class MusicSearchService {
                     .offset(offset)
                     .build();
             Paging<Artist> paging = request.execute();
-            List<ArtistInfo> results = new ArrayList<>();
-            for (Artist artist : paging.getItems()) {
-                String name = artist.getName();
-                // genres 배열을 쉼표로 join
-                String genres = (artist.getGenres() != null && artist.getGenres().length > 0)
-                        ? String.join(", ", artist.getGenres())
-                        : null;
-                // 이미지
-                String imageUrl = (artist.getImages() != null && artist.getImages().length > 0)
-                        ? artist.getImages()[0].getUrl()
-                        : null;
-
-                results.add(ArtistInfo.builder()
-                        .name(name)
-                        .genres(genres)
-                        .imageUrl(imageUrl)
-                        .build());
-            }
-            return results;
+            return Arrays.stream(paging.getItems())
+                    .map(this::toArtistInfo)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             return List.of(ArtistInfo.builder().name("에러").genres(e.getMessage()).build());
         }
     }
-
 
     public List<AlbumInfo> searchAlbums(String query, int limit, int offset) {
         try {
@@ -109,31 +131,13 @@ public class MusicSearchService {
                     .offset(offset)
                     .build();
             Paging<AlbumSimplified> paging = request.execute();
-            List<AlbumInfo> results = new ArrayList<>();
-            for (AlbumSimplified album : paging.getItems()) {
-                String name = album.getName();
-                String artistNames = (album.getArtists() != null && album.getArtists().length > 0)
-                        ? Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(", "))
-                        : "Unknown Artist";
-                //String albumType = album.getAlbumType() != null ? album.getAlbumType().getType() : null;
-                String releaseDate = album.getReleaseDate();
-                String imageUrl = (album.getImages() != null && album.getImages().length > 0)
-                        ? album.getImages()[0].getUrl()
-                        : null;
-
-                results.add(AlbumInfo.builder()
-                        .name(name)
-                        .artists(artistNames)
-                        .releaseDate(releaseDate)
-                        .imageUrl(imageUrl)
-                        .build());
-            }
-            return results;
+            return Arrays.stream(paging.getItems())
+                    .map(this::toAlbumInfo)
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             return new ArrayList<>();
         }
     }
-
 
     public SearchAllResult searchAll(String query, int limit, int offset) {
         try {
@@ -144,73 +148,17 @@ public class MusicSearchService {
                     .build();
             var result = request.execute();
 
-            // 트랙
-            List<TrackInfo> tracks = new ArrayList<>();
-            if (result.getTracks() != null && result.getTracks().getItems() != null) {
-                for (Track track : result.getTracks().getItems()) {
-                    String title = track.getName();
-                    String artist = track.getArtists().length > 0 ? track.getArtists()[0].getName() : "Unknown Artist";
-                    String album = (track.getAlbum() != null) ? track.getAlbum().getName() : "Unknown Album";
-                    String imageUrl = (track.getAlbum() != null && track.getAlbum().getImages() != null && track.getAlbum().getImages().length > 0)
-                            ? track.getAlbum().getImages()[0].getUrl() : null;
-                    String duration = null;
-                    if (track.getDurationMs() != null) {
-                        int totalSeconds = track.getDurationMs() / 1000;
-                        int minutes = totalSeconds / 60;
-                        int seconds = totalSeconds % 60;
-                        duration = String.format("%d:%02d", minutes, seconds);
-                    }
-                    tracks.add(TrackInfo.builder()
-                            .title(title)
-                            .artist(artist)
-                            .album(album)
-                            .duration(duration)
-                            .imageUrl(imageUrl)
-                            .build());
-                }
-            }
+            List<TrackInfo> tracks = result.getTracks() != null && result.getTracks().getItems() != null
+                    ? Arrays.stream(result.getTracks().getItems()).map(this::toTrackInfo).collect(Collectors.toList())
+                    : new ArrayList<>();
 
-            // 아티스트
-            List<ArtistInfo> artists = new ArrayList<>();
-            if (result.getArtists() != null && result.getArtists().getItems() != null) {
-                for (Artist artist : result.getArtists().getItems()) {
-                    String name = artist.getName();
-                    String genres = (artist.getGenres() != null && artist.getGenres().length > 0)
-                            ? String.join(", ", artist.getGenres())
-                            : null;
-                    String imageUrl = (artist.getImages() != null && artist.getImages().length > 0)
-                            ? artist.getImages()[0].getUrl()
-                            : null;
-                    artists.add(ArtistInfo.builder()
-                            .name(name)
-                            .genres(genres)
-                            .imageUrl(imageUrl)
-                            .build());
-                }
-            }
+            List<ArtistInfo> artists = result.getArtists() != null && result.getArtists().getItems() != null
+                    ? Arrays.stream(result.getArtists().getItems()).map(this::toArtistInfo).collect(Collectors.toList())
+                    : new ArrayList<>();
 
-            // 앨범
-            List<AlbumInfo> albums = new ArrayList<>();
-            if (result.getAlbums() != null && result.getAlbums().getItems() != null) {
-                for (AlbumSimplified album : result.getAlbums().getItems()) {
-                    String name = album.getName();
-                    String artistNames = (album.getArtists() != null && album.getArtists().length > 0)
-                            ? Arrays.stream(album.getArtists()).map(ArtistSimplified::getName).collect(Collectors.joining(", "))
-                            : "Unknown Artist";
-                    String albumType = album.getAlbumType() != null ? album.getAlbumType().getType() : null;
-                    String releaseDate = album.getReleaseDate();
-                    String imageUrl = (album.getImages() != null && album.getImages().length > 0)
-                            ? album.getImages()[0].getUrl()
-                            : null;
-
-                    albums.add(AlbumInfo.builder()
-                            .name(name)
-                            .artists(artistNames)
-                            .releaseDate(releaseDate)
-                            .imageUrl(imageUrl)
-                            .build());
-                }
-            }
+            List<AlbumInfo> albums = result.getAlbums() != null && result.getAlbums().getItems() != null
+                    ? Arrays.stream(result.getAlbums().getItems()).map(this::toAlbumInfo).collect(Collectors.toList())
+                    : new ArrayList<>();
 
             return new SearchAllResult(tracks, artists, albums);
 
@@ -223,3 +171,4 @@ public class MusicSearchService {
         }
     }
 }
+

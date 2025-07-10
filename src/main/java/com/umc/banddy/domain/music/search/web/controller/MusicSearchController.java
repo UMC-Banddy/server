@@ -23,7 +23,7 @@ public class MusicSearchController {
     }
 
 
-    @GetMapping("/track")
+    @GetMapping("/tracks")
     public ApiResponse<List<TrackInfo>> searchTrack(
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int limit,
@@ -35,7 +35,7 @@ public class MusicSearchController {
 
 
 
-    @GetMapping("/artist")
+    @GetMapping("/artists")
     public ApiResponse<List<ArtistInfo>> searchArtist(
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int limit,
@@ -45,7 +45,7 @@ public class MusicSearchController {
         return ApiResponse.onSuccess(result);
     }
 
-    @GetMapping("/album")
+    @GetMapping("/albums")
     public ApiResponse<List<AlbumInfo>> searchAlbum(
             @RequestParam String q,
             @RequestParam(defaultValue = "10") int limit,

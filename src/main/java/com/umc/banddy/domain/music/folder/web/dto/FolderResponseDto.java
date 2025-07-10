@@ -1,17 +1,16 @@
-package com.umc.banddy.domain.music.search.web.dto;
+package com.umc.banddy.domain.music.folder.web.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArtistInfo {
-    private String spotifyId;
+public class FolderResponseDto {
+    //private Long trackFolderId;
+    private Long folderId;
     private String name;
-    private String genres;
-    private String imageUrl;
 }
