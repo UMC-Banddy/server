@@ -12,7 +12,8 @@ public class TrackConverter {
             String artist,
             String album,
             String duration,
-            String imageUrl
+            String imageUrl,
+            String externalUrl
     ) {
         return Track.builder()
                 .spotifyId(spotifyId)
@@ -21,6 +22,7 @@ public class TrackConverter {
                 .album(album)
                 .duration(duration)
                 .imageUrl(imageUrl)
+                .externalUrl(externalUrl)
                 .build();
     }
 
@@ -34,7 +36,8 @@ public class TrackConverter {
                 .album(track.getAlbum())
                 .duration(track.getDuration())
                 .imageUrl(track.getImageUrl())
-                .memberTrackId(memberTrackId)
+                .externalUrl(track.getExternalUrl())
+                //.memberTrackId(memberTrackId)
                 .build();
     }
 }

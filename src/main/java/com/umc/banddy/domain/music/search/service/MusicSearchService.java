@@ -44,6 +44,10 @@ public class MusicSearchService {
             int seconds = totalSeconds % 60;
             duration = String.format("%d:%02d", minutes, seconds);
         }
+        String externalUrl = null;
+        if (track.getExternalUrls() != null) {
+            externalUrl = track.getExternalUrls().get("spotify");
+        }
         return TrackInfo.builder()
                 .spotifyId(spotifyId)
                 .title(title)
@@ -51,6 +55,7 @@ public class MusicSearchService {
                 .album(album)
                 .duration(duration)
                 .imageUrl(imageUrl)
+                .externalUrl(externalUrl)
                 .build();
     }
 

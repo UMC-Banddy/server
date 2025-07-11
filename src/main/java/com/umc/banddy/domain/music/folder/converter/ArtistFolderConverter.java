@@ -1,25 +1,29 @@
 package com.umc.banddy.domain.music.folder.converter;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.music.folder.domain.TrackFolder;
+import com.umc.banddy.domain.music.folder.domain.ArtistFolder;
 import com.umc.banddy.domain.music.folder.web.dto.FolderRequestDto;
 import com.umc.banddy.domain.music.folder.web.dto.FolderResponseDto;
+import com.umc.banddy.domain.member.Member;
 
-public class TrackFolderConverter {
+public class ArtistFolderConverter {
 
     // Request DTO → Entity
-    public static TrackFolder toTrackFolder(FolderRequestDto dto, Member member) {
-        return TrackFolder.builder()
+    public static ArtistFolder toArtistFolder(FolderRequestDto dto, Member member) {
+        return ArtistFolder.builder()
                 .name(dto.getName())
                 .member(member)
                 .build();
     }
 
     // Entity → Response DTO
-    public static FolderResponseDto toFolderResponseDto(TrackFolder folder) {
+    public static FolderResponseDto toFolderResponseDto(ArtistFolder folder) {
         return FolderResponseDto.builder()
                 .folderId(folder.getId())
                 .name(folder.getName())
                 .build();
     }
 }
+
+
+
+

@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class FolderTracksRequestDto {
-    //private Long trackId;
-    private Long memberTrackId;
+    private Long trackId;
+    //private Long memberTrackId;
 }

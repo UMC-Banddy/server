@@ -25,4 +25,9 @@ public class FolderTracks {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "track_folder_id")
     private TrackFolder trackFolder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "track_id")
+    private Track track;
+
 }

@@ -19,6 +19,7 @@ public class TrackResponseDto {
         String album;
         String duration;
         String imageUrl;
-        Long memberTrackId;
+        String externalUrl;
+        //Long memberTrackId;
     }
 }
