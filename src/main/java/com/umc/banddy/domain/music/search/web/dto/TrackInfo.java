@@ -21,5 +21,6 @@ public class TrackInfo {
     private String album;
     private String duration;
     private String imageUrl;
+    private String externalUrl;
 }
 

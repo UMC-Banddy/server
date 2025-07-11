@@ -38,9 +38,6 @@ public class TrackService {
     private final SpotifyTokenManager spotifyTokenManager;
     private final JwtTokenUtil jwtTokenUtil;
 
-    // 하드코딩된 memberId (인증 연동 전 임시)
-    private static final Long HARDCODED_MEMBER_ID = 1L;
-
 
     /**
      * Spotify API에서 곡 정보를 받아와 저장
