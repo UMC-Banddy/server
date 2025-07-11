@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FolderResponseDto {
-    //private Long trackFolderId;
     private Long folderId;
     private String name;
 }

@@ -86,24 +86,27 @@ public class TrackFolderService {
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_SAVED_BY_MEMBER));
 
         // 이미 추가된 곡이면 중복 추가 방지
-        FolderTracks folderTracks = folderTracksRepository.findByTrackFolderAndMemberTrack(folder, memberTrack)
+        folderTracksRepository.findByTrackFolderAndMemberTrack(folder, memberTrack)
                 .orElseGet(() -> folderTracksRepository.save(
                         FolderTracksConverter.toFolderTracks(folder, memberTrack)
                 ));
 
-        // 이번에 추가된 곡만 리스트로 응답
-        List<TrackResponseDto.TrackResultDto> trackDtos = List.of(
-                TrackConverter.toTrackResultDto(track, memberTrack.getId())
-        );
+        // 폴더에 있는 모든 곡 리스트로 응답
+        List<TrackResponseDto.TrackResultDto> trackDtos = folderTracksRepository.findAllByTrackFolder(folder).stream()
+                .map(folderTracks -> {
+                    MemberTrack mt = folderTracks.getMemberTrack();
+                    return TrackConverter.toTrackResultDto(mt.getTrack(), mt.getId());
+                })
+                .toList();
 
         return FolderTracksResponseDto.builder()
-                .folderTracksId(folderTracks.getId())
                 .trackFolderId(folder.getId())
                 .tracks(trackDtos)
                 .build();
     }
 
 
+    // 폴더 내 곡 삭제
     @Transactional
     public void removeTrackFromFolder(Long folderId, Long trackId, String token) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
@@ -127,7 +130,6 @@ public class TrackFolderService {
 
         folderTracksRepository.delete(folderTracks);
     }
-
 
 
 

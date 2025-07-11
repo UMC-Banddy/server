@@ -3,6 +3,7 @@ package com.umc.banddy.domain.music.artist.web.controller;
 import com.umc.banddy.domain.music.artist.service.ArtistService;
 import com.umc.banddy.domain.music.artist.web.dto.ArtistRequestDto;
 import com.umc.banddy.domain.music.artist.web.dto.ArtistResponseDto;
+import com.umc.banddy.domain.music.artist.web.dto.ArtistToggleResponseDto;
 import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,14 +44,15 @@ public class ArtistController {
 
     // 아티스트 저장/삭제 토글
     @PostMapping("/toggle")
-    public ResponseEntity<ApiResponse<ArtistResponseDto>> toggleArtist(
+    public ResponseEntity<ApiResponse<ArtistToggleResponseDto>> toggleArtist(
             @RequestBody ArtistRequestDto requestDto,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
-        ArtistResponseDto result = artistService.toggleArtist(requestDto, token);
+        ArtistToggleResponseDto result = artistService.toggleArtist(requestDto, token);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
 
     // 저장한 아티스트 목록 조회
     @GetMapping

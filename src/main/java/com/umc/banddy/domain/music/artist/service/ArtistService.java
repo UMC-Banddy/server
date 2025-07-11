@@ -9,6 +9,9 @@ import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
 import com.umc.banddy.domain.music.artist.repository.MemberArtistRepository;
 import com.umc.banddy.domain.music.artist.web.dto.ArtistRequestDto;
 import com.umc.banddy.domain.music.artist.web.dto.ArtistResponseDto;
+import com.umc.banddy.domain.music.artist.web.dto.ArtistToggleResponseDto;
+import com.umc.banddy.domain.music.folder.domain.FolderArtists;
+import com.umc.banddy.domain.music.folder.repository.FolderArtistsRepository;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
@@ -31,6 +34,7 @@ public class ArtistService {
     private final MemberRepository memberRepository;
     private final JwtTokenUtil jwtTokenUtil;
     private final SpotifyTokenManager spotifyTokenManager;
+    private final FolderArtistsRepository folderArtistsRepository;
 
     // 아티스트 저장
     @Transactional
@@ -77,7 +81,7 @@ public class ArtistService {
                             .build()
             );
         } catch (Exception e) {
-            throw new RuntimeException("Spotify에서 아티스트 정보를 가져올 수 없습니다: " + e.getMessage(), e);
+            throw new GeneralException(ErrorStatus.SPOTIFY_RESOURCE_NOT_FOUND);
         }
     }
 
@@ -90,12 +94,27 @@ public class ArtistService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         Artist artist = artistRepository.findById(artistId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.ARTIST_NOT_FOUND));
-        memberArtistRepository.deleteByMemberAndArtist(member, artist);
+
+        // 1. 회원-아티스트 매핑 조회
+        MemberArtist memberArtist = memberArtistRepository.findByMemberAndArtist(member, artist)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.ARTIST_NOT_SAVED_BY_MEMBER));
+
+        // 2. 폴더-아티스트 매핑이 있는지 확인 (여러 폴더에 있을 수 있으므로 모두 조회)
+        List<FolderArtists> folderArtistsList = folderArtistsRepository.findAllByMemberArtist(memberArtist);
+
+        // 3. 폴더-아티스트 매핑이 있으면 모두 삭제
+        if (!folderArtistsList.isEmpty()) {
+            folderArtistsRepository.deleteAll(folderArtistsList);
+        }
+
+        // 4. 회원-아티스트 매핑 삭제
+        memberArtistRepository.delete(memberArtist);
     }
+
 
     // 아티스트 저장/삭제 토글
     @Transactional
-    public ArtistResponseDto toggleArtist(ArtistRequestDto requestDto, String token) {
+    public ArtistToggleResponseDto toggleArtist(ArtistRequestDto requestDto, String token) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -104,16 +123,24 @@ public class ArtistService {
                 .orElseGet(() -> artistRepository.save(ArtistConverter.toArtist(requestDto)));
 
         var memberArtistOpt = memberArtistRepository.findByMemberAndArtist(member, artist);
+        boolean isSaved;
         if (memberArtistOpt.isPresent()) {
             memberArtistRepository.delete(memberArtistOpt.get());
-            return ArtistConverter.toArtistResponseDto(artist, null);
+            isSaved = false;
         } else {
-            MemberArtist memberArtist = memberArtistRepository.save(
+            memberArtistRepository.save(
                     MemberArtist.builder().member(member).artist(artist).build()
             );
-            return ArtistConverter.toArtistResponseDto(artist, memberArtist.getId());
+            isSaved = true;
         }
+
+        return ArtistToggleResponseDto.builder()
+                .artistId(artist.getId())
+                .spotifyId(artist.getSpotifyId())
+                .isSaved(isSaved)
+                .build();
     }
+
 
     // 저장한 아티스트 목록 조회
     @Transactional(readOnly = true)
