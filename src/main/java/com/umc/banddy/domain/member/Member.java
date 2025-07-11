@@ -2,6 +2,7 @@ package com.umc.banddy.domain.member;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.umc.banddy.domain.member.enums.Gender;
 
 @Entity
 @Getter
@@ -23,11 +24,18 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String nickname;
 
+    @Column(nullable = false)
+    private Integer age;
+
     @Column(length = 10)
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column(length = 20)
-    private String region;
+    private String region;  // 시
+
+    @Column(length = 20)
+    private String district; //구
 
     @Column(length = 500)
     private String refreshToken;
