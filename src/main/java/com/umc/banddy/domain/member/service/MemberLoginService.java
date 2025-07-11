@@ -23,7 +23,7 @@ public class MemberLoginService {
 
     public LoginResponse login(LoginRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.AUTHENTICATION_FAILED));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new GeneralException(ErrorStatus.AUTHENTICATION_FAILED);
