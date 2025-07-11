@@ -24,8 +24,10 @@ public class MemberCommandService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
+                .age(request.getAge())
                 .gender(request.getGender())
                 .region(request.getRegion())
+                .district(request.getDistrict())
                 .build();
 
         memberRepository.save(member);
