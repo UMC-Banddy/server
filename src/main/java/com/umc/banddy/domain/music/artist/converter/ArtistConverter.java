@@ -20,6 +20,7 @@ public class ArtistConverter {
                 .name(artist.getName())
                 .genre(artist.getGenre())
                 .imageUrl(artist.getImageUrl())
+                .externalUrl(artist.getExternalUrl())
                 .memberArtistId(memberArtistId)
                 .build();
     }

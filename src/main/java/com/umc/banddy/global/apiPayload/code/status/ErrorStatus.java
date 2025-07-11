@@ -31,6 +31,10 @@ public enum ErrorStatus implements BaseErrorCode {
     //ARTIST_ALREADY_SAVED(HttpStatus.CONFLICT, "ARTIST4009", "이미 저장된 아티스트입니다."),
     ARTIST_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "ARTIST4000", "해당 아티스트는 회원이 저장한 아티스트가 아닙니다."),
 
+    // Album
+    ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM4004", "앨범을 찾을 수 없습니다."),
+    ALBUM_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "ALBUM4000", "해당 앨범은 회원이 저장한 앨범이 아닙니다."),
+
     // Folder
     FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
     FOLDER_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더에 해당 곡이 없습니다."),
