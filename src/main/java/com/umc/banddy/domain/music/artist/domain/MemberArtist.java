@@ -1,20 +1,19 @@
-package com.umc.banddy.domain.music.track.domain.mapping;
+package com.umc.banddy.domain.music.artist.domain;
 
 import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.music.track.domain.Track;
-import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MemberTrack extends BaseEntity {
+public class MemberArtist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +23,7 @@ public class MemberTrack extends BaseEntity {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "track_id")
-    private Track track;
+    @JoinColumn(name = "artist_id")
+    private Artist artist;
 
 }

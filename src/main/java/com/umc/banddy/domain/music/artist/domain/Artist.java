@@ -1,6 +1,5 @@
-package com.umc.banddy.domain.music.folder.domain;
+package com.umc.banddy.domain.music.artist.domain;
 
-import com.umc.banddy.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +11,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TrackFolder {
+public class Artist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @Column(nullable = false, unique = true)
+    private String spotifyId;
+
+    private String name;
+    private String genre;
+    private String imageUrl;
 }
