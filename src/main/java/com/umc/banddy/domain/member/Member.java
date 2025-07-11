@@ -1,15 +1,16 @@
 package com.umc.banddy.domain.member;
 
+import com.umc.banddy.domain.member.enums.Gender;
+import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import com.umc.banddy.domain.member.enums.Gender;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +36,7 @@ public class Member {
     private String region;  // 시
 
     @Column(length = 20)
-    private String district; //구
+    private String district; // 구
 
     @Column(length = 500)
     private String refreshToken;
@@ -43,5 +44,4 @@ public class Member {
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
-
 }

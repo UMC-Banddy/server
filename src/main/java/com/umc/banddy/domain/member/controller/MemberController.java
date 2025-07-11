@@ -18,7 +18,7 @@ import java.util.HashMap;
 
 @Tag(name = "member", description = "회원 관련 API")
 @RestController
-@RequestMapping("/members")
+@RequestMapping("/member")
 @RequiredArgsConstructor
 public class MemberController {
 
@@ -26,7 +26,7 @@ public class MemberController {
     private final MemberLoginService memberLoginService;
 
     @Operation(summary = "회원가입", description = "회원가입 api")
-    @PostMapping("/join")
+    @PostMapping
     public ResponseEntity<Map<String, String>> signup(@RequestBody @Valid SignupRequest request) {
         memberCommandService.signup(request);
         Map<String, String> response = new HashMap<>();

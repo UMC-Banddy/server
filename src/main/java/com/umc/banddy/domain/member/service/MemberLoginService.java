@@ -6,9 +6,8 @@ import com.umc.banddy.domain.member.MemberRepository;
 import com.umc.banddy.domain.member.dto.LoginRequest;
 import com.umc.banddy.domain.member.dto.LoginResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +23,10 @@ public class MemberLoginService {
 
     public LoginResponse login(LoginRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.AUTHENTICATION_FAILED));
 
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new GeneralException(ErrorStatus.AUTHENTICATION_FAILED);
         }
 
         String accessToken = jwtTokenUtil.generateAccessToken(member);
@@ -38,5 +37,4 @@ public class MemberLoginService {
 
         return new LoginResponse(member.getId(), accessToken, refreshToken);
     }
-
 }
