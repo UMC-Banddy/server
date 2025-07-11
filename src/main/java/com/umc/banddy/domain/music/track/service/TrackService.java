@@ -2,6 +2,10 @@ package com.umc.banddy.domain.music.track.service;
 
 import com.umc.banddy.domain.member.Member;
 import com.umc.banddy.domain.member.MemberRepository;
+import com.umc.banddy.domain.music.folder.domain.FolderTracks;
+import com.umc.banddy.domain.music.folder.domain.TrackFolder;
+import com.umc.banddy.domain.music.folder.repository.FolderTracksRepository;
+import com.umc.banddy.domain.music.folder.repository.TrackFolderRepository;
 import com.umc.banddy.domain.music.search.service.MusicSearchService;
 import com.umc.banddy.domain.music.track.converter.TrackConverter;
 import com.umc.banddy.domain.music.track.domain.Track;
@@ -13,6 +17,7 @@ import com.umc.banddy.domain.music.track.web.dto.TrackRequestDto;
 import com.umc.banddy.domain.music.track.web.dto.TrackToggleResponseDto;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
+import com.umc.banddy.global.apiPayload.exception.handler.FolderHandler;
 import com.umc.banddy.global.apiPayload.exception.handler.TrackHandler;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import com.umc.banddy.global.security.oauth.SpotifyTokenManager;
@@ -37,6 +42,8 @@ public class TrackService {
     private final MusicSearchService musicSearchService;
     private final SpotifyTokenManager spotifyTokenManager;
     private final JwtTokenUtil jwtTokenUtil;
+    private final TrackFolderRepository trackFolderRepository;
+    private final FolderTracksRepository folderTracksRepository;
 
 
     /**
@@ -64,6 +71,10 @@ public class TrackService {
                     && spotifyTrack.getAlbum().getImages().length > 0)
                     ? spotifyTrack.getAlbum().getImages()[0].getUrl()
                     : "";
+            String externalUrl = null;
+            if (spotifyTrack.getExternalUrls() != null && spotifyTrack.getExternalUrls().get("spotify") != null) {
+                externalUrl = spotifyTrack.getExternalUrls().get("spotify");
+            }
 
             return trackRepository.save(
                     TrackConverter.toTrackFromSpotify(
@@ -72,7 +83,8 @@ public class TrackService {
                             artist,
                             album,
                             duration,
-                            imageUrl
+                            imageUrl,
+                            externalUrl
                     )
             );
         } catch (Exception e) {
@@ -112,23 +124,32 @@ public class TrackService {
 
 
     /**
-     * 곡 삭제 (회원-곡 매핑만 삭제)
+     * 곡 삭제
      */
     @Transactional
     public void deleteTrack(Long trackId, String token) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
-
-        Track track = trackRepository.findById(trackId)
-                .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        Track track = trackRepository.findById(trackId)
+                .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_FOUND));
 
-        // 회원이 저장한 곡인지 확인
+        // 1. 회원-곡 매핑 조회
         MemberTrack memberTrack = memberTrackRepository.findByMemberAndTrack(member, track)
                 .orElseThrow(() -> new TrackHandler(ErrorStatus.TRACK_NOT_SAVED_BY_MEMBER));
 
+        // 2. 폴더-곡 매핑이 있는지 확인 (여러 폴더에 있을 수 있으므로 모두 조회)
+        List<FolderTracks> folderTracksList = folderTracksRepository.findAllByMemberTrack(memberTrack);
+
+        // 3. 폴더-곡 매핑이 있으면 모두 삭제
+        if (!folderTracksList.isEmpty()) {
+            folderTracksRepository.deleteAll(folderTracksList);
+        }
+
+        // 4. 회원-곡 매핑 삭제
         memberTrackRepository.delete(memberTrack);
     }
+
 
 
     /**

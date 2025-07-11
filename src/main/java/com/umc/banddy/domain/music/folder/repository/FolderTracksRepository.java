@@ -15,5 +15,6 @@ public interface FolderTracksRepository extends JpaRepository<FolderTracks, Long
     void deleteByTrackFolderAndTrack(TrackFolder trackFolder, Track track);
     Optional<FolderTracks> findByTrackFolderAndTrack(TrackFolder trackFolder, Track track);
     //void deleteByTrackFolderAndMemberTrack(TrackFolder trackFolder, MemberTrack memberTrack);
+    List<FolderTracks> findAllByMemberTrack(MemberTrack memberTrack);
 }
 
