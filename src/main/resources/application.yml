@@ -26,6 +26,14 @@ spring:
         hbm2ddl:
           auto: update
         default_batch_fetch_size: 1000
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kssjshyjj@gmail.com
+    password: vdhe bosw ymui ohab
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
