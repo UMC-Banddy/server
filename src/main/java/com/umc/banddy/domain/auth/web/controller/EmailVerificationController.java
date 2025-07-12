@@ -1,11 +1,10 @@
-package com.umc.banddy.domain.member.controller;
+package com.umc.banddy.domain.auth.web.controller;
 
-import com.umc.banddy.domain.member.dto.EmailSendRequest;
-import com.umc.banddy.domain.member.dto.EmailVerifyRequest;
-import com.umc.banddy.domain.member.dto.EmailVerifyResponse;
-import com.umc.banddy.domain.member.service.EmailVerificationService;
+import com.umc.banddy.domain.auth.web.dto.EmailSendRequest;
+import com.umc.banddy.domain.auth.web.dto.EmailVerifyRequest;
+import com.umc.banddy.domain.auth.web.dto.EmailVerifyResponse;
+import com.umc.banddy.domain.auth.service.EmailVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,9 +1,8 @@
 package com.umc.banddy.domain.music.track.service;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.folder.domain.FolderTracks;
-import com.umc.banddy.domain.music.folder.domain.TrackFolder;
 import com.umc.banddy.domain.music.folder.repository.FolderTracksRepository;
 import com.umc.banddy.domain.music.folder.repository.TrackFolderRepository;
 import com.umc.banddy.domain.music.search.service.MusicSearchService;
@@ -17,7 +16,6 @@ import com.umc.banddy.domain.music.track.web.dto.TrackRequestDto;
 import com.umc.banddy.domain.music.track.web.dto.TrackToggleResponseDto;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
-import com.umc.banddy.global.apiPayload.exception.handler.FolderHandler;
 import com.umc.banddy.global.apiPayload.exception.handler.TrackHandler;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import com.umc.banddy.global.security.oauth.SpotifyTokenManager;

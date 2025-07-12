@@ -3,7 +3,7 @@ package com.umc.banddy.domain.music.folder.converter;
 import com.umc.banddy.domain.music.folder.domain.ArtistFolder;
 import com.umc.banddy.domain.music.folder.web.dto.FolderRequestDto;
 import com.umc.banddy.domain.music.folder.web.dto.FolderResponseDto;
-import com.umc.banddy.domain.member.Member;
+import com.umc.banddy.domain.member.domain.Member;
 
 public class ArtistFolderConverter {
 

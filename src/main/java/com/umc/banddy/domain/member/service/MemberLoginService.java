@@ -1,17 +1,15 @@
 package com.umc.banddy.domain.member.service;
 
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
-import com.umc.banddy.domain.member.dto.LoginRequest;
-import com.umc.banddy.domain.member.dto.LoginResponse;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.member.web.dto.LoginRequest;
+import com.umc.banddy.domain.member.web.dto.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor

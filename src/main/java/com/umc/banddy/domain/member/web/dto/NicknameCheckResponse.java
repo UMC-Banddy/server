@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.member.dto;
+package com.umc.banddy.domain.member.web.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

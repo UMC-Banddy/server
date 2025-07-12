@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.music.track.repository;
 
-import com.umc.banddy.domain.member.Member;
+import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,8 +1,8 @@
-package com.umc.banddy.domain.member.service;
+package com.umc.banddy.domain.auth.service;
 
-import com.umc.banddy.domain.member.dto.EmailSendRequest;
-import com.umc.banddy.domain.member.dto.EmailVerifyRequest;
-import com.umc.banddy.domain.member.dto.EmailVerifyResponse;
+import com.umc.banddy.domain.auth.web.dto.EmailSendRequest;
+import com.umc.banddy.domain.auth.web.dto.EmailVerifyRequest;
+import com.umc.banddy.domain.auth.web.dto.EmailVerifyResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
