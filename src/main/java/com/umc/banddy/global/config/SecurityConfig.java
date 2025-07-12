@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                                "/members/join", "/members/login", "/members/check-nickname",
+                                "/member", "/member/login", "/member/check-nickname",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-resources", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

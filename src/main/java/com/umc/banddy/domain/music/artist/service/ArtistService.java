@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.music.artist.service;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.artist.converter.ArtistConverter;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.domain.MemberArtist;

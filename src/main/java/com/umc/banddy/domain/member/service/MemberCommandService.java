@@ -1,9 +1,9 @@
 package com.umc.banddy.domain.member.service;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
-import com.umc.banddy.domain.member.dto.SignupRequest;
-import com.umc.banddy.domain.member.dto.NicknameCheckResponse;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.member.web.dto.SignupRequest;
+import com.umc.banddy.domain.member.web.dto.NicknameCheckResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

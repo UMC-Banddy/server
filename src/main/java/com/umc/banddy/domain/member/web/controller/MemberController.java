@@ -1,16 +1,15 @@
-package com.umc.banddy.domain.member.controller;
+package com.umc.banddy.domain.member.web.controller;
 
-import com.umc.banddy.domain.member.dto.LoginRequest;
-import com.umc.banddy.domain.member.dto.LoginResponse;
-import com.umc.banddy.domain.member.dto.SignupRequest;
+import com.umc.banddy.domain.member.web.dto.LoginRequest;
+import com.umc.banddy.domain.member.web.dto.LoginResponse;
+import com.umc.banddy.domain.member.web.dto.SignupRequest;
 import com.umc.banddy.domain.member.service.MemberCommandService;
 import com.umc.banddy.domain.member.service.MemberLoginService;
-import com.umc.banddy.domain.member.dto.NicknameCheckResponse;
+import com.umc.banddy.domain.member.web.dto.NicknameCheckResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;

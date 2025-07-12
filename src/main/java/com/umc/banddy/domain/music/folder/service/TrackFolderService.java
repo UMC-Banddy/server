@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.music.folder.service;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.folder.converter.FolderTracksConverter;
 import com.umc.banddy.domain.music.folder.converter.TrackFolderConverter;
 import com.umc.banddy.domain.music.folder.domain.FolderTracks;

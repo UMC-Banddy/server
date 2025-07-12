@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.music.folder.service;
 
-import com.umc.banddy.domain.member.Member;
-import com.umc.banddy.domain.member.MemberRepository;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.domain.MemberArtist;
 import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
@@ -20,7 +20,6 @@ import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.GenericApplicationListenerAdapter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

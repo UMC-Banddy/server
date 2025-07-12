@@ -1,7 +1,7 @@
 package com.umc.banddy.global.security.jwt;
 
 import io.jsonwebtoken.*;
-import com.umc.banddy.domain.member.Member;
+import com.umc.banddy.domain.member.domain.Member;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Component
@@ -84,4 +86,11 @@ public class JwtTokenUtil {
                 ? authorization.substring(7)
                 : null;
     }
+    public LocalDateTime getExpirationDate(String token) {
+        Claims claims = parseToken(token);
+        Date expiration = claims.getExpiration();
+        return expiration.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
 }
+

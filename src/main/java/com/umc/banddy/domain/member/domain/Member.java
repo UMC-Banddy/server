@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.member;
+package com.umc.banddy.domain.member.domain;
 
 import com.umc.banddy.domain.member.enums.Gender;
 import com.umc.banddy.global.entity.BaseEntity;

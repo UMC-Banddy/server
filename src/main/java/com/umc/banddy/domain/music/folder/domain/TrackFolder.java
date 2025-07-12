@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.music.folder.domain;
 
-import com.umc.banddy.domain.member.Member;
+import com.umc.banddy.domain.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
