@@ -2,6 +2,7 @@ package com.umc.banddy.domain.auth.web.controller;
 
 import com.umc.banddy.domain.auth.service.AuthService;
 import com.umc.banddy.domain.auth.web.dto.LogoutRequest;
+import com.umc.banddy.domain.auth.web.dto.RefreshTokenRequest;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +40,18 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "로그아웃이 완료되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "액세스 토큰 재발급", description = "유효한 리프레시 토큰으로 액세스 토큰을 재발급합니다.")
+    @PostMapping("/refreshToken")
+    public ResponseEntity<Map<String, String>> reissueAccessToken(
+            @RequestBody @Valid RefreshTokenRequest request) {
+
+        String newAccessToken = authService.reissueAccessToken(request.getRefreshToken());
+
+        Map<String, String> response = new HashMap<>();
+        response.put("accessToken", newAccessToken);
         return ResponseEntity.ok(response);
     }
 
