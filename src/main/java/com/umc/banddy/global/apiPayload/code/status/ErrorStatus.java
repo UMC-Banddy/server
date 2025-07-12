@@ -44,12 +44,17 @@ public enum ErrorStatus implements BaseErrorCode {
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH4001", "아이디 또는 비밀번호가 일치하지 않습니다."),
     DYNAMIC_KEY_NOT_FOUND(HttpStatus.BAD_REQUEST, "AUTH4003", "사용자에 대한 동적 키가 존재하지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH4011", "유효하지 않은 토큰입니다."),
-    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH4012", "토큰이 만료되었습니다."),
     VERIFICATION_CODE_WRONG(HttpStatus.BAD_REQUEST, "AUTH4021", "인증번호가 일치하지 않습니다."),
     VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "AUTH4022", "인증번호가 만료되었습니다."),
     LOGOUT_TOKEN(HttpStatus.BAD_REQUEST, "AUTH4002", "이미 로그아웃된 토큰입니다."),
-    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_004", "유효하지 않은 Access Token입니다."),
-    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_005", "유효하지 않은 Refresh Token입니다.");
+    // Access Token
+    ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_006", "Access Token이 만료되었습니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_007", "유효하지 않은 Access Token입니다."),
+
+    // Refresh Token
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_008", "Refresh Token이 만료되었습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_009", "유효하지 않은 Refresh Token입니다.");
+
 
 
     private final HttpStatus httpStatus;
