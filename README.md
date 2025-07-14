@@ -71,4 +71,3 @@
     <td><div align="center">모집, 채팅</div></td>
     <td><div align="center">밴드, 프로필</div></td>
 </table>
->>>>>>> develop

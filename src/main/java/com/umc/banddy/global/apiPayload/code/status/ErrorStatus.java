@@ -56,7 +56,6 @@ public enum ErrorStatus implements BaseErrorCode {
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_009", "유효하지 않은 Refresh Token입니다.");
 
 
-
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

@@ -14,5 +14,4 @@ public class BanddyApplication {
 		SpringApplication.run(BanddyApplication.class, args);
 	}
 
-
 }
