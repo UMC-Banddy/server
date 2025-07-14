@@ -25,7 +25,5 @@ public class UserTemp extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @OneToMany
-    @JoinColumn(name = "user_temp_id")
-    private List<ChatRoomParticipant> chatRoomParticipants;
+
 }

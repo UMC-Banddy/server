@@ -12,5 +12,4 @@ import java.security.Principal;
 public class MessageAuthenticationHeader implements Principal {
     private final Long memberId;
     private final String name;
-
 }

@@ -7,18 +7,24 @@ import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.chat.repository.UserTempRepository;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
+import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.graphql.servlet.GraphQlWebMvcAutoConfiguration;
 import org.springframework.stereotype.Service;
+
+import java.security.Principal;
+
+import static com.umc.banddy.domain.chat.converter.chatConveter.toChatMessageResponse;
 
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService{
 
-    private final UserTempRepository userTempRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomParicipantRepository participantRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final MemberRepository memberRepository;
 
 //    public void verifyParticipant() {
     //        // 방 형식 검증
@@ -42,12 +48,15 @@ public class ChatServiceImpl implements ChatService{
 //    }
 
     public ChatMessage saveMessage(
+            Principal principal,
             ChatMessageRequest messageRequest ,
             Long roomId
     ){
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
 
         ChatMessage chatMessage = ChatMessage.builder()
-                .userTemp(userTempRepository.findById(messageRequest.getSenderId()).orElseThrow())
+                .member(memberRepository.findById(auth.getMemberId())
+                        .orElseThrow(() -> new IllegalArgumentException("잘못된 참여자")))
                 .chatRoom(chatRoomRepository.findById(roomId)
                         .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다.")))
                 .content(messageRequest.getContent())
@@ -57,13 +66,6 @@ public class ChatServiceImpl implements ChatService{
     }
 
     public ChatMessageResponse chatToResponse(ChatMessage chatMessage) {
-        return ChatMessageResponse.builder()
-                .messageId(chatMessage.getId())
-                .content(chatMessage.getContent())
-                .senderId(chatMessage.getUserTemp().getId())
-                .senderName(chatMessage.getUserTemp().getName())
-                .roomId(chatMessage.getChatRoom().getId())
-                .timestamp(chatMessage.getCreatedAt())
-                .build();
+        return toChatMessageResponse(chatMessage);
     }
 }

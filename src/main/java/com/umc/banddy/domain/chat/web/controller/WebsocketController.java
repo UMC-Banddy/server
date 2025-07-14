@@ -14,6 +14,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 
+import java.security.Principal;
+
 @Controller
 @RequiredArgsConstructor
 public class WebsocketController {
@@ -23,7 +25,7 @@ public class WebsocketController {
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
-            //Principal principal, // 나중에 사용자 인증정보 활용시 추가
+            Principal principal,
             @Payload ChatMessageRequest messageRequest,
             @Validated @DestinationVariable Long roomId
     ) {
@@ -31,7 +33,7 @@ public class WebsocketController {
         // 유효 참여자, 유효 채팅방인지 검증하는 로직 추가할것
 
         // 채팅 메세지 저장
-        ChatMessage chatMessage = chatService.saveMessage(messageRequest, roomId);
+        ChatMessage chatMessage = chatService.saveMessage(principal, messageRequest, roomId);
 
         // 응답 생성
         ChatMessageResponse chatMessageResponse = chatService.chatToResponse(chatMessage);
