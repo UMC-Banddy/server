@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.chat.service;
 
-import com.umc.banddy.domain.chat.entity.ChatMessage;
+import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParicipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
@@ -8,9 +8,8 @@ import com.umc.banddy.domain.chat.repository.UserTempRepository;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.graphql.servlet.GraphQlWebMvcAutoConfiguration;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor

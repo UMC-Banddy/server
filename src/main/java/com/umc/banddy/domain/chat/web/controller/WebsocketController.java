@@ -1,13 +1,8 @@
 package com.umc.banddy.domain.chat.web.controller;
 
 
-import com.umc.banddy.domain.chat.entity.ChatMessage;
-import com.umc.banddy.domain.chat.entity.ChatRoom;
-import com.umc.banddy.domain.chat.entity.ChatRoomParticipant;
-import com.umc.banddy.domain.chat.entity.enums.RoomType;
-import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
-import com.umc.banddy.domain.chat.repository.ChatRoomParicipantRepository;
-import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
+import com.umc.banddy.domain.chat.domain.ChatMessage;
+import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
@@ -19,12 +14,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 @Controller
 @RequiredArgsConstructor
-public class ChatController {
+public class WebsocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;

@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.chat.web.dto;
 
-import com.umc.banddy.domain.chat.entity.enums.RoomType;
+import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;

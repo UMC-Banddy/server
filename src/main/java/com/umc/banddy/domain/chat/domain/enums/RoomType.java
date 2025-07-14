@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.entity.enums;
+package com.umc.banddy.domain.chat.domain.enums;
 
 public enum RoomType {
     GROUP,

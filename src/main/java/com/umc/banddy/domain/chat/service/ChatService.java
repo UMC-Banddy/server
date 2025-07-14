@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.chat.service;
 
-import com.umc.banddy.domain.chat.entity.ChatMessage;
+import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
 

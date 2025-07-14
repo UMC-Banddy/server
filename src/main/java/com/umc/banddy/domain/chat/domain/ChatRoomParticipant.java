@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.entity;
+package com.umc.banddy.domain.chat.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

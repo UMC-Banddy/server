@@ -1,13 +1,12 @@
-package com.umc.banddy.domain.chat.entity;
+package com.umc.banddy.domain.chat.domain;
 
+import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -16,16 +15,21 @@ import static lombok.AccessLevel.PROTECTED;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor(access = PROTECTED)
-public class UserTemp extends BaseEntity {
+public class ChatRoom extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private RoomType roomType;
+
     @OneToMany
-    @JoinColumn(name = "user_temp_id")
-    private List<ChatRoomParticipant> chatRoomParticipants;
+    @JoinColumn(name = "chat_room_id")
+    private java.util.List<ChatRoomParticipant> participants;
+
 }

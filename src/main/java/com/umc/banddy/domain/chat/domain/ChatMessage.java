@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.entity;
+package com.umc.banddy.domain.chat.domain;
 
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 import static lombok.AccessLevel.PROTECTED;
 
