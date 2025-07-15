@@ -33,15 +33,14 @@ public class AuthController {
             @RequestHeader("Authorization") String authorization,
             @RequestBody @Valid LogoutRequest logoutRequest
     ) {
-        String accessToken = authorization.startsWith("Bearer ") ?
-                authorization.substring(7) : authorization;
 
-        authService.logout(accessToken, logoutRequest.getRefreshToken());
+        authService.logout(authorization, logoutRequest.getRefreshToken());
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "로그아웃이 완료되었습니다.");
         return ResponseEntity.ok(response);
     }
+
 
     @Operation(summary = "액세스 토큰 재발급", description = "유효한 리프레시 토큰으로 액세스 토큰을 재발급합니다.")
     @PostMapping("/refreshToken")
