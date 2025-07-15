@@ -1,25 +1,26 @@
-package com.umc.banddy.domain.mypage.profile.domain.mapping;
+package com.umc.banddy.domain.other.profile.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "member_genre")
+@Table(name = "member_tag")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class MemberGenre {
-
+public class MemberTag {
     @Id
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id2") // member_id 역할
+    @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id")
-    private Genre genre;
+    private String tag;
+
+    public String getTagName() {
+        return this.tag;
+    }
 }
