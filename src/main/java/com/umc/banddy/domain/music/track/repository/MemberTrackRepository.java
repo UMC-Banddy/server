@@ -12,5 +12,6 @@ public interface MemberTrackRepository extends JpaRepository<MemberTrack, Long> 
     Optional<MemberTrack> findByMemberAndTrack(Member member, Track track);
     void deleteByMemberAndTrack(Member member, Track track);
     List<MemberTrack> findAllByMember(Member member);
+    List<MemberTrack> findByMemberId(Long memberId);
 
 }

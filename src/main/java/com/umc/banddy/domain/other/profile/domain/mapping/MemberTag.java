@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.other.tag.domain.mapping;
+package com.umc.banddy.domain.other.profile.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
 import jakarta.persistence.*;

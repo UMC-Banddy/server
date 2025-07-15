@@ -5,9 +5,9 @@ import com.umc.banddy.domain.music.artist.domain.MemberArtist;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
 import com.umc.banddy.domain.mypage.profile.domain.mapping.MemberKeyword;
 import com.umc.banddy.domain.other.profile.domain.mapping.*;
+import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
-import com.umc.banddy.domain.other.tag.domain.mapping.MemberTag;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,8 +59,19 @@ public class OtherProfileConverter {
                         .title(t.getTrack().getTitle())
                         .artist(t.getTrack().getArtist())
                         .imageUrl(t.getTrack().getImageUrl())
-                        .soundUrl("https://cdn.example.com/preview.mp3") // TODO: 실제 연동
+                        .externalUrl(t.getTrack().getExternalUrl())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public static MemberTagResponse toMemberTagResponse(Long memberId, List<MemberTag> tags) {
+        List<String> tagList = tags.stream()
+                .map(MemberTag::getTag)
+                .collect(Collectors.toList());
+
+        return MemberTagResponse.builder()
+                .memberId(memberId)
+                .tags(tagList)
+                .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.other.tag.web.dto;
+package com.umc.banddy.domain.other.profile.web.dto;
 
 import lombok.Builder;
 import lombok.Getter;
