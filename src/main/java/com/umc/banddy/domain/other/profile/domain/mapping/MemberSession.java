@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.other.profile.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.other.profile.domain.Session;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,6 @@ public class MemberSession {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(name = "session_id")
-    private Long sessionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")

@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.mypage.profile.domain.mapping;
+package com.umc.banddy.domain.mypage.profile.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
