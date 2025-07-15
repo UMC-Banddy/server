@@ -71,13 +71,17 @@ public class ArtistService {
             String imageUrl = (spotifyArtist.getImages() != null && spotifyArtist.getImages().length > 0)
                     ? spotifyArtist.getImages()[0].getUrl()
                     : "";
-
+            String externalUrl = null;
+            if (spotifyArtist.getExternalUrls() != null && spotifyArtist.getExternalUrls().get("spotify") != null) {
+                externalUrl = spotifyArtist.getExternalUrls().get("spotify");
+            }
             return artistRepository.save(
                     Artist.builder()
                             .spotifyId(spotifyId)
                             .name(name)
                             .genre(genre)
                             .imageUrl(imageUrl)
+                            .externalUrl(externalUrl)
                             .build()
             );
         } catch (Exception e) {

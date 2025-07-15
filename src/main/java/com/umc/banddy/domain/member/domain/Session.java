@@ -17,4 +17,6 @@ public class Session {
     @Column(nullable = false)
     private String name;
 
+    @Column
+    private String icon;
 }

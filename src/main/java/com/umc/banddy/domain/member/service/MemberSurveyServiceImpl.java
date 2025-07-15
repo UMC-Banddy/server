@@ -64,7 +64,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
         if (keywords.getMANNER() != null) {
             for (String name : keywords.getMANNER()) {
-                keywordRepository.findByNameAndCategory(name, KeywordCategory.MANNER)
+                keywordRepository.findByContentAndCategory(name, KeywordCategory.MANNER)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -75,7 +75,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
         if (keywords.getSTYLE() != null) {
             for (String name : keywords.getSTYLE()) {
-                keywordRepository.findByNameAndCategory(name, KeywordCategory.STYLE)
+                keywordRepository.findByContentAndCategory(name, KeywordCategory.STYLE)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -86,7 +86,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
         if (keywords.getSKILL() != null) {
             for (String name : keywords.getSKILL()) {
-                keywordRepository.findByNameAndCategory(name, KeywordCategory.SKILL)
+                keywordRepository.findByContentAndCategory(name, KeywordCategory.SKILL)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -97,7 +97,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
         if (keywords.getFREQ() != null) {
             for (String name : keywords.getFREQ()) {
-                keywordRepository.findByNameAndCategory(name, KeywordCategory.FREQ)
+                keywordRepository.findByContentAndCategory(name, KeywordCategory.FREQ)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -161,7 +161,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         return keywordRepository.findAll().stream()
                 .collect(Collectors.groupingBy(
                         Keyword::getCategory,
-                        Collectors.mapping(k -> new SimpleKeywordDto(k.getId(), k.getName()), Collectors.toList())
+                        Collectors.mapping(k -> new SimpleKeywordDto(k.getId(), k.getContent()), Collectors.toList())
                 ));
     }
 

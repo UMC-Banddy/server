@@ -15,4 +15,5 @@ public class AlbumInfo {
     private String artists;
     private String releaseDate;
     private String imageUrl;
+    private String externalUrl;
 }

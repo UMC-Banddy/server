@@ -12,6 +12,7 @@ public class ArtistResponseDto {
     private String name;
     private String genre;
     private String imageUrl;
-    private Long memberArtistId; // 저장한 경우에만 값 세팅, 아니면 null
+    private String externalUrl;
+    //private Long memberArtistId; // 저장한 경우에만 값 세팅, 아니면 null
 }
 

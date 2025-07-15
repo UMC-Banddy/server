@@ -16,7 +16,7 @@ public class Keyword {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
-    private String name;
+    private String content;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

@@ -14,4 +14,5 @@ public class ArtistInfo {
     private String name;
     private String genres;
     private String imageUrl;
+    private String externalUrl;
 }

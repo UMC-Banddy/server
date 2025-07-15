@@ -45,7 +45,7 @@ public class Member extends BaseEntity {
     private String profileImageUrl;
 
     @Column(nullable = true)
-    private String introduction;
+    private String bio;
 
     @Column(nullable = true)
     private String mediaUrl;
@@ -55,8 +55,9 @@ public class Member extends BaseEntity {
     }
 
     public void updateProfile(String profileImageUrl, String introduction, String mediaUrl) {
-        this.profileImageUrl = profileImageUrl;
-        this.introduction = introduction;
-        this.mediaUrl = mediaUrl;
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        if (bio != null) this.bio = bio;
+        if (mediaUrl != null) this.mediaUrl = mediaUrl;
     }
+
 }

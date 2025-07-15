@@ -22,4 +22,5 @@ public class Artist {
     private String name;
     private String genre;
     private String imageUrl;
+    private String externalUrl;
 }
