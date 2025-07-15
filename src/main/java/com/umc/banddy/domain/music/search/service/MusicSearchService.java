@@ -68,11 +68,16 @@ public class MusicSearchService {
         String imageUrl = (artist.getImages() != null && artist.getImages().length > 0)
                 ? artist.getImages()[0].getUrl()
                 : null;
+        String externalUrl = null;
+        if (artist.getExternalUrls() != null) {
+            externalUrl = artist.getExternalUrls().get("spotify");
+        }
         return ArtistInfo.builder()
                 .spotifyId(spotifyId)
                 .name(name)
                 .genres(genres)
                 .imageUrl(imageUrl)
+                .externalUrl(externalUrl)
                 .build();
     }
 
@@ -86,12 +91,17 @@ public class MusicSearchService {
         String imageUrl = (album.getImages() != null && album.getImages().length > 0)
                 ? album.getImages()[0].getUrl()
                 : null;
+        String externalUrl = null;
+        if (album.getExternalUrls() != null) {
+            externalUrl = album.getExternalUrls().get("spotify");
+        }
         return AlbumInfo.builder()
                 .spotifyId(spotifyId)
                 .name(name)
                 .artists(artistNames)
                 .releaseDate(releaseDate)
                 .imageUrl(imageUrl)
+                .externalUrl(externalUrl)
                 .build();
     }
 
