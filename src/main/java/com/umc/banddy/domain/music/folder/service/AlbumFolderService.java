@@ -98,7 +98,7 @@ public class AlbumFolderService {
                 .collect(Collectors.toList());
 
         return FolderAlbumsResponseDto.builder()
-                .folderAlbumsId(null)
+                //.folderAlbumsId(null)
                 .albumFolderId(folder.getId())
                 .albums(albumDtos)
                 .build();

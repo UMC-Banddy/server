@@ -13,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FolderAlbumsResponseDto {
-    private Long folderAlbumsId;
     private Long albumFolderId;
     private List<AlbumResponseDto> albums;
 }

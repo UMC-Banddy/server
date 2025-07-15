@@ -21,7 +21,6 @@ public class ArtistConverter {
                 .genre(artist.getGenre())
                 .imageUrl(artist.getImageUrl())
                 .externalUrl(artist.getExternalUrl())
-                .memberArtistId(memberArtistId)
                 .build();
     }
 }

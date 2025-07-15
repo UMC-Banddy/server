@@ -30,7 +30,6 @@ public class AlbumConverter {
                 .artist(album.getArtist())
                 .imageUrl(album.getImageUrl())
                 .externalUrl(album.getExternalUrl())
-                .memberAlbumId(memberAlbumId)
                 .build();
     }
 
