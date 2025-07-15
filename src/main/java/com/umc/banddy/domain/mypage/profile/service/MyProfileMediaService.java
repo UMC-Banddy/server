@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.mypage.profile.service;
 
-import com.umc.banddy.domain.mypage.profile.domain.Member;
-import com.umc.banddy.domain.mypage.profile.repository.MemberRepository;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;

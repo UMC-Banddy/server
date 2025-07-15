@@ -1,9 +1,12 @@
 package com.umc.banddy.domain.mypage.profile.service;
 
-import com.umc.banddy.domain.mypage.profile.domain.mapping.MemberTrack;
-import com.umc.banddy.domain.mypage.profile.domain.Member;
-import com.umc.banddy.domain.mypage.profile.repository.MemberRepository;
-import com.umc.banddy.domain.mypage.profile.repository.MemberTrackRepository;
+import com.umc.banddy.domain.member.enums.Gender;
+import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
+import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.music.track.repository.MemberTrackRepository;
+import com.umc.banddy.domain.other.profile.repository.MemberTagRepository;
+import com.umc.banddy.domain.other.profile.domain.mapping.MemberTag;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileResponse;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileUpdateRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +21,38 @@ public class MyProfileService {
 
     private final MemberRepository memberRepository;
     private final MemberTrackRepository memberTrackRepository;
+    private final MemberTagRepository memberTagRepository;
 
     public MyProfileResponse getMyProfile(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+        List<MemberTrack> allTracks = memberTrackRepository.findAll(); // 전체 가져오기
 
-        List<MemberTrack> tracks = memberTrackRepository.findTop3ByMemberIdOrderByCreatedAtDesc(memberId);
-        List<MyProfileResponse.SavedTrack> savedTracks = tracks.stream()
+        List<MemberTrack> filteredTracks = allTracks.stream()
+                .filter(t -> t.getMember().getId().equals(memberId))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt())) // 최신순 정렬
+                .limit(3)
+                .collect(Collectors.toList());
+
+        List<MyProfileResponse.SavedTrack> savedTracks = filteredTracks.stream()
                 .map(t -> new MyProfileResponse.SavedTrack(
                         t.getTrack().getTitle(),
                         t.getTrack().getImageUrl()))
                 .collect(Collectors.toList());
 
-        boolean soundOn = tracks.stream()
-                .anyMatch(t -> "ON".equalsIgnoreCase(t.getSoundOn()));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        List<String> tags = memberTagRepository.findByMemberId(memberId)
+                .stream()
+                .map(MemberTag::getTagName)
+                .collect(Collectors.toList());
 
         return new MyProfileResponse(
                 member.getId(),
                 member.getNickname(),
                 member.getProfileImageUrl(),
                 member.getBio(),
-                List.of("태그A", "태그B"), // TODO: 태그 로직 추가
-                savedTracks,
-                soundOn
+                tags,
+                savedTracks
         );
     }
 
@@ -52,7 +64,7 @@ public class MyProfileService {
                 .id(member.getId())
                 .nickname(request.getNickname())
                 .age(request.getAge())
-                .gender(request.getGender())
+                .gender(Gender.valueOf(request.getGender()))
                 .region(request.getRegion())
                 .district(request.getDistrict())
                 .bio(request.getBio())
