@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.member.domain;
 
+import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import com.umc.banddy.domain.member.enums.Platform;
@@ -9,7 +10,7 @@ import com.umc.banddy.domain.member.enums.Platform;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class SnsLink {
+public class SnsLink extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
