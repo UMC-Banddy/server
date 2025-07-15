@@ -41,15 +41,23 @@ public class Member extends BaseEntity {
     @Column(length = 500)
     private String refreshToken;
 
-    @Column(length = 255)
+    @Column(nullable = true)
+    private String profileImageUrl;
+
+    @Column(nullable = true)
     private String bio;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+    @Column(nullable = true)
+    private String mediaUrl;
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
-    public void updateProfileImage(String imageUrl) { this.profileImageUrl = imageUrl; }
+    public void updateProfile(String profileImageUrl, String introduction, String mediaUrl) {
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        if (bio != null) this.bio = bio;
+        if (mediaUrl != null) this.mediaUrl = mediaUrl;
+    }
+
 }

@@ -1,19 +1,19 @@
-package com.umc.banddy.domain.mypage.profile.domain.mapping;
+package com.umc.banddy.domain.member.domain.mapping;
 
+import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.domain.mypage.profile.domain.Keyword;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "member_keyword")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class MemberKeyword {
+public class MemberGenre {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -21,6 +21,6 @@ public class MemberKeyword {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keyword_id")
-    private Keyword keyword;
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
 }

@@ -22,7 +22,7 @@ public class MyProfileMediaService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        member.updateProfileImage(uploadUrl);
+        member.updateProfile(uploadUrl, null, null);
         memberRepository.save(member);
 
         return uploadUrl;

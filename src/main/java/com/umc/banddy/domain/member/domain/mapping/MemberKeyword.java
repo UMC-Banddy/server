@@ -1,32 +1,26 @@
-package com.umc.banddy.domain.other.profile.domain.mapping;
+package com.umc.banddy.domain.member.domain.mapping;
 
+import com.umc.banddy.domain.member.domain.Keyword;
 import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.domain.other.profile.domain.Session;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "member_session")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class MemberSession {
-    @Id
-    private Long id;
+public class MemberKeyword {
 
-    private String level;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
-    private Session session;
-
-    public Session getSession() {
-        return session;
-    }
+    @JoinColumn(name = "keyword_id")
+    private Keyword keyword;
 }

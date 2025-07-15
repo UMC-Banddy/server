@@ -73,12 +73,17 @@ public class JwtTokenUtil {
 
     // 내부 파서
     private Claims parseToken(String token) {
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7); // Bearer 접두어 제거
+        }
+
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 
     public static String extractToken(HttpServletRequest request) {
         String authorization = request.getHeader("Authorization");

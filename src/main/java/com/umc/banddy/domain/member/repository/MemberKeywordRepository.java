@@ -1,10 +1,10 @@
-package com.umc.banddy.domain.mypage.profile.repository;
+package com.umc.banddy.domain.member.repository;
 
-import com.umc.banddy.domain.mypage.profile.domain.mapping.MemberKeyword;
+import com.umc.banddy.domain.member.domain.mapping.MemberKeyword;
 import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 
 public interface MemberKeywordRepository extends JpaRepository<MemberKeyword, Long> {
     List<MemberKeyword> findByMemberId(Long memberId);
+
 }
