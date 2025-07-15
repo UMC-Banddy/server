@@ -3,11 +3,15 @@ package com.umc.banddy.domain.other.profile.service;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.artist.domain.MemberArtist;
+import com.umc.banddy.domain.music.artist.repository.MemberArtistRepository;
 import com.umc.banddy.domain.mypage.profile.domain.mapping.MemberKeyword;
+import com.umc.banddy.domain.mypage.profile.repository.MemberKeywordRepository;
 import com.umc.banddy.domain.other.profile.converter.OtherProfileConverter;
 import com.umc.banddy.domain.other.profile.domain.mapping.*;
 import com.umc.banddy.domain.other.profile.repository.*;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
+import com.umc.banddy.domain.other.tag.domain.mapping.MemberTag;
+import com.umc.banddy.domain.other.tag.repository.MemberTagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +37,7 @@ public class OtherProfileService {
         List<MemberSession> sessions = memberSessionRepository.findByMemberId(targetMemberId);
         List<MemberArtist> artists = memberArtistRepository.findByMemberId(targetMemberId);
         List<MemberKeyword> keywords = memberKeywordRepository.findByMemberId(targetMemberId);
-        List<MemberSns> snsList = memberSNSRepository.findById2(targetMemberId);
+        List<MemberSns> snsList = memberSNSRepository.findByMemberId(targetMemberId);
 
         MemberSns instagram = snsList.stream().filter(s -> "instagram".equalsIgnoreCase(s.getSnsName())).findFirst().orElse(null);
         MemberSns youtube = snsList.stream().filter(s -> "youtube".equalsIgnoreCase(s.getSnsName())).findFirst().orElse(null);

@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.other.profile.domain.mapping;
+package com.umc.banddy.domain.other.profile.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

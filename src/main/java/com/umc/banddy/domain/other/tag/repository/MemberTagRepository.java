@@ -1,6 +1,6 @@
-package com.umc.banddy.domain.other.profile.repository;
+package com.umc.banddy.domain.other.tag.repository;
 
-import com.umc.banddy.domain.other.profile.domain.mapping.MemberTag;
+import com.umc.banddy.domain.other.tag.domain.mapping.MemberTag;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 

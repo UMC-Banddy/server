@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.mypage.profile.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.mypage.profile.domain.Keyword;
 import jakarta.persistence.*;
 import lombok.*;
 

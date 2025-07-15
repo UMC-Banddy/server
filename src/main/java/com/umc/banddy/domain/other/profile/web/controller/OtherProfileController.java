@@ -3,6 +3,7 @@ package com.umc.banddy.domain.other.profile.web.controller;
 import com.umc.banddy.domain.other.profile.service.OtherProfileService;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
+@Tag(name = "상대방 프로필 조회")
 public class OtherProfileController {
 
     private final OtherProfileService otherProfileService;

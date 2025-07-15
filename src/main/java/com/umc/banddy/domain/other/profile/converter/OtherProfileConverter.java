@@ -7,6 +7,7 @@ import com.umc.banddy.domain.mypage.profile.domain.mapping.MemberKeyword;
 import com.umc.banddy.domain.other.profile.domain.mapping.*;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
+import com.umc.banddy.domain.other.tag.domain.mapping.MemberTag;
 
 import java.util.List;
 import java.util.stream.Collectors;

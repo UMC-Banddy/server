@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberSnsRepository extends JpaRepository<MemberSns, Long> {
-    List<MemberSns> findById2(Long memberId);
+    List<MemberSns> findByMemberId(Long memberId);
 }

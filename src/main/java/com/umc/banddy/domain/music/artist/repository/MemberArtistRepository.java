@@ -12,4 +12,5 @@ public interface MemberArtistRepository extends JpaRepository<MemberArtist, Long
     Optional<MemberArtist> findByMemberAndArtist(Member member, Artist artist);
     List<MemberArtist> findAllByMember(Member member);
     void deleteByMemberAndArtist(Member member, Artist artist);
+    List<MemberArtist> findByMemberId(Long memberId);
 }
