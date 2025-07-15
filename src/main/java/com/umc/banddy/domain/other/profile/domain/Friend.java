@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.other.profile.domain;
 
+import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Friend {
+public class Friend extends BaseEntity {
     @Id
     private Long id;
 
@@ -20,8 +21,5 @@ public class Friend {
 
     @Column(name = "friendship_id")
     private Long friendshipId;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
 
