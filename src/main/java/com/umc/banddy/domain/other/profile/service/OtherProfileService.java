@@ -17,6 +17,8 @@ import com.umc.banddy.domain.member.repository.MemberKeywordRepository;
 import com.umc.banddy.domain.member.domain.mapping.MemberKeyword;
 import com.umc.banddy.domain.member.repository.MemberSessionRepository;
 import com.umc.banddy.domain.member.domain.mapping.MemberSession;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -56,21 +58,24 @@ public class OtherProfileService {
         return OtherProfileConverter.toDto(member, tags, sessions, artists, keywords, instagram, youtube, isFriend, isBlocked, canRequestChat);
     }
 
-    // ✅ 저장한 곡 목록 조회
     public List<SavedTrackResponse> getSavedTracks(Long memberId) {
-        return memberTrackRepository.findByMemberId(memberId).stream()
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return memberTrackRepository.findAllByMember(member).stream()
                 .map(memberTrack -> {
                     var track = memberTrack.getTrack();
                     return SavedTrackResponse.builder()
                             .trackId(track.getId())
                             .title(track.getTitle())
-                            .artist(track.getArtist()) // Track 엔티티에 있다고 가정
+                            .artist(track.getArtist()) // Track 엔티티에 존재한다고 가정
                             .imageUrl(track.getImageUrl())
                             .externalUrl(track.getExternalUrl())
                             .build();
                 })
                 .toList();
     }
+
 
     public MemberTagResponse getTagsByMemberId(Long memberId) {
         List<MemberTag> tags = memberTagRepository.findByMemberId(memberId);
