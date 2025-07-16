@@ -212,4 +212,20 @@ public class TrackService {
                 .build();
     }
 
+    /**
+     * 최근 저장한 곡 전체 조회 (최신순 정렬)
+     */
+    @Transactional(readOnly = true)
+    public List<TrackResponseDto.TrackResultDto> getRecentTracks(String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return memberTrackRepository.findByMemberIdOrderByCreatedAtDesc(member.getId()).stream()
+                .map(mt -> TrackConverter.toTrackResultDto(mt.getTrack(), mt.getId()))
+                .collect(Collectors.toList());
+    }
+
+
+
 }
