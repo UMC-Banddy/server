@@ -1,7 +1,12 @@
 package com.umc.banddy.domain.member.domain;
 
 import com.umc.banddy.domain.member.enums.Gender;
+import com.umc.banddy.domain.member.enums.Status;
+import com.umc.banddy.domain.member.enums.Role;
+import com.umc.banddy.domain.member.listener.MemberEntityListener;
 import com.umc.banddy.global.entity.BaseEntity;
+
+import java.time.LocalDate;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,6 +15,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@EntityListeners(MemberEntityListener.class)
 public class Member extends BaseEntity {
 
     @Id
@@ -50,14 +56,29 @@ public class Member extends BaseEntity {
     @Column(nullable = true)
     private String mediaUrl;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+
+    private LocalDate inactiveDate;
+
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 
-    public void updateProfile(String profileImageUrl, String introduction, String mediaUrl) {
+    public void updateProfile(String profileImageUrl, String bio, String mediaUrl) {
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
-        if (bio != null) this.bio = bio;
+        if (this.bio != null) this.bio = this.bio;
         if (mediaUrl != null) this.mediaUrl = mediaUrl;
     }
 
+    public void deactivate() {
+        this.status = Status.INACTIVE;
+        this.inactiveDate = LocalDate.now();
+    }
 }

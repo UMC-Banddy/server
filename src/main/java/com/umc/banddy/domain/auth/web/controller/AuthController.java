@@ -2,7 +2,9 @@ package com.umc.banddy.domain.auth.web.controller;
 
 import com.umc.banddy.domain.auth.service.AuthService;
 import com.umc.banddy.domain.auth.web.dto.LogoutRequest;
+import com.umc.banddy.domain.auth.web.dto.DeactivateRequest;
 import com.umc.banddy.domain.auth.web.dto.RefreshTokenRequest;
+import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,5 +55,9 @@ public class AuthController {
         response.put("accessToken", newAccessToken);
         return ResponseEntity.ok(response);
     }
-
+    @PostMapping("/inactive")
+    public ApiResponse<String> deactivate(@RequestBody DeactivateRequest request) {
+        authService.deactivateMember(request.getMemberId(), request.getRefreshToken());
+        return ApiResponse.onSuccess("회원 탈퇴가 완료되었습니다.");
+    }
 }
