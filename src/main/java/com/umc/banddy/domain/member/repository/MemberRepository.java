@@ -10,4 +10,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByEmail(String email);
     // 닉네임 중복 확인
     boolean existsByNickname(String nickname);
+
+    String findEmailById(Long receiverId); // 개인 메세지 보낼 때 사용
 }

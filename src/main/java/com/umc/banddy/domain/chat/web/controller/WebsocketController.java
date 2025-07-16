@@ -6,6 +6,7 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -26,11 +27,9 @@ public class WebsocketController {
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
             Principal principal,
-            @Payload ChatMessageRequest messageRequest,
-            @Validated @DestinationVariable Long roomId
+            @Valid @Payload ChatMessageRequest messageRequest,
+            @DestinationVariable Long roomId
     ) {
-
-        // 유효 참여자, 유효 채팅방인지 검증하는 로직 추가할것
 
         // 채팅 메세지 저장
         ChatMessage chatMessage = chatService.saveMessage(principal, messageRequest, roomId);
@@ -39,24 +38,26 @@ public class WebsocketController {
         ChatMessageResponse chatMessageResponse = chatService.chatToResponse(chatMessage);
 
         // 전송 로직 분기
+        // 그룹 채팅
+        // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
         if (messageRequest.getRoomType().equals(RoomType.GROUP)) {
             // GROUP: 토픽 브로드캐스트
             messagingTemplate.convertAndSend(
                     "/topic/rooms/" + roomId,
                     chatMessageResponse
             );
-        }
+        } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE)
+                || messageRequest.getRoomType().equals(RoomType.BAND)) {
 
-        // 단일은 다시 해야할듯
-//        } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE)
-//                || messageRequest.getRoomType().equals(RoomType.BAND)) {
-//            // PRIVATE or BAND: 단일 사용자에게 전송
-//            Long recipientId = messageRequest.getRecipientId();
-//            messagingTemplate.convertAndSendToUser(
-//                    recipientId.toString(),
-//                    "/queue/rooms/" + roomId,
-//                    chatMessage
-//            );
+            Long receiverId = messageRequest.getReceiverId().orElseThrow(
+                    () -> new IllegalArgumentException("수신자 ID가 필요합니다.")
+            );
+            // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
+            messagingTemplate.convertAndSendToUser(
+                    chatService.findReceiverEmail(receiverId),
+                    "/queue/rooms/" + roomId,
+                    chatMessageResponse
+            );
     }
 
 //    @MessageMapping("/chat/addUser/{roomId}")
@@ -68,4 +69,5 @@ public class WebsocketController {
 //        return;
 //    }
 
+    }
 }

@@ -1,11 +1,9 @@
 package com.umc.banddy.domain.chat.domain;
 
+import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.member.domain.Member;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +14,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @AllArgsConstructor
 @Builder
+@Setter
 @NoArgsConstructor(access = PROTECTED)
 public class ChatRoomParticipant {
 
@@ -26,8 +25,12 @@ public class ChatRoomParticipant {
     @Column(nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LocalDateTime lastReadAt;
+    private Role role;
+
+    @Column(nullable = false)
+    private LocalDateTime lastReadAt; //erd에 없음
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id", nullable = false)

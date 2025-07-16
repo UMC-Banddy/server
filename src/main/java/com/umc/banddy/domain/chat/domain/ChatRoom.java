@@ -25,6 +25,9 @@ public class ChatRoom extends BaseEntity {
     private String name;
 
     @Column(nullable = false)
+    private String imageUrl; //erd에 없음
+
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoomType roomType;
 

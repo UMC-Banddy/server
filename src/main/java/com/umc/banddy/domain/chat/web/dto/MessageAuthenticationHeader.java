@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.security.Principal;
 
-@Data
+
 @RequiredArgsConstructor
 @Getter
 public class MessageAuthenticationHeader implements Principal {

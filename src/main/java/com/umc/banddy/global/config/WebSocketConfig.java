@@ -25,7 +25,10 @@ import java.security.Principal;
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+
     private TaskScheduler messageBrokerTaskScheduler;
+
+    @Autowired
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
@@ -37,12 +40,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // STOMP 엔드포인트 설정
-                .setAllowedOrigins("*") // CORS 설정: 임시 모든 출처 허용
+                .setAllowedOriginPatterns("*") // CORS 설정: 임시 모든 출처 허용
                 .withSockJS(); // SockJS 적용
 
         // 순수 WebSocket 전용 엔드포인트
         registry.addEndpoint("/ws-raw")
-                .setAllowedOrigins("*");
+                .setAllowedOriginPatterns("*");
     }
 
     // 메세지 브로커 설정
@@ -59,20 +62,32 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
        registration.interceptors(new ChannelInterceptor() {
+
+           // 웹소켓 메세지는 시큐리티 체인을 통과하지 않아 인증 로직 구현
+           // connect 요청시 한번만 jwt 토큰을 검증함
            @Override
            public Message<?> preSend(Message<?> message, MessageChannel channel) {
                StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                if(StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
                    String token = headerAccessor.getFirstNativeHeader("Authorization");
-                   if (token != null && jwtTokenUtil.validateToken(token)) {
-                       Principal principal = new MessageAuthenticationHeader(jwtTokenUtil.getMemberIdFromToken(token),jwtTokenUtil.getEmailFromToken(token));
+                   System.out.println("jwt 토큰: " + token);
+
+                   if (token != null && token.startsWith("Bearer ")) {
+                       token = token.substring(7);  // 'Bearer ' 잘라냄
+                   }
+
+                   if (token == null || token.isEmpty() || !jwtTokenUtil.validateToken(token)) {
+                       System.out.println("Authorization header 없음 또는 JWT 검증 실패");
+                       throw new IllegalArgumentException("Authorization header 없음 또는 JWT 검증 실패");
+                   } else {
+                       Principal principal = new MessageAuthenticationHeader(
+                               jwtTokenUtil.getMemberIdFromToken(token),
+                               jwtTokenUtil.getEmailFromToken(token)
+                       );
                        headerAccessor.setUser(principal);
+                       System.out.println("Principal 설정됨: " + principal.getName());
                    }
                }
-//               else if (StompCommand.DISCONNECT.equals(headerAccessor.getCommand())) {
-//                   // 연결 해제 시점에 필요한 로직 추가 가능
-//                   // 예: 세션 정리, 사용자 상태 업데이트 등
-//               }
                return message;
            }
        });

@@ -2,12 +2,12 @@ package com.umc.banddy.domain.chat.web.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
 @Builder
-
 public class ChatMessageResponse {
 
     private Long messageId; // 메시지 ID
