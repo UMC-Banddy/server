@@ -46,7 +46,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
         // 프로필 정보 업데이트
-        member.updateProfile(request.getProfileImageUrl(), request.getIntroduction(), request.getMediaUrl());
+        member.updateProfile(request.getProfileImageUrl(), request.getBio(), request.getMediaUrl());
 
         // 장르 저장
         request.getGenreNames().forEach(name ->
