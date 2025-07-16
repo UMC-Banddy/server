@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.other.profile.service;
 
+import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.SnsLink;
 import com.umc.banddy.domain.member.repository.MemberRepository;
@@ -8,8 +9,6 @@ import com.umc.banddy.domain.music.artist.domain.MemberArtist;
 import com.umc.banddy.domain.music.artist.repository.MemberArtistRepository;
 import com.umc.banddy.domain.music.track.repository.MemberTrackRepository;
 import com.umc.banddy.domain.other.profile.converter.OtherProfileConverter;
-import com.umc.banddy.domain.other.profile.domain.mapping.*;
-import com.umc.banddy.domain.other.profile.repository.*;
 import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
