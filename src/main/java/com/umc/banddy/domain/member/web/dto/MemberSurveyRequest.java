@@ -20,7 +20,7 @@ public class MemberSurveyRequest {
     private List<SnsLinkRequest> snsLinks;
 
     private String profileImageUrl;
-    private String introduction;
+    private String bio;
     private String mediaUrl;
 
     @Getter

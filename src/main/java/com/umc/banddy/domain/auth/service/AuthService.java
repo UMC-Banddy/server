@@ -4,11 +4,14 @@ import com.umc.banddy.domain.auth.service.TokenBlacklistService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.umc.banddy.domain.member.enums.Status;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -57,5 +60,13 @@ public class AuthService {
         return jwtTokenUtil.generateAccessToken(member);
     }
 
+    @Transactional
+    public void deactivateMember(Long memberId, String refreshToken) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        member.deactivate(); // status → INACTIVE, inactiveDate → now()
+        tokenBlacklistService.addToBlackList(refreshToken);
+    }
 }
 
