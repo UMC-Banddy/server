@@ -3,10 +3,15 @@ package com.umc.banddy.domain.member.service;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.web.dto.SignupRequest;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 import com.umc.banddy.domain.member.web.dto.NicknameCheckResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.util.List;
+import com.umc.banddy.domain.member.enums.Status;
 
 @Service
 @RequiredArgsConstructor
@@ -39,5 +44,12 @@ public class MemberCommandService {
         } else {
             return new NicknameCheckResponse(true, "사용 가능한 닉네임입니다.");
         }
+    }
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정
+    @Transactional
+    public void deleteInactiveMembers() {
+        LocalDate sevenDaysAgo = LocalDate.now().minusDays(7);
+        List<Member> membersToDelete = memberRepository.findByStatusAndInactiveDateBefore(Status.INACTIVE, sevenDaysAgo);
+        memberRepository.deleteAll(membersToDelete);
     }
 }
