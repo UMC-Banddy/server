@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 
 import java.security.Principal;
+import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -49,9 +50,8 @@ public class WebsocketController {
         } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE)
                 || messageRequest.getRoomType().equals(RoomType.BAND)) {
 
-            Long receiverId = messageRequest.getReceiverId().orElseThrow(
-                    () -> new IllegalArgumentException("수신자 ID가 필요합니다.")
-            );
+            Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
+                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
             // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
             messagingTemplate.convertAndSendToUser(
                     chatService.findReceiverEmail(receiverId),

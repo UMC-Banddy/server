@@ -18,6 +18,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
+
 import java.security.Principal;
 
 
@@ -41,6 +43,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // STOMP 엔드포인트 설정
                 .setAllowedOriginPatterns("*") // CORS 설정: 임시 모든 출처 허용
+                .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .withSockJS(); // SockJS 적용
 
         // 순수 WebSocket 전용 엔드포인트

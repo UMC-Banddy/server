@@ -26,8 +26,13 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
             @Param("lastReadAt") LocalDateTime lastReadAt
     );
 
+    @Query("select p from ChatRoomParticipant p where p.chatRoom.id = :roomId and p.member.email = :email")
+    Optional<ChatRoomParticipant> findByChatRoomIdAndEmail(
+            @Param("roomId") Long roomId,
+            @Param("email") String email
+    );
+
 
     Optional<ChatRoomParticipant> findByChatRoomIdAndMemberId(Long roomId, Long memberId);
-    Optional<ChatRoomParticipant> findByChatRoomIdAndEmail(Long roomId, String email);
 
 }

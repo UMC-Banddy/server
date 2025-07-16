@@ -3,6 +3,7 @@ package com.umc.banddy.domain.chat.service;
 import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
+import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
@@ -78,6 +79,7 @@ public class ChatServiceImpl implements ChatService{
             ChatRoomParticipant participant = ChatRoomParticipant.builder()
                     .chatRoom(savedRoom)
                     .member(member)
+                    .role(Role.MEMBER) // 테스트 용
                     .lastReadAt(LocalDateTime.now()) // 초기값 설정
                     .build();
             participantRepository.save(participant);

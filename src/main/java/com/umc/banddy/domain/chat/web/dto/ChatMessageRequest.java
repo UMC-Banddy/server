@@ -8,32 +8,34 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Optional;
 
-@Getter
+@Data
+@NoArgsConstructor
 public class ChatMessageRequest {
 
     @NotNull
     private Long roomId;
 
-    @NotNull
+    @NotNull(message = "roomType은 필수입니다.")
     private RoomType roomType;
 
-    // Optional<T> 선언 (값이 없을 땐 Optional.empty())
-    private Optional<@NotBlank Long> receiverId = Optional.empty();
+    // Optional 대신 그냥 Long: GROUP이면 null, PRIVATE면 not null
+    private Long receiverId;
 
-    @NotBlank
+    @NotBlank(message = "content는 공백일 수 없습니다.")
     private String content;
 
-    // roomType이 PRIVATE일 땐 receiverId가 반드시 있어야,
-    // GROUP일 땐 반드시 없어야 한다는 검증
-    @AssertTrue(message = "PRIVATE 채팅엔 receiverId가, GROUP 채팅엔 없어야 합니다.")
+    // roomType이 PRIVATE일 땐 receiverId가 반드시 not-null
+    // roomType이 GROUP일 땐 receiverId가 반드시 null
+    @AssertTrue
     public boolean isReceiverValid() {
         if (roomType == RoomType.PRIVATE) {
-            return receiverId.isPresent();
+            return receiverId != null;
         } else {
-            return receiverId.isEmpty();
+            return receiverId == null;
         }
     }
 
