@@ -1,10 +1,8 @@
-package com.umc.banddy.domain.other.profile.domain;
+package com.umc.banddy.domain.mypage.notification.domain;
 
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "friend")
