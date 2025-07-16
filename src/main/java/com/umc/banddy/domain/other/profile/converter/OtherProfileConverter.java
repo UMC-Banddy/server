@@ -20,8 +20,8 @@ public class OtherProfileConverter {
             List<MemberSession> sessions,
             List<MemberArtist> artists,
             List<MemberKeyword> keywords,
-            MemberSns instagram,
-            MemberSns youtube,
+            String instagramUrl,
+            String youtubeUrl,
             boolean isFriend,
             boolean isBlocked,
             boolean canRequestChat
@@ -33,25 +33,30 @@ public class OtherProfileConverter {
                 .profileImageUrl(member.getProfileImageUrl())
                 .age(member.getAge())
                 .gender(member.getGender().name())
-                .tags(tags.stream().map(MemberTag::getTag).collect(Collectors.toList()))
+                .tags(tags.stream().map(MemberTag::getTag).toList())
                 .sessions(sessions.stream()
                         .map(s -> new OtherProfileResponse.Session(
                                 s.getSession().getName(),
                                 s.getSession().getIcon()
                         ))
-                        .collect(Collectors.toList()))
+                        .toList())
                 .favoriteArtists(artists.stream()
-                        .map(a -> new OtherProfileResponse.Artist(a.getArtist().getName(), a.getArtist().getImageUrl()))
-                        .collect(Collectors.toList()))
-                .traits(keywords.stream().map(k -> k.getKeyword().getContent()).collect(Collectors.toList()))
-                .instagramUrl(instagram != null ? instagram.getSnsUrl() : null)
-                .youtubeUrl(youtube != null ? youtube.getSnsUrl() : null)
+                        .map(a -> new OtherProfileResponse.Artist(
+                                a.getArtist().getName(),
+                                a.getArtist().getImageUrl()))
+                        .toList())
+                .traits(keywords.stream()
+                        .map(k -> k.getKeyword().getContent())
+                        .toList())
+                .instagramUrl(instagramUrl)
+                .youtubeUrl(youtubeUrl)
                 .isFriend(isFriend)
                 .isBlocked(isBlocked)
                 .canRequestChat(canRequestChat)
                 .build();
     }
 
+    // 저장한 곡 변환
     public static List<SavedTrackResponse> toSavedTrackDto(List<MemberTrack> tracks) {
         return tracks.stream()
                 .map(t -> SavedTrackResponse.builder()
@@ -61,13 +66,13 @@ public class OtherProfileConverter {
                         .imageUrl(t.getTrack().getImageUrl())
                         .externalUrl(t.getTrack().getExternalUrl())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static MemberTagResponse toMemberTagResponse(Long memberId, List<MemberTag> tags) {
         List<String> tagList = tags.stream()
                 .map(MemberTag::getTag)
-                .collect(Collectors.toList());
+                .toList();
 
         return MemberTagResponse.builder()
                 .memberId(memberId)
