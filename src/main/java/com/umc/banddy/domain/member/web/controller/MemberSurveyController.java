@@ -5,6 +5,7 @@ import com.umc.banddy.domain.member.service.MemberSurveyService;
 import com.umc.banddy.domain.member.web.dto.MemberSurveyRequest;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import com.umc.banddy.domain.member.enums.KeywordCategory;
 import com.umc.banddy.domain.member.web.dto.SimpleKeywordDto;
 import com.umc.banddy.domain.member.web.dto.SimpleSessionDto;
 
+@Tag(name = "member-survey", description = "사전 테스트 API")
 @RestController
 @RequestMapping("/member/survey")
 @RequiredArgsConstructor
