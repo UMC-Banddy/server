@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.music.artist.domain;
 
+import com.umc.banddy.domain.band.profile.domain.Band;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,4 +24,5 @@ public class Artist {
     private String genre;
     private String imageUrl;
     private String externalUrl;
+
 }
