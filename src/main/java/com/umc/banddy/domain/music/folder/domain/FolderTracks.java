@@ -2,6 +2,7 @@ package com.umc.banddy.domain.music.folder.domain;
 
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
+import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class FolderTracks {
+public class FolderTracks extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
