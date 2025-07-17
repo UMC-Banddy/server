@@ -55,6 +55,7 @@ public class AuthController {
         response.put("accessToken", newAccessToken);
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "회원 탈퇴", description = "회원탈퇴 7일후 회원정보가 완전히 삭제됩니다.")
     @PostMapping("/inactive")
     public ApiResponse<String> deactivate(@RequestBody DeactivateRequest request) {
         authService.deactivateMember(request.getMemberId(), request.getRefreshToken());
