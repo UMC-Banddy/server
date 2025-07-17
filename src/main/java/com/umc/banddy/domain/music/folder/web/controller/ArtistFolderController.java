@@ -8,6 +8,8 @@ import com.umc.banddy.domain.music.folder.web.dto.FolderRequestDto;
 import com.umc.banddy.domain.music.folder.web.dto.FolderResponseDto;
 import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "아카이브 아티스트 폴더", description = "아카이브 아티스트 폴더 관련 API")
 @RestController
 @RequestMapping("/api/artist-folders")
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class ArtistFolderController {
     private final ArtistFolderService artistFolderService;
 
     // 폴더 생성
+    @Operation(summary = "아티스트 폴더 생성", description = "아카이브에 아티스트 폴더를 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,
@@ -34,6 +38,7 @@ public class ArtistFolderController {
     }
 
     // 폴더 삭제
+    @Operation(summary = "아티스트 폴더 삭제", description = "아카이브에서 아티스트 폴더를 삭제합니다.")
     @DeleteMapping("/{folderId}")
     public ResponseEntity<ApiResponse<Void>> deleteFolder(
             @PathVariable Long folderId,
@@ -45,6 +50,7 @@ public class ArtistFolderController {
     }
 
     // 폴더 목록 조회
+    @Operation(summary = "아티스트 폴더 목록 조회", description = "아카이브 아티스트 폴더 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<ApiResponse<List<FolderResponseDto>>> getFoldersByMember(HttpServletRequest request) {
         String token = JwtTokenUtil.extractToken(request);
@@ -53,6 +59,7 @@ public class ArtistFolderController {
     }
 
     // 폴더에 아티스트 추가
+    @Operation(summary = "폴더에 아티스트 추가", description = "아카이브 아티스트 폴더에 아티스트를 추가합니다.")
     @PostMapping("/{folderId}/artists")
     public ResponseEntity<ApiResponse<FolderArtistsResponseDto>> addArtistToFolder(
             @PathVariable Long folderId,
@@ -65,6 +72,7 @@ public class ArtistFolderController {
     }
 
     // 폴더 내 아티스트 삭제
+    @Operation(summary = "폴더에서 아티스트 삭제", description = "아카이브 아티스트 폴더에서 아티스트를 삭제합니다.")
     @DeleteMapping("/{folderId}/artists/{artistId}")
     public ResponseEntity<ApiResponse<Void>> removeArtistFromFolder(
             @PathVariable Long folderId,
@@ -77,6 +85,7 @@ public class ArtistFolderController {
     }
 
     // 특정 폴더 내 아티스트 목록 조회
+    @Operation(summary = "폴더 내 아티스트 목록 조회", description = "아카이브 아티스트 폴더 내 아티스트 목록을 조회합니다.")
     @GetMapping("/{folderId}/artists")
     public ResponseEntity<ApiResponse<List<ArtistResponseDto>>> getArtistsInFolder(
             @PathVariable Long folderId,
