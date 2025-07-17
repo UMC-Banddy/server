@@ -1,11 +1,10 @@
 package com.umc.banddy.domain.band.profile.converter;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
-import com.umc.banddy.domain.band.profile.domain.mapping.BandArtist;
-import com.umc.banddy.domain.band.profile.domain.mapping.BandSns;
-import com.umc.banddy.domain.band.profile.domain.mapping.BandTrack;
+import com.umc.banddy.domain.band.profile.domain.mapping.*;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse.*;
+import com.umc.banddy.domain.band.profile.web.dto.BandDetailResponse;
 import com.umc.banddy.domain.member.domain.Session;
 
 import java.util.List;
@@ -13,7 +12,8 @@ import java.util.stream.Collectors;
 
 public class BandProfileConverter {
 
-    public static BandProfileResponse toResponse(
+    // 밴드 프로필
+    public static BandProfileResponse toProfileResponse(
             Band band,
             List<BandTrack> goalTracks,
             List<BandArtist> preferredArtists,
@@ -49,6 +49,43 @@ public class BandProfileConverter {
                 .preferredArtists(artistDtos)
                 .composition(compositionDto)
                 .sns(snsDtos)
+                .build();
+    }
+
+    // 밴드 상세 응답
+    public static BandDetailResponse toDetailResponse(
+            Band band,
+            boolean isBookmarked,
+            List<BandSession> sessions,
+            List<BandTag> tags,
+            List<BandTrack> tracks
+    ) {
+        return BandDetailResponse.builder()
+                .bandId(band.getId())
+                .name(band.getName())
+                .imageUrl(band.getProfileImageUrl())
+                .description(band.getDescription())
+                .isBookmarked(isBookmarked)
+                .recruitingSessions(
+                        sessions.stream()
+                                .map(bs -> bs.getSession().getName())
+                                .collect(Collectors.toList())
+                )
+                .tags(
+                        tags.stream()
+                                .map(bt -> bt.getTag().getName())
+                                .collect(Collectors.toList())
+                )
+                .tracks(
+                        tracks.stream()
+                                .map(bt -> BandDetailResponse.TrackDto.builder()
+                                        .trackId(bt.getTrack().getId())
+                                        .title(bt.getTrack().getTitle())
+                                        .artist(bt.getTrack().getArtist())
+                                        .imageUrl(bt.getTrack().getImageUrl())
+                                        .build())
+                                .collect(Collectors.toList())
+                )
                 .build();
     }
 }

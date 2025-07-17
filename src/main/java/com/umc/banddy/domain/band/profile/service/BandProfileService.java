@@ -29,6 +29,6 @@ public class BandProfileService {
         List<BandArtist> preferredArtists = bandArtistRepository.findByBandId(bandId);
         List<BandSns> snsLinks = bandSnsRepository.findByBandId(bandId);
 
-        return BandProfileConverter.toResponse(band, goalTracks, preferredArtists, snsLinks);
+        return BandProfileConverter.toProfileResponse(band, goalTracks, preferredArtists, snsLinks);
     }
 }
