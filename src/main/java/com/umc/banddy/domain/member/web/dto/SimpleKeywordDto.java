@@ -7,5 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class SimpleKeywordDto {
     private Long id;
-    private String name;
+    private String content;
 }

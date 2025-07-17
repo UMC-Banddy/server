@@ -73,7 +73,7 @@ public class Member extends BaseEntity {
 
     public void updateProfile(String profileImageUrl, String bio, String mediaUrl) {
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
-        if (this.bio != null) this.bio = this.bio;
+        if (bio != null) this.bio = bio;
         if (mediaUrl != null) this.mediaUrl = mediaUrl;
     }
 
