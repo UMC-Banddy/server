@@ -22,6 +22,7 @@ import static com.umc.banddy.global.security.jwt.JwtTokenUtil.extractToken;
 public class TrackController {
 
     private final TrackService trackService;
+    private final JwtTokenUtil jwtTokenUtil;
 
    // 곡 저장
     @PostMapping
@@ -76,4 +77,13 @@ public class TrackController {
         TrackToggleResponseDto result = trackService.toggleTrack(requestDto.getSpotifyId(), token);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
+    // 마이페이지 - 최근 저장한 곡 조히
+    @GetMapping("/recent")
+    public ResponseEntity<List<TrackResponseDto.TrackResultDto>> getRecentTracks(HttpServletRequest request) {
+        String token = JwtTokenUtil.extractToken(request);
+        List<TrackResponseDto.TrackResultDto> response = trackService.getRecentTracks(token);
+        return ResponseEntity.ok(response);
+    }
+
 }

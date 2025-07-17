@@ -1,0 +1,11 @@
+package com.umc.banddy.domain.mypage.notification.repository;
+
+import com.umc.banddy.domain.mypage.notification.domain.FriendNotification;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface FriendNotificationRepository extends JpaRepository<FriendNotification, Long> {
+    List<FriendNotification> findByReceiverId(Long memberId);
+}
+
