@@ -6,11 +6,14 @@ import com.umc.banddy.domain.music.search.web.dto.ArtistInfo;
 import com.umc.banddy.domain.music.search.web.dto.SearchAllResult;
 import com.umc.banddy.domain.music.search.web.dto.TrackInfo;
 import com.umc.banddy.global.apiPayload.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "음악 검색", description = "음악 검색 관련 API")
 @RestController
 @RequestMapping("/api/music/search")
 public class MusicSearchController {
@@ -23,6 +26,7 @@ public class MusicSearchController {
     }
 
 
+    @Operation(summary = "곡 검색", description = "Spotify에서 곡을 검색합니다.")
     @GetMapping("/tracks")
     public ApiResponse<List<TrackInfo>> searchTrack(
             @RequestParam String q,
@@ -33,8 +37,7 @@ public class MusicSearchController {
         return ApiResponse.onSuccess(result);
     }
 
-
-
+    @Operation(summary = "아티스트 검색", description = "Spotify에서 아티스트를 검색합니다.")
     @GetMapping("/artists")
     public ApiResponse<List<ArtistInfo>> searchArtist(
             @RequestParam String q,
@@ -45,6 +48,7 @@ public class MusicSearchController {
         return ApiResponse.onSuccess(result);
     }
 
+    @Operation(summary = "앨범 검색", description = "Spotify에서 앨범을 검색합니다.")
     @GetMapping("/albums")
     public ApiResponse<List<AlbumInfo>> searchAlbum(
             @RequestParam String q,
@@ -55,6 +59,7 @@ public class MusicSearchController {
         return ApiResponse.onSuccess(result);
     }
 
+    @Operation(summary = "음악 검색", description = "Spotify에서 곡, 아티스트, 앨범을 검색합니다.")
     @GetMapping("")
     public ApiResponse<SearchAllResult> searchAll(
             @RequestParam String q,

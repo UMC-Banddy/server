@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.music.artist.domain;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
+import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Artist {
+public class Artist extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
