@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.music.track.domain;
 
+import com.umc.banddy.domain.band.profile.domain.Band;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,4 +22,5 @@ public class Track extends BaseEntity {
     private String duration;
     private String imageUrl;
     private String externalUrl;
+
 }

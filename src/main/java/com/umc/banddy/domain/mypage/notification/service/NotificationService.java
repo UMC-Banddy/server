@@ -1,5 +1,7 @@
 package com.umc.banddy.domain.mypage.notification.service;
 
+import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
+import com.umc.banddy.domain.band.notification.repository.BandNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.converter.NotificationConverter;
 //import com.umc.banddy.domain.mypage.notification.domain.ChatNotification;
 import com.umc.banddy.domain.mypage.notification.domain.ChatNotification;
@@ -19,11 +21,14 @@ public class NotificationService {
 
     private final ChatNotificationRepository chatNotificationRepository;
     private final FriendNotificationRepository friendNotificationRepository;
+    private final BandNotificationRepository bandNotificationRepository;
 
     public List<NotificationResponse> getAllNotifications(Long memberId) {
         List<ChatNotification> chats = chatNotificationRepository.findByReceiverId(memberId);
         List<FriendNotification> friends = friendNotificationRepository.findByReceiverId(memberId);
-        return NotificationConverter.mergeAndSort(chats, friends);
+        List<BandNotification> bands = bandNotificationRepository.findByReceiverId(memberId); // ✅ 추가
+
+        return NotificationConverter.mergeAndSort(chats, friends, bands);
     }
 }
 
