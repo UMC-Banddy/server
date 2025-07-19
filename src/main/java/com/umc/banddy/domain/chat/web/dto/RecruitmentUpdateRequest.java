@@ -4,6 +4,7 @@ import com.umc.banddy.domain.band.profile.enums.BandStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -11,9 +12,10 @@ import java.util.Map;
 @Getter
 @AllArgsConstructor
 @Builder
-public class RecruitmentRequest {
+public class RecruitmentUpdateRequest {
 
-    private BandStatus status = BandStatus.ACTIVE;
+    private Long bandId;
+    private BandStatus status;
     private String profileImageUrl;
     private String representativeSong;
     private String name;
@@ -26,15 +28,15 @@ public class RecruitmentRequest {
     private List<Long> artist;
     private List<Long> track;
 
-    private int ageStart;
-    private int ageEnd;
+    private Integer ageStart;
+    private Integer ageEnd;
     private String gender;
     private String region;
     private String district;
     private String averageAge;
     private List<String> job;
-    private int maleCount;
-    private int femaleCount;
+    private Integer maleCount;
+    private Integer femaleCount;
 
     private List<String> currentSessions;
     private Map<String, String> snsLinks;

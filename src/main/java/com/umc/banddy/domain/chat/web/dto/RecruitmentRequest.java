@@ -13,7 +13,7 @@ import java.util.Map;
 @Builder
 public class RecruitmentRequest {
 
-    private BandStatus status = BandStatus.ACTIVE;
+    private BandStatus status;
     private String profileImageUrl;
     private String representativeSong;
     private String name;
