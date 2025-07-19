@@ -4,22 +4,19 @@ import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "friend")
+@Table(name = "tag")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Friend extends BaseEntity {
+public class Tag extends BaseEntity {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id")
-    private Long memberId;
-
-    @Column(name = "friendship_id")
-    private Long friendshipId;
+    @Column(name = "name", nullable = false, length = 50)
+    private String name;
 }
 

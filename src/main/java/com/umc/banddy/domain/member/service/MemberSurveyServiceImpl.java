@@ -63,8 +63,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         KeywordRequestGroup keywords = request.getKeywords();
 
         if (keywords.getMANNER() != null) {
-            for (String name : keywords.getMANNER()) {
-                keywordRepository.findByContentAndCategory(name, KeywordCategory.MANNER)
+            for (String content: keywords.getMANNER()) {
+                keywordRepository.findByContentAndCategory(content, KeywordCategory.MANNER)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -74,8 +74,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         }
 
         if (keywords.getSTYLE() != null) {
-            for (String name : keywords.getSTYLE()) {
-                keywordRepository.findByContentAndCategory(name, KeywordCategory.STYLE)
+            for (String content : keywords.getSTYLE()) {
+                keywordRepository.findByContentAndCategory(content, KeywordCategory.STYLE)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -85,8 +85,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         }
 
         if (keywords.getSKILL() != null) {
-            for (String name : keywords.getSKILL()) {
-                keywordRepository.findByContentAndCategory(name, KeywordCategory.SKILL)
+            for (String content : keywords.getSKILL()) {
+                keywordRepository.findByContentAndCategory(content, KeywordCategory.SKILL)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
@@ -96,8 +96,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         }
 
         if (keywords.getFREQ() != null) {
-            for (String name : keywords.getFREQ()) {
-                keywordRepository.findByContentAndCategory(name, KeywordCategory.FREQ)
+            for (String content : keywords.getFREQ()) {
+                keywordRepository.findByContentAndCategory(content, KeywordCategory.FREQ)
                         .ifPresent(keyword -> memberKeywordRepository.save(
                                 MemberKeyword.builder()
                                         .member(member)
