@@ -21,17 +21,11 @@ public class ChatContoller {
 
     private final ChatService chatService;
 
-    @Operation(summary = "채팅방 생성", description = "새로운 채팅방 생성 api")
+    @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
     @PostMapping("/rooms")
     public ResponseEntity<ChatRoomResponse> createChatRoom(@RequestBody @Valid ChatRoomRequest request) {
         return ResponseEntity.ok(chatService.createGroupChatRoom(request));
     }
-
-//    @Operation(summary = "밴드/그룹 채팅방 조회", description = "밴드 또는 그룹 채팅방 조회 api")
-//    @GetMapping("/rooms")
-//    public ResponseEntity<> getChatRooms(){
-//
-//    }
 
     @Operation(summary = "개인 채팅방 생성", description = "개인 채팅방 생성 api")
     @PostMapping("/rooms/friends")
@@ -41,4 +35,9 @@ public class ChatContoller {
     ) {
         return ResponseEntity.ok(chatService.createPrivateChatRoom(principal,request));
     }
+    //    @Operation(summary = "밴드/그룹 채팅방 조회", description = "밴드 또는 그룹 채팅방 조회 api")
+//    @GetMapping("/rooms")
+//    public ResponseEntity<> getChatRooms(){
+//
+//    }
 }
