@@ -36,6 +36,9 @@ public class Band extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Column(name = "auto_Close")
+    private Boolean autoClose; // 모집 종료일에 자동 종료 여부
+
     @Column(name = "age_start")
     private Integer ageStart;
 

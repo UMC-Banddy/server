@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Principal;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api")
@@ -27,7 +25,7 @@ public class RecruitmentController {
     @PostMapping("/recruitment")
     public ResponseEntity<RecruitmentResponse> createRecruitmentRoom(
             @RequestBody @Valid RecruitmentRequest request) {
-        return ResponseEntity.ok(recruitmentService.createRecruitmentRoom(request));
+        return ResponseEntity.ok(recruitmentService.createBand(request));
     }
 
 
