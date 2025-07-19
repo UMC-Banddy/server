@@ -52,6 +52,16 @@ public class SecurityConfig {
     // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // WebSocket에 대한 CORS 설정
+        CorsConfiguration wsConfig = new CorsConfiguration();
+        wsConfig.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://localhost:3000"
+        ));
+        wsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
+        wsConfig.setAllowedHeaders(Arrays.asList("*"));
+        wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
+
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -59,7 +69,10 @@ public class SecurityConfig {
         config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/ws/**", wsConfig);
+        source.registerCorsConfiguration("/ws-raw/**", wsConfig);
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 }
