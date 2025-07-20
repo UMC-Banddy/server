@@ -5,7 +5,6 @@ import com.umc.banddy.domain.band.profile.domain.mapping.*;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse.*;
 import com.umc.banddy.domain.band.profile.web.dto.BandDetailResponse;
-import com.umc.banddy.domain.member.domain.Session;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +16,9 @@ public class BandProfileConverter {
             Band band,
             List<BandTrack> goalTracks,
             List<BandArtist> preferredArtists,
-            List<BandSns> sns
+            List<BandSns> sns,
+            List<BandSession> sessions,
+            List<BandJob> jobs
     ) {
         List<TrackDto> trackDtos = goalTracks.stream()
                 .map(bt -> new TrackDto(
@@ -36,12 +37,19 @@ public class BandProfileConverter {
                 .map(s -> new SnsDto(s.getPlatform(), s.getSnsLink()))
                 .collect(Collectors.toList());
 
+        List<String> sessionList = sessions.stream()
+                .map(bs -> bs.getSession().getName())
+                .collect(Collectors.toList());
+
+        List<String> jobList = jobs.stream()
+                .map(bj -> bj.getJob())
+                .collect(Collectors.toList());
+
         CompositionDto compositionDto = CompositionDto.builder()
                 .averageAge(String.valueOf(band.getAverageAge()))
-                .job(band.getJob())
+                //.job(band.getJob())
                 .maleCount(band.getMaleCount())
                 .femaleCount(band.getFemaleCount())
-                .sessions(band.getSessions().stream().map(Session::getName).collect(Collectors.toList()))
                 .build();
 
         return BandProfileResponse.builder()
@@ -49,6 +57,8 @@ public class BandProfileConverter {
                 .preferredArtists(artistDtos)
                 .composition(compositionDto)
                 .sns(snsDtos)
+                .sessions(sessionList) // 밴드에 존재하는 세션, 따로 DTO로 받음
+                .jobs(jobList)
                 .build();
     }
 
@@ -70,7 +80,7 @@ public class BandProfileConverter {
                         sessions.stream()
                                 .map(bs -> bs.getSession().getName())
                                 .collect(Collectors.toList())
-                )
+                ) // 모집 중인 세션 (변경 없음)
                 .tags(
                         tags.stream()
                                 .map(bt -> bt.getTag().getName())

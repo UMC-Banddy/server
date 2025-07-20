@@ -10,4 +10,6 @@ public interface BandSessionRepository extends JpaRepository<BandSession, Long> 
     List<BandSession> findByBandId(Long bandId);
 
     void deleteAllByBand(Band band);
+
+    List<BandSession> findByBandIdAndSessionStatus(Long bandId, String status);
 }

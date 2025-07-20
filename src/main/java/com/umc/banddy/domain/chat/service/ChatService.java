@@ -30,7 +30,7 @@ public interface ChatService {
 
     void topicMessage(Long roomId, ChatMessageResponse chatMessageResponse);
 
-    void queueMessage(String receiverEmail, Long roomId, ChatMessageResponse chatMessageResponse )
+    void queueMessage(String receiverEmail, Long roomId, ChatMessageResponse chatMessageResponse );
 
 
     //String findReceiverId(Long roomId);

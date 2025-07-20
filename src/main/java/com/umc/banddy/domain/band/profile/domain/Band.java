@@ -46,12 +46,12 @@ public class Band extends BaseEntity {
     @Column(name = "age_end")
     private Integer ageEnd;
 
-    private String job;
+//    private String job;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
-    private List<Session> sessions;
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    @Enumerated(EnumType.STRING)
+//    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
+//    private List<Session> sessions;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 10)
@@ -78,5 +78,3 @@ public class Band extends BaseEntity {
     private Integer femaleCount;
 
 }
-//희지님 혹시 모집 부분 개발 중인데 band 엔티티에서 세션이 @ElementCollection(fetch = FetchType.LAZY)으로 band_session이 자동 생성 중인데 수정해서 별도의 엔티티로 작동하게 해도 될까요?
-

@@ -18,6 +18,7 @@ import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.repository.TrackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BandManagementService {
 
     private final BandRepository bandRepository;
@@ -44,6 +46,7 @@ public class BandManagementService {
     private final BandTrackRepository bandTrackRepository;
     private final BandJobRepository bandJobRepository;
     private final BandSnsRepository bandSnsRepository;
+
 
     public RecruitmentResponse createRecruitment(RecruitmentRequest request){
 
@@ -61,6 +64,8 @@ public class BandManagementService {
                 .region(request.getRegion())
                 .district(request.getDistrict())
                 .status(BandStatus.RECRUITING)
+                .maleCount(request.getMaleCount())
+                .femaleCount(request.getFemaleCount())
                 .averageAge(request.getAverageAge())
                 .build();
 

@@ -10,5 +10,7 @@ public interface BandJobRepository extends JpaRepository<BandJob, Long> {
     List<BandJob> findByBandId(Long bandId);
 
     void deleteAllByBand(Band band);
+
+    List<BandJob> findJobsByBandId(Long bandId);
 }
 
