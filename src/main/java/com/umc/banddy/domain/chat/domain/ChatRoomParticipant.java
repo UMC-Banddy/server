@@ -2,6 +2,7 @@ package com.umc.banddy.domain.chat.domain;
 
 import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,10 +23,12 @@ public class ChatRoomParticipant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Column(nullable = false)
+    private Status status;
 
     @Column(nullable = false)
     private LocalDateTime lastReadAt; //erd에 없음
