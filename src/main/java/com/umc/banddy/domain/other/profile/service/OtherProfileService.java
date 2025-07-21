@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.other.profile.service;
 
+import com.umc.banddy.domain.friend.domain.FriendStatus;
 import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.SnsLink;
@@ -61,7 +62,9 @@ public class OtherProfileService {
                 .findFirst()
                 .orElse(null);
 
-        boolean isFriend = friendRepository.findByMemberIdAndFriendshipId(loginMemberId, targetMemberId).isPresent();
+        boolean isFriend = !friendRepository
+                .findAllBetween(loginMemberId, targetMemberId).isEmpty();
+
         boolean isBlocked = false;
         boolean canRequestChat = !isBlocked && !loginMemberId.equals(targetMemberId);
 
