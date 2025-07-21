@@ -39,10 +39,14 @@ public enum ErrorStatus implements BaseErrorCode {
     FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
     FOLDER_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더에 해당 곡이 없습니다."),
 
-
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "MEMBER4002", "이미 존재하는 이메일입니다."),
+
+    // Band
+    BAND_NOT_FOUND(HttpStatus.NOT_FOUND, "BAND4004", "해당 밴드를 찾을 수 없습니다."),
+    BAND_ALREADY_BOOKMARKED(HttpStatus.CONFLICT, "BAND4009", "이미 저장한 밴드입니다."),
+    BAND_NOT_BOOKMARKED(HttpStatus.BAD_REQUEST, "BAND4000", "해당 밴드는 저장한 밴드가 아닙니다."),
 
     // 인증 관련 에러
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH4001", "아이디 또는 비밀번호가 일치하지 않습니다."),
