@@ -1,13 +1,11 @@
 package com.umc.banddy.domain.mypage.notification.domain;
 
 import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendRequest;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
+import com.umc.banddy.domain.friend.domain.FriendRequest;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
