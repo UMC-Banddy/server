@@ -1,23 +1,15 @@
-package com.umc.banddy.domain.chat.web.dto;
+package com.umc.banddy.domain.chat.web.dto.Message;
 
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.Optional;
-
-@Data
-@NoArgsConstructor
+@Getter
+@AllArgsConstructor
+@Builder
 public class ChatMessageRequest {
-
-    @NotNull
-    private Long roomId;
 
     @NotNull(message = "roomType은 필수입니다.")
     private RoomType roomType;

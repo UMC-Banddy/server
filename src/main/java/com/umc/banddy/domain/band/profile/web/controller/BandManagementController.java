@@ -1,9 +1,9 @@
 package com.umc.banddy.domain.band.profile.web.controller;
 
 import com.umc.banddy.domain.band.profile.service.BandManagementService;
-import com.umc.banddy.domain.chat.web.dto.RecruitmentRequest;
-import com.umc.banddy.domain.chat.web.dto.RecruitmentResponse;
-import com.umc.banddy.domain.chat.web.dto.RecruitmentUpdateRequest;
+import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentRequest;
+import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentResponse;
+import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentUpdateRequest;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,8 +1,14 @@
 package com.umc.banddy.domain.chat.web.controller;
 
 import com.umc.banddy.domain.chat.domain.ChatRoom;
+import com.umc.banddy.domain.chat.service.ChatMessageService;
+import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.service.ChatService;
-import com.umc.banddy.domain.chat.web.dto.*;
+import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomRequest;
+import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomResponse;
+import com.umc.banddy.domain.chat.web.dto.ChatRoom.PrivateChatRoomRequest;
+import com.umc.banddy.domain.chat.web.dto.ChatRoom.PrivateChatRoomResponse;
+import com.umc.banddy.domain.chat.web.dto.Message.ChatSystemResponse;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,36 +19,36 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-
-import java.security.Principal;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/chat")
 public class ChatContoller {
 
+    private final ChatRoomService chatRoomService;
     private final ChatService chatService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final ChatMessageService chatMessageService;
 
     @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
     @PostMapping("/rooms")
     public ResponseEntity<ChatRoomResponse> createChatRoom(
             @RequestBody @Valid ChatRoomRequest chatRoomRequest,
             HttpServletRequest request
-            ) {
+    ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatService.createGroupChatRoom(currentMemberId, chatRoomRequest));
+        return ResponseEntity.ok(chatRoomService.createGroupChatRoom(currentMemberId, chatRoomRequest));
     }
 
     @Operation(summary = "개인 채팅방 생성", description = "개인 채팅방 생성 api")
     @PostMapping("/rooms/friends")
     public ResponseEntity<PrivateChatRoomResponse> createPrivateChatRooms(
-            Principal principal,
-            PrivateChatRoomRequest request
+            HttpServletRequest request,
+            PrivateChatRoomRequest privateChatRoomRequest
     ) {
-        return ResponseEntity.ok(chatService.createPrivateChatRoom(principal,request));
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatRoomService.createPrivateChatRoom(currentMemberId, privateChatRoomRequest));
     }
 
     @Operation(summary="채팅 참여")
@@ -53,16 +59,35 @@ public class ChatContoller {
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom, Member> pair = chatService.verifedRoomAndMember(roomId, currentMemberId);
-        return ResponseEntity.ok(chatService.joinChatRoom(pair.getLeft(), pair.getRight()));
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
+        return ResponseEntity.ok(chatMessageService.joinChatRoom(pair.getLeft(), pair.getRight()));
+    }
 
+    @Operation(summary = "채팅방 나가기")
+    @PostMapping("/rooms/{roomId}/members/exit")
+    public ResponseEntity<ChatSystemResponse> exitChatRoom(
+            HttpServletRequest request,
+            @PathVariable Long roomId
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
+        return ResponseEntity.ok(chatMessageService.exitChatRoom(pair.getLeft(), pair.getRight()));
+    }
+
+    @Operation(summary = "메세지 무한 스크롤")
+    @GetMapping("/rooms/{roomId}/messages")
+    public ResponseEntity<?> getChatMessages(
+            @PathVariable Long roomId,
+            @RequestParam(required = false, defaultValue = "0") Long cursor,
+            @RequestParam(required = false, defaultValue = "20") Integer limit,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit, currentMemberId));
     }
 
 
 
-    //    @Operation(summary = "밴드/그룹 채팅방 조회", description = "밴드 또는 그룹 채팅방 조회 api")
-//    @GetMapping("/rooms")
-//    public ResponseEntity<> getChatRooms(){
-//
-//    }
 }
