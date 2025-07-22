@@ -1,4 +1,3 @@
 FROM openjdk:17-jdk
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} banddy.jar
-ENTRYPOINT ["java", "-jar", "/banddy.jar"]
+COPY build/libs/banddy-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
