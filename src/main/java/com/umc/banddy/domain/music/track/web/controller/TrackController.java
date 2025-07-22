@@ -18,7 +18,7 @@ import java.util.List;
 
 import static com.umc.banddy.global.security.jwt.JwtTokenUtil.extractToken;
 
-@Tag(name = "곡 아카이빙", description = "곡 아카이빙 관련 API")
+@Tag(name = "곡곡곡 아카이빙", description = "곡 아카이빙 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/tracks")
