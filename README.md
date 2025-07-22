@@ -1,4 +1,4 @@
-//# server
+# server
 
 ## Git Convention
 
