@@ -1,6 +1,6 @@
 package com.umc.banddy.domain.friend.service;
 
-import com.umc.banddy.domain.friend.web.dto.FriendResponseDto;
+import com.umc.banddy.domain.friend.web.dto.FriendRequestResponseDto;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public interface FriendRequestService {
 
     void rejectFriend(Long requestId);
 
-    List<FriendResponseDto> getReceivedFriendRequests(Long memberId);
+    List<FriendRequestResponseDto> getReceivedFriendRequests(Long memberId);
 
-    FriendResponseDto getFriendRequestDetail(Long requestId);
+    FriendRequestResponseDto getFriendRequestDetail(Long requestId);
 }

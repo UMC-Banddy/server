@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.friend.web.controller;
 
 import com.umc.banddy.domain.friend.web.dto.FriendRequestDto;
-import com.umc.banddy.domain.friend.web.dto.FriendResponseDto;
+import com.umc.banddy.domain.friend.web.dto.FriendRequestResponseDto;
 import com.umc.banddy.domain.friend.service.FriendRequestService;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +53,7 @@ public class FriendRequestController {
     // 받은 친구 신청 목록 조회
     @Operation(summary = "받은 친구 신청 목록 조회", description = "내가 받은 친구 신청 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<List<FriendResponseDto>> getReceivedFriendRequests(HttpServletRequest request) {
+    public ResponseEntity<List<FriendRequestResponseDto>> getReceivedFriendRequests(HttpServletRequest request) {
         String token = JwtTokenUtil.extractToken(request);
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
 
@@ -63,7 +63,7 @@ public class FriendRequestController {
     // 친구 신청 상세 조회
     @Operation(summary = "친구 신청 상세 조회", description = "특정 친구 요청의 상세 정보를 조회합니다.")
     @GetMapping("/{requestId}")
-    public ResponseEntity<FriendResponseDto> getFriendRequestDetail(@PathVariable Long requestId) {
+    public ResponseEntity<FriendRequestResponseDto> getFriendRequestDetail(@PathVariable Long requestId) {
         return ResponseEntity.ok(friendRequestService.getFriendRequestDetail(requestId));
     }
 }

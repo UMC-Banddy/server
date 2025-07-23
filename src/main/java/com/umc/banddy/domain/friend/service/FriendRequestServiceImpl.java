@@ -5,7 +5,7 @@ import com.umc.banddy.domain.friend.domain.FriendRequest;
 import com.umc.banddy.domain.friend.domain.FriendStatus;
 import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.friend.repository.FriendRequestRepository;
-import com.umc.banddy.domain.friend.web.dto.FriendResponseDto;
+import com.umc.banddy.domain.friend.web.dto.FriendRequestResponseDto;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +79,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FriendResponseDto> getReceivedFriendRequests(Long memberId) {
+    public List<FriendRequestResponseDto> getReceivedFriendRequests(Long memberId) {
         List<FriendRequest> requests = friendRequestRepository.findByReceiverIdAndStatus(memberId, FriendStatus.REQUESTED);
 
         return requests.stream()
@@ -87,8 +87,8 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                     Member requester = memberRepository.findById(request.getRequesterId())
                             .orElseThrow(() -> new IllegalArgumentException("요청한 회원이 존재하지 않습니다."));
 
-                    return FriendResponseDto.builder()
-                            .friendId(request.getId())  // 요청 ID
+                    return FriendRequestResponseDto.builder()
+                            .requestId(request.getId())
                             .otherMemberId(requester.getId())
                             .nickname(requester.getNickname())
                             .email(requester.getEmail())
@@ -100,15 +100,15 @@ public class FriendRequestServiceImpl implements FriendRequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public FriendResponseDto getFriendRequestDetail(Long requestId) {
+    public FriendRequestResponseDto getFriendRequestDetail(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
 
         Member requester = memberRepository.findById(request.getRequesterId())
                 .orElseThrow(() -> new IllegalArgumentException("요청한 회원이 존재하지 않습니다."));
 
-        return FriendResponseDto.builder()
-                .friendId(request.getId())
+        return FriendRequestResponseDto.builder()
+                .requestId(request.getId())
                 .otherMemberId(requester.getId())
                 .nickname(requester.getNickname())
                 .email(requester.getEmail())
