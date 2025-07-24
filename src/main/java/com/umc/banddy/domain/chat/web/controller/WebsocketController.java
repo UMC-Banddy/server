@@ -13,8 +13,12 @@ import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageResponse;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.global.security.jwt.JwtTokenUtil;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -33,18 +37,20 @@ public class WebsocketController {
     private final ChatService chatService;
     private final ChatMessageService chatMessageService;
     private final WebsocketService websocketService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
-            @AuthenticationPrincipal Member member,
+            HttpServletRequest request,
             @Valid @Payload ChatMessageRequest messageRequest,
             @DestinationVariable Long roomId
     ) {
-
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
 
         // 채팅 메세지 저장
-        ChatMessage chatMessage = chatMessageService.saveMessage(chatRoom, member, messageRequest);
+        ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(), pair.getRight(), messageRequest);
 
         // 응답 생성
         ChatMessageResponse chatMessageResponse = chatMessageService.chatToResponse(chatMessage);
@@ -67,37 +73,41 @@ public class WebsocketController {
     // 채팅방 구독
     @MessageMapping("chat/subscribe/{roomId}")
     public void subscribeChatRoom(
-            @AuthenticationPrincipal Member member,
+            HttpServletRequest request,
             @DestinationVariable Long roomId
     ) {
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
 
         websocketService.topicMessage(
-                chatRoom.getId(),
-                toWsMessage(toTimeMark(chatRoom, member), MessageType.MARk_AS_READ)
+                pair.getLeft().getId(),
+                toWsMessage(toTimeMark(pair.getLeft(), pair.getRight()), MessageType.MARk_AS_READ)
         );
     }
 
     // 채팅방 구독 해제
     @MessageMapping("chat/unsubscribe/{roomId}")
     public void unsubscribeChatRoom(
-            @AuthenticationPrincipal Member member,
+            HttpServletRequest request,
             @DestinationVariable Long roomId
     ) {
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
 
         // 구독 해제 시점 갱신
-        ChatRoomParticipant participant= chatService.markLastRead(chatRoom, member);
+        ChatRoomParticipant participant= chatService.markLastRead(pair.getLeft(), pair.getRight());
 
         TimeMark timeMark = TimeMark.builder()
-                .memberId(member.getId())
-                .nickname(member.getNickname())
-                .roomId(chatRoom.getId())
+                .memberId(pair.getLeft().getId())
+                .nickname(pair.getLeft().getName())
+                .roomId(pair.getLeft().getId())
                 .timestamp(participant.getLastReadAt())
                 .build();
 
         websocketService.topicMessage(
-                chatRoom.getId(),
+                pair.getLeft().getId(),
                 toWsMessage(timeMark, MessageType.MARK_AS_UNREAD)
         );
     }

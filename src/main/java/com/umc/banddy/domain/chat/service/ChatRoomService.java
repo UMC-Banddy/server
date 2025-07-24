@@ -7,10 +7,7 @@ import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomRequest;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomResponse;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.PrivateChatRoomRequest;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.PrivateChatRoomResponse;
+import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
@@ -114,5 +111,11 @@ public class ChatRoomService {
 
         participantRepository.save(participant);
     }
+
+//    public List<ChatRoomList> getGroupChatRoom(Member member){
+//
+//        return chatRoomRepository.findByParticipants_MemberAndRoomType(member, RoomType.GROUP);
+//
+//    }
 
 }

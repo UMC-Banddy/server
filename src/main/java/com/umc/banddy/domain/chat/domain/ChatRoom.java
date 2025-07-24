@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -33,6 +35,6 @@ public class ChatRoom extends BaseEntity {
 
     @OneToMany
     @JoinColumn(name = "chat_room_id")
-    private java.util.List<ChatRoomParticipant> participants;
+    private List<ChatRoomParticipant> participants;
 
 }
