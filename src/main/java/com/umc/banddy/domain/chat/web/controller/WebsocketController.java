@@ -10,14 +10,17 @@ import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.service.WebsocketService;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageResponse;
+import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.member.domain.Member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
@@ -36,15 +39,15 @@ public class WebsocketController {
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @Valid @Payload ChatMessageRequest messageRequest,
             @DestinationVariable Long roomId
     ) {
 
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
 
         // 채팅 메세지 저장
-        ChatMessage chatMessage = chatMessageService.saveMessage(chatRoom, member, messageRequest);
+        ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(),pair.getRight(), messageRequest);
 
         // 응답 생성
         ChatMessageResponse chatMessageResponse = chatMessageService.chatToResponse(chatMessage);
@@ -67,27 +70,31 @@ public class WebsocketController {
     // 채팅방 구독
     @MessageMapping("chat/subscribe/{roomId}")
     public void subscribeChatRoom(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @DestinationVariable Long roomId
     ) {
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
-
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
         websocketService.topicMessage(
                 chatRoom.getId(),
-                toWsMessage(toTimeMark(chatRoom, member), MessageType.MARk_AS_READ)
+                toWsMessage(toTimeMark(chatRoom,member), MessageType.MARk_AS_READ)
         );
     }
 
     // 채팅방 구독 해제
     @MessageMapping("chat/unsubscribe/{roomId}")
     public void unsubscribeChatRoom(
-            @AuthenticationPrincipal Member member,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @DestinationVariable Long roomId
     ) {
-        ChatRoom chatRoom = chatService.verifedChatRoom(roomId);
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
 
         // 구독 해제 시점 갱신
-        ChatRoomParticipant participant= chatService.markLastRead(chatRoom, member);
+        ChatRoomParticipant participant= chatService.markLastRead(chatRoom,member);
 
         TimeMark timeMark = TimeMark.builder()
                 .memberId(member.getId())

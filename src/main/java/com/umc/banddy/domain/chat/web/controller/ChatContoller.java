@@ -88,6 +88,4 @@ public class ChatContoller {
         return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit, currentMemberId));
     }
 
-
-
 }
