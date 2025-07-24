@@ -10,12 +10,11 @@ import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.service.WebsocketService;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageResponse;
+import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,16 +40,15 @@ public class WebsocketController {
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
-            HttpServletRequest request,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @Valid @Payload ChatMessageRequest messageRequest,
             @DestinationVariable Long roomId
     ) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
+
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
 
         // 채팅 메세지 저장
-        ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(), pair.getRight(), messageRequest);
+        ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(),pair.getRight(), messageRequest);
 
         // 응답 생성
         ChatMessageResponse chatMessageResponse = chatMessageService.chatToResponse(chatMessage);
@@ -73,41 +71,41 @@ public class WebsocketController {
     // 채팅방 구독
     @MessageMapping("chat/subscribe/{roomId}")
     public void subscribeChatRoom(
-            HttpServletRequest request,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @DestinationVariable Long roomId
     ) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
-
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
         websocketService.topicMessage(
-                pair.getLeft().getId(),
-                toWsMessage(toTimeMark(pair.getLeft(), pair.getRight()), MessageType.MARk_AS_READ)
+                chatRoom.getId(),
+                toWsMessage(toTimeMark(chatRoom,member), MessageType.MARk_AS_READ)
         );
     }
 
     // 채팅방 구독 해제
     @MessageMapping("chat/unsubscribe/{roomId}")
     public void unsubscribeChatRoom(
-            HttpServletRequest request,
+            @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @DestinationVariable Long roomId
     ) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId,currentMemberId);
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
 
         // 구독 해제 시점 갱신
-        ChatRoomParticipant participant= chatService.markLastRead(pair.getLeft(), pair.getRight());
+        ChatRoomParticipant participant= chatService.markLastRead(chatRoom,member);
 
         TimeMark timeMark = TimeMark.builder()
-                .memberId(pair.getLeft().getId())
-                .nickname(pair.getLeft().getName())
-                .roomId(pair.getLeft().getId())
+                .memberId(member.getId())
+                .nickname(member.getNickname())
+                .roomId(chatRoom.getId())
                 .timestamp(participant.getLastReadAt())
                 .build();
 
         websocketService.topicMessage(
-                pair.getLeft().getId(),
+                chatRoom.getId(),
                 toWsMessage(timeMark, MessageType.MARK_AS_UNREAD)
         );
     }

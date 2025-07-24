@@ -2,7 +2,7 @@ package com.umc.banddy.domain.chat.listener;
 
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.service.ChatService;
-import com.umc.banddy.domain.chat.web.controller.SubscriptionStateService;
+import com.umc.banddy.domain.chat.service.SubscriptionStateService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;

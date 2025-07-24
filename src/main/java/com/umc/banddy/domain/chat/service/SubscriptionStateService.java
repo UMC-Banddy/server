@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.controller;
+package com.umc.banddy.domain.chat.service;
 
 import org.springframework.stereotype.Service;
 
