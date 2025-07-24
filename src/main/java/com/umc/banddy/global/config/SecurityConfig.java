@@ -56,14 +56,15 @@ public class SecurityConfig {
         CorsConfiguration wsConfig = new CorsConfiguration();
         wsConfig.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:4040"      // 테스트 용
         ));
         wsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
         wsConfig.setAllowedHeaders(Arrays.asList("*"));
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowCredentials(false);

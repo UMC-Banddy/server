@@ -46,9 +46,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .withSockJS(); // SockJS 적용
 
-        // 순수 WebSocket 전용 엔드포인트
-        registry.addEndpoint("/ws-raw")
-                .setAllowedOriginPatterns("*");
+//        // 순수 WebSocket 전용 엔드포인트
+//        registry.addEndpoint("/ws")
+//                .setAllowedOriginPatterns("*");
     }
 
     // 메세지 브로커 설정
@@ -61,6 +61,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // topic 구독자에게 브로드캐스트, queue는 특정 사용자에게 메시지 전송, /user/queue는 개인 메시지 전송을 위한 설정
     }
 
+
     // 클라이언트로부터 수신 받은 메세지 인터셉터
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
@@ -72,8 +73,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
            public Message<?> preSend(Message<?> message, MessageChannel channel) {
                StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                if(StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
+                   System.out.println(">>> 클라이언트 CONNECT 감지: headers=" + headerAccessor.toNativeHeaderMap());
                    String token = headerAccessor.getFirstNativeHeader("Authorization");
-                   System.out.println("jwt 토큰: " + token);
 
                    if (token != null && token.startsWith("Bearer ")) {
                        token = token.substring(7);  // 'Bearer ' 잘라냄

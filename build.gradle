@@ -31,6 +31,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'	// 채팅 웹소켓 지원
+	implementation 'org.springframework.security:spring-security-messaging' // 채팅 웹소켓 보안 지원
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.2.0'
 	compileOnly 'org.projectlombok:lombok'

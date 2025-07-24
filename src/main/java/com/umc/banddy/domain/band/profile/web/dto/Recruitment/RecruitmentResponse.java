@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto;
+package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
