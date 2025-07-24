@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import com.umc.banddy.domain.member.enums.Status;
+import com.umc.banddy.domain.member.enums.Role;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,8 @@ public class MemberCommandService {
                 .gender(request.getGender())
                 .region(request.getRegion())
                 .district(request.getDistrict())
+                .role(Role.USER)
+                .status(Status.ACTIVE)
                 .build();
 
         memberRepository.save(member);
