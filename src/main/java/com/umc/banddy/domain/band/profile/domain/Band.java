@@ -10,6 +10,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -36,18 +37,21 @@ public class Band extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Column(name = "auto_Close")
+    private Boolean autoClose; // 모집 종료일에 자동 종료 여부
+
     @Column(name = "age_start")
     private Integer ageStart;
 
     @Column(name = "age_end")
     private Integer ageEnd;
 
-    private String job;
+//    private String job;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
-    private List<Session> sessions;
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    @Enumerated(EnumType.STRING)
+//    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
+//    private List<Session> sessions;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 10)
@@ -74,4 +78,3 @@ public class Band extends BaseEntity {
     private Integer femaleCount;
 
 }
-

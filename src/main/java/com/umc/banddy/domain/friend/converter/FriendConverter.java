@@ -13,6 +13,8 @@ public class FriendConverter {
                 .nickname(other.getNickname())
                 .email(other.getEmail())
                 .bio(other.getBio())
+                .profileImageUrl(other.getProfileImageUrl())
+                .createdAt(friend.getCreatedAt())
                 .build();
     }
 }
