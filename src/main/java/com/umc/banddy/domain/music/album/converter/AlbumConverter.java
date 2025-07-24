@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.music.album.converter;
 
 import com.umc.banddy.domain.music.album.domain.Album;
+import com.umc.banddy.domain.music.album.repository.AlbumVisibilityResponse;
 import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
 import com.umc.banddy.domain.music.album.web.dto.AlbumToggleResponseDto;
 
@@ -40,4 +41,12 @@ public class AlbumConverter {
                 .isSaved(isSaved)
                 .build();
     }
+
+    public static AlbumVisibilityResponse toVisibilityResponse(Long memberId, Boolean isPrivate) {
+        return AlbumVisibilityResponse.builder()
+                .memberId(memberId)
+                .isPrivate(isPrivate)
+                .build();
+    }
+
 }

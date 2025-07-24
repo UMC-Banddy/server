@@ -6,6 +6,7 @@ import com.umc.banddy.domain.music.album.converter.AlbumConverter;
 import com.umc.banddy.domain.music.album.domain.Album;
 import com.umc.banddy.domain.music.album.domain.MemberAlbum;
 import com.umc.banddy.domain.music.album.repository.AlbumRepository;
+import com.umc.banddy.domain.music.album.repository.AlbumVisibilityResponse;
 import com.umc.banddy.domain.music.album.repository.MemberAlbumRepository;
 import com.umc.banddy.domain.music.album.web.dto.AlbumRequestDto;
 import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
@@ -160,6 +161,27 @@ public class AlbumService {
         } catch (Exception e) {
             throw new GeneralException(ErrorStatus.SPOTIFY_RESOURCE_NOT_FOUND);
         }
+    }
+
+    // 앨범 잠금 상태 수정
+    @Transactional
+    public AlbumVisibilityResponse updateAlbumVisibility(Long albumId, Boolean isPrivate, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.ALBUM_NOT_FOUND));
+
+        MemberAlbum memberAlbum = memberAlbumRepository.findByMemberAndAlbum(member, album)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.ALBUM_NOT_SAVED_BY_MEMBER));
+
+        memberAlbum.setIsPrivate(isPrivate); // 잠금 상태 변경
+
+        return AlbumVisibilityResponse.builder()
+                .memberId(member.getId())
+                .isPrivate(isPrivate)
+                .build();
     }
 
 }
