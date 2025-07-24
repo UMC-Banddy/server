@@ -32,6 +32,7 @@ public class NotificationConverter {
                 .type(NotificationType.FRIEND)
                 .imageUrl(profileImage)
                 .createdAt(n.getCreatedAt())
+                .friendRequestId(n.getFriendRequest().getId())
                 .build();
     }
 

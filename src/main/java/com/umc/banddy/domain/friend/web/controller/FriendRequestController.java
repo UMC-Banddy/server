@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "friend-request", description = "친구 요청 관련 API")
+@Tag(name = "친구 요청", description = "친구 요청 관련 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/friend-request")
+@RequestMapping("/api/friend/request")
 public class FriendRequestController {
 
     private final FriendRequestService friendRequestService;
@@ -51,17 +51,17 @@ public class FriendRequestController {
     }
 
     // 받은 친구 신청 목록 조회
-    @Operation(summary = "받은 친구 신청 목록 조회", description = "내가 받은 친구 신청 목록을 조회합니다.")
+    /* @Operation(summary = "받은 친구 신청 목록 조회", description = "내가 받은 친구 신청 목록을 조회합니다.")
     @GetMapping
     public ResponseEntity<List<FriendRequestResponseDto>> getReceivedFriendRequests(HttpServletRequest request) {
         String token = JwtTokenUtil.extractToken(request);
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
 
         return ResponseEntity.ok(friendRequestService.getReceivedFriendRequests(memberId));
-    }
+    } */
 
     // 친구 신청 상세 조회
-    @Operation(summary = "친구 신청 상세 조회", description = "특정 친구 요청의 상세 정보를 조회합니다.")
+    @Operation(summary = "친구 신청 상세 조회", description = "알림 탭에서 특정 친구 요청의 상세 정보를 조회합니다.")
     @GetMapping("/{requestId}")
     public ResponseEntity<FriendRequestResponseDto> getFriendRequestDetail(@PathVariable Long requestId) {
         return ResponseEntity.ok(friendRequestService.getFriendRequestDetail(requestId));

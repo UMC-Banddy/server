@@ -8,9 +8,12 @@ import com.umc.banddy.domain.friend.repository.FriendRequestRepository;
 import com.umc.banddy.domain.friend.web.dto.FriendRequestResponseDto;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.umc.banddy.domain.mypage.notification.domain.FriendNotification;
+import com.umc.banddy.domain.mypage.notification.repository.FriendNotificationRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +26,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final FriendNotificationRepository friendNotificationRepository;
 
     @Override
     @Transactional
@@ -47,6 +51,21 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .build();
 
         friendRequestRepository.save(request);
+
+        Member sender = memberRepository.findById(requesterId)
+                .orElseThrow(() -> new IllegalArgumentException("보낸 회원 없음"));
+        Member receiver = memberRepository.findById(receiverId)
+                .orElseThrow(() -> new IllegalArgumentException("받는 회원 없음"));
+
+        FriendNotification notification = FriendNotification.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .friendRequest(request)
+                .isRead(ReadStatus.UNREAD)
+                .type("REQUEST")
+                .build();
+
+        friendNotificationRepository.save(notification);
     }
 
     @Override
