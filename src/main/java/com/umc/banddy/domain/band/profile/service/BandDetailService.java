@@ -10,7 +10,7 @@ import com.umc.banddy.domain.band.profile.repository.BandRepository;
 import com.umc.banddy.domain.band.profile.repository.BandSessionRepository;
 import com.umc.banddy.domain.band.profile.repository.BandTagRepository;
 import com.umc.banddy.domain.band.profile.repository.BandTrackRepository;
-import com.umc.banddy.domain.band.profile.repository.BandBookmarkRepository;
+import com.umc.banddy.domain.band.bookmark.repository.BandBookmarkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

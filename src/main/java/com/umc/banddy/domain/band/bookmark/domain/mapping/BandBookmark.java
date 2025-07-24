@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.band.profile.domain.mapping;
+package com.umc.banddy.domain.band.bookmark.domain.mapping;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
 import com.umc.banddy.domain.member.domain.Member;
