@@ -112,6 +112,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                             .nickname(requester.getNickname())
                             .email(requester.getEmail())
                             .bio(requester.getBio())
+                            .profileImageUrl(requester.getProfileImageUrl())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -132,6 +133,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .nickname(requester.getNickname())
                 .email(requester.getEmail())
                 .bio(requester.getBio())
+                .profileImageUrl(requester.getProfileImageUrl())
                 .build();
     }
 }
