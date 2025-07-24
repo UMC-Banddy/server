@@ -43,21 +43,14 @@ public class WebsocketController {
         // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
         if (messageRequest.getRoomType().equals(RoomType.GROUP)) {
             // GROUP: 토픽 브로드캐스트
-            messagingTemplate.convertAndSend(
-                    "/topic/rooms/" + roomId,
-                    chatMessageResponse
-            );
+            chatService.topicMessage(roomId, chatMessageResponse);
         } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE)
                 || messageRequest.getRoomType().equals(RoomType.BAND)) {
 
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
                     .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
             // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
-            messagingTemplate.convertAndSendToUser(
-                    chatService.findReceiverEmail(receiverId),
-                    "/queue/rooms/" + roomId,
-                    chatMessageResponse
-            );
+            chatService.queueMessage(chatService.findReceiverEmail(receiverId), roomId, chatMessageResponse);
     }
 
 //    @MessageMapping("/chat/addUser/{roomId}")

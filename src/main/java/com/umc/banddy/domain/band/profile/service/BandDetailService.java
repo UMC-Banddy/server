@@ -26,12 +26,12 @@ public class BandDetailService {
     private final BandTagRepository bandTagRepository;
     private final BandTrackRepository bandTrackRepository;
 
-    public BandDetailResponse getBandDetail(Long loginMemberId, Long bandId) {
+    public BandDetailResponse getBandDetail(Long bandId, Long loginMemberId) {
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
 
         boolean isBookmarked = bandBookmarkRepository.existsByMemberIdAndBandId(loginMemberId, bandId);
-        List<BandSession> sessions = bandSessionRepository.findByBandId(bandId);
+        List<BandSession> sessions = bandSessionRepository.findByBandIdAndSessionStatus(bandId,"RECRUITING");
         List<BandTag> tags = bandTagRepository.findByBandId(bandId);
         List<BandTrack> tracks = bandTrackRepository.findByBandId(bandId);
 
