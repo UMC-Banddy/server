@@ -1,4 +1,4 @@
-# server
+# Banddy-server
 
 ## Git Convention
 
