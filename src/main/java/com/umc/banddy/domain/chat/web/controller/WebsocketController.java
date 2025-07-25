@@ -14,13 +14,13 @@ import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
@@ -36,6 +36,7 @@ public class WebsocketController {
     private final ChatService chatService;
     private final ChatMessageService chatMessageService;
     private final WebsocketService websocketService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(

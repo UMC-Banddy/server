@@ -7,7 +7,7 @@ import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
-import com.umc.banddy.domain.chat.repository.MessagePagingRepository;
+import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
 import com.umc.banddy.domain.chat.web.dto.Message.*;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
@@ -28,7 +28,7 @@ public class ChatMessageService {
     private final ChatRoomParticipantRepository participantRepository;
     private final WebsocketService websocketService;
     private final ChatService chatService;
-    private final MessagePagingRepository messagePagingRepository;
+    private final ChatCustomRepository chatCustomRepository;
 
     // 채팅 메세지 저장
     public ChatMessage saveMessage(ChatRoom chatRoom, Member member, ChatMessageRequest messageRequest){
@@ -117,7 +117,7 @@ public class ChatMessageService {
     public CursorChatMessageResponse getChatMessages(Long roomId, Long cursor, Integer limit, Long currentMemberId) {
 
         List<CursorChatMessage> ccm
-                = messagePagingRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
+                = chatCustomRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
 
         return CursorChatMessageResponse.builder()
                 .roomId(roomId)

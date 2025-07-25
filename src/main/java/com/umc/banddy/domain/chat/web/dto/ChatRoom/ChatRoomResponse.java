@@ -17,7 +17,7 @@ public class ChatRoomResponse {
     private String roomName;
     private String roomImageUrl;
     private LocalDateTime lastMessageTime;
-    private LocalDateTime pinnedAt;
+    //private LocalDateTime pinnedAt;
     private RoomType roomtype;
     private List<RoomMemberinfo> memberinfos;
 

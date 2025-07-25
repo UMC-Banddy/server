@@ -12,10 +12,11 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class MessagePagingRepository {
+public class ChatCustomRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    // 페이징
     public List<CursorChatMessage> findByRoomIdWithCursorAsDto(Long roomId, Long cursor, int limit) {
         return queryFactory
                 .select(Projections.constructor(
@@ -39,4 +40,5 @@ public class MessagePagingRepository {
     private BooleanExpression ltCursor(Long cursor) {
         return cursor != null ? QChatMessage.chatMessage.id.lt(cursor) : null;
     }
+
 }
