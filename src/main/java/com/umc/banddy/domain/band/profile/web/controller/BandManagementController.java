@@ -64,16 +64,16 @@ public class BandManagementController {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(bandManagementService.getApplicationList(bandId, currentMemberId));
     }
-    @Operation(summary = "밴드 합격 불합격 처리")
-    @PatchMapping("/recruitments/{bandId}")
-    public ResponseEntity<ApplicationListResponse> updateApplicantStatus(
-            @PathVariable Long bandId,
-            ApplicantUpdateRequest applicantUpdateRequest,
-            HttpServletRequest request
-    ){
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId));
-    }
+//    @Operation(summary = "밴드 합격 불합격 처리")
+//    @PatchMapping("/recruitments/{bandId}")
+//    public ResponseEntity<ApplicationListResponse> updateApplicantStatus(
+//            @PathVariable Long bandId,
+//            ApplicantUpdateRequest applicantUpdateRequest,
+//            HttpServletRequest request
+//    ){
+//        String token = JwtTokenUtil.extractToken(request);
+//        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+//        return ResponseEntity.ok(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId));
+//    }
 
 }
