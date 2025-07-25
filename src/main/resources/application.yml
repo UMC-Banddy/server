@@ -38,6 +38,10 @@ spring:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
+  servlet:
+    multipart:
+      enabled: true
+
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
