@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                                "/member", "/member/login", "/member/check-nickname",
+                                "/member", "/member/login", "/member/check-nickname", "/auth/send", "/auth/verify",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-resources", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
