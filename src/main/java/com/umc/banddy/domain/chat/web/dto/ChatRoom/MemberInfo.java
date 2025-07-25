@@ -7,5 +7,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ChatRoomList {
+public class MemberInfo{
+    private Long memberId;
+    private String nickname;
+    private String profileImageUrl;
 }

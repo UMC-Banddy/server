@@ -7,6 +7,7 @@ import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatSystemResponse;
 import com.umc.banddy.domain.chat.web.dto.Message.CursorChatMessageResponse;
+import com.umc.banddy.domain.friend.service.FriendService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,6 +27,7 @@ public class ChatContoller {
     private final ChatService chatService;
     private final JwtTokenUtil jwtTokenUtil;
     private final ChatMessageService chatMessageService;
+
 
     @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
     @PostMapping("/rooms")
@@ -80,18 +81,31 @@ public class ChatContoller {
             @PathVariable Long roomId,
             @RequestParam(required = false, defaultValue = "0") Long cursor,
             @RequestParam(required = false, defaultValue = "20") Integer limit,
-            @AuthenticationPrincipal Member member
+            HttpServletRequest request
     ) {
-        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit, member.getId()));
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit, currentMemberId));
     }
 
-//    @Operation(summary = "채팅방 조회")
-//    @GetMapping("/rooms")
-//    public ResponseEntity <?> getChatRooms(
-//    ){
-//
-//        return null;
-//    }
+    @Operation(summary = "채팅방 조회")
+    @GetMapping("/rooms")
+    public ResponseEntity <ChatRoomListResponse> getChatRooms(
+            HttpServletRequest request
+    ){
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatRoomService.getMyChatRooms(currentMemberId));
+    }
 
+    @Operation(summary = "친구 채팅방 조회")
+    @GetMapping("/friends")
+    public ResponseEntity <FriendsChatRoomResponse> getFriendsChatRooms(
+            HttpServletRequest request
+    ){
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
+    }
 
 }

@@ -4,12 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.banddy.domain.chat.domain.QChatMessage;
-import com.umc.banddy.domain.chat.domain.QChatRoom;
-import com.umc.banddy.domain.chat.domain.enums.RoomType;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomList;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.ChatRoomResponse;
 import com.umc.banddy.domain.chat.web.dto.Message.CursorChatMessage;
-import com.umc.banddy.domain.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
