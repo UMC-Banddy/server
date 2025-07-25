@@ -8,10 +8,14 @@ import com.umc.banddy.domain.member.web.dto.SimpleKeywordDto;
 import com.umc.banddy.domain.member.web.dto.SimpleSessionDto;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberSurveyService {
 
-    void saveSurveyInfo(String accessToken, MemberSurveyRequest request);
+    void saveSurveyInfo(String accessToken,
+                        MemberSurveyRequest request,
+                        MultipartFile profileImage,
+                        MultipartFile mediaFile);
 
     List<Genre> getAllGenres();
     List<Artist> getAllArtists();

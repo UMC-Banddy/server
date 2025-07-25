@@ -14,6 +14,8 @@ public class BandProfileResponse {
     private List<ArtistDto> preferredArtists;
     private CompositionDto composition;
     private List<SnsDto> sns;
+    private List<String> sessions;
+    private List<String> jobs;
 
     @Getter @AllArgsConstructor
     public static class TrackDto {
@@ -31,10 +33,9 @@ public class BandProfileResponse {
     @Getter @Builder
     public static class CompositionDto {
         private String averageAge;
-        private String job;
+        //private String job;
         private int maleCount;
         private int femaleCount;
-        private List<String> sessions;
     }
 
     @Getter @AllArgsConstructor

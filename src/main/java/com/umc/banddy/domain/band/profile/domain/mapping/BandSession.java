@@ -27,6 +27,6 @@ public class BandSession extends BaseEntity {
     private Session session;
 
     @Column(name = "session_status")
-    private String sessionStatus;
+    private String sessionStatus; // 나중에 enum으로 변경 고려
 }
 

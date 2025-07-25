@@ -22,33 +22,6 @@ public class FriendController {
     private final FriendService friendService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    //  친구 신청
-    @Operation(summary = "친구 신청", description = "친구 신청 시 사용합니다")
-    @PostMapping("/request")
-    public ResponseEntity<Void> requestFriend(@RequestBody FriendRequestDto dto,
-                                              HttpServletRequest request) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
-
-        friendService.requestFriend(memberId, dto.getTargetMemberId());
-        return ResponseEntity.ok().build();
-    }
-
-    //  친구 수락
-    @Operation(summary = "친구신청 수락", description = "친구 신청을 수락합니다")
-    @PostMapping("/accept/{friendId}")
-    public ResponseEntity<Void> acceptFriend(@PathVariable Long friendId) {
-        friendService.acceptFriend(friendId);
-        return ResponseEntity.ok().build();
-    }
-
-    //  친구 거절
-    @Operation(summary = "친구신청 거절", description = "친구 신청을 거절합니다")
-    @PostMapping("/reject/{friendId}")
-    public ResponseEntity<Void> rejectFriend(@PathVariable Long friendId) {
-        friendService.rejectFriend(friendId);
-        return ResponseEntity.ok().build();
-    }
 
     //  친구 목록 조회
     @Operation(summary = "친구 목록 조회")
@@ -59,24 +32,6 @@ public class FriendController {
 
         List<FriendResponseDto> friends = friendService.getMyFriends(memberId);
         return ResponseEntity.ok(friends);
-    }
-
-    //  받은 신청 목록 조회
-    @Operation(summary = "친구 신청 목록 조회", description = "받은 친구 신청을 조회합니다")
-    @GetMapping("/requests")
-    public ResponseEntity<List<FriendResponseDto>> getRequests(HttpServletRequest request) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
-
-        List<FriendResponseDto> requests = friendService.getReceivedFriendRequests(memberId);
-        return ResponseEntity.ok(requests);
-    }
-
-    //  요청 상세 조회 (알림 클릭 시)
-    @Operation(summary = "친구 신청 상세 조회", description = "받은 친구 신청을 상세 조회합니다")
-    @GetMapping("/requests/{friendId}")
-    public ResponseEntity<FriendResponseDto> getRequestDetail(@PathVariable Long friendId) {
-        return ResponseEntity.ok(friendService.getFriendRequestDetail(friendId));
     }
 
     //  친구 삭제

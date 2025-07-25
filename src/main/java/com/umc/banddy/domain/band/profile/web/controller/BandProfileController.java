@@ -37,6 +37,6 @@ public class BandProfileController {
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return bandDetailService.getBandDetail(bandId, currentMemberId);
+        return bandDetailService.getBandDetail(currentMemberId, bandId);
     }
 }

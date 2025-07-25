@@ -1,6 +1,8 @@
 package com.umc.banddy.domain.chat.repository;
 
+import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
+import com.umc.banddy.domain.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -26,13 +28,13 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
             @Param("lastReadAt") LocalDateTime lastReadAt
     );
 
-    @Query("select p from ChatRoomParticipant p where p.chatRoom.id = :roomId and p.member.email = :email")
-    Optional<ChatRoomParticipant> findByChatRoomIdAndEmail(
-            @Param("roomId") Long roomId,
-            @Param("email") String email
-    );
+//    @Query("select p from ChatRoomParticipant p where p.chatRoom.id = :roomId and p.member.email = :email")
+//    Optional<ChatRoomParticipant> findByChatRoomIdAndEmail(
+//            @Param("roomId") Long roomId,
+//            @Param("email") String email
+//    );
 
+    boolean existsByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
-    Optional<ChatRoomParticipant> findByChatRoomIdAndMemberId(Long roomId, Long memberId);
-
+    Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 }

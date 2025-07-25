@@ -8,6 +8,7 @@ import lombok.*;
 @Entity
 @Table(name = "band_sns")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder

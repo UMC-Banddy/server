@@ -1,12 +1,13 @@
-package com.umc.banddy.domain.chat.web.dto;
+package com.umc.banddy.domain.chat.web.dto.Message;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@AllArgsConstructor
 @Builder
 public class ChatMessageResponse {
 
