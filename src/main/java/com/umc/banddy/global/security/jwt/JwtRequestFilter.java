@@ -23,22 +23,20 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Authorization 헤더가 존재하고 Bearer로 시작하는 경우
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
             try {
-                //  토큰 유효성 검사 (유효하지 않으면 예외 발생)
                 if (jwtTokenUtil.validateToken(token)) {
                     String email = jwtTokenUtil.getEmailFromToken(token);
 
-                    // 인증 객체 등록
                     User principal = new User(email, "", Collections.emptyList());
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
@@ -46,15 +44,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
-                    throw new AuthHandler(ErrorStatus.INVALID_TOKEN); // 유효하지 않으면 에러 던짐
+                    // 유효하지 않은 토큰일 경우 401 응답
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
+                    return;
                 }
 
             } catch (Exception e) {
-                throw new AuthHandler(ErrorStatus.INVALID_TOKEN); // 파싱 중 예외도 동일하게 처리
+                // 토큰 파싱 중 오류 발생 시에도 401 응답
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT Token Parsing Failed");
+                return;
             }
         }
 
-        // 4. 토큰이 없거나 정상 인증된 경우 다음 필터 진행
         chain.doFilter(request, response);
     }
 }
