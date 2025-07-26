@@ -3,6 +3,7 @@ package com.umc.banddy.domain.chat.repository;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,13 +43,20 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
             @Param("friendIds") List<Long> friendIds
     );
 
-    boolean existsByChatRoomAndMember(ChatRoom chatRoom, Member member);
+    boolean existsByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
+
+    Optional<ChatRoomParticipant> findTopByChatRoomAndMemberAndStatusOrderByIdDesc(
+            ChatRoom chatRoom,
+            Member member,
+            Status status
+    );
 
     List<ChatRoomParticipant> findByMember(Member member);
 
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
     List<ChatRoomParticipant> findByChatRoomIdIn(List<Long> roomIds);
+
 
 
 }
