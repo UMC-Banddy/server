@@ -25,7 +25,7 @@ public class AutocompleteController {
     @GetMapping("/tracks")
     public ResponseEntity<ApiResponse<AutocompleteResponseDto>> autocompleteTracks(
             @RequestParam String query,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(defaultValue = "20") int limit
     ) {
         var results = autocompleteService.autocompleteTracks(query, limit);
         return ResponseEntity.ok(ApiResponse.onSuccess(new AutocompleteResponseDto(results)));
@@ -36,7 +36,7 @@ public class AutocompleteController {
     @GetMapping("/artists")
     public ResponseEntity<ApiResponse<AutocompleteResponseDto>> autocompleteArtists(
             @RequestParam String query,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(defaultValue = "20") int limit
     ) {
         var results = autocompleteService.autocompleteArtists(query, limit);
         return ResponseEntity.ok(ApiResponse.onSuccess(new AutocompleteResponseDto(results)));
@@ -47,7 +47,7 @@ public class AutocompleteController {
     @GetMapping("/albums")
     public ResponseEntity<ApiResponse<AutocompleteResponseDto>> autocompleteAlbums(
             @RequestParam String query,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(defaultValue = "20") int limit
     ) {
         var results = autocompleteService.autocompleteAlbums(query, limit);
         return ResponseEntity.ok(ApiResponse.onSuccess(new AutocompleteResponseDto(results)));
@@ -58,7 +58,7 @@ public class AutocompleteController {
     @GetMapping("/music")
     public ResponseEntity<ApiResponse<AutocompleteResponseDto>> autocompleteMusic(
             @RequestParam String query,
-            @RequestParam(defaultValue = "30") int limit
+            @RequestParam(defaultValue = "10") int limit
     ) {
         var results = autocompleteService.autocompleteMusic(query, limit);
         return ResponseEntity.ok(ApiResponse.onSuccess(new AutocompleteResponseDto(results)));
