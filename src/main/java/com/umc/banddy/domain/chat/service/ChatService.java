@@ -6,6 +6,7 @@ import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,9 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +38,8 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다. ID: " + roomId));
     }
 
-    public ChatRoomParticipant verifedParticipant(ChatRoom chatRoom, Member member) {
-        return participantRepository.findByChatRoomAndMember(chatRoom, member)
+    public ChatRoomParticipant verifedParticipant(ChatRoom chatRoom, Member member, Status status) {
+        return participantRepository.findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member,Status.ACTIVE)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다. 채팅방 ID: " + chatRoom.getId() + ", 멤버 ID: " + member.getId()));
     }
     public Long extractRoomId(String dest) {
@@ -59,7 +57,7 @@ public class ChatService {
     }
     @Transactional
     public ChatRoomParticipant markLastRead(ChatRoom chatRoom , Member member) {
-        ChatRoomParticipant participant = participantRepository.findByChatRoomAndMember(chatRoom, member)
+        ChatRoomParticipant participant = participantRepository.findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member, Status.ACTIVE)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
 
         participant.setLastReadAt(LocalDateTime.now());

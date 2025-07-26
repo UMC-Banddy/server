@@ -214,7 +214,7 @@ public class BandManagementService {
         Band band = bandRepository.findById(request.getBandId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
 
-        if(member != band.getManager()) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
+        if(member.equals(band.getManager())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
 
         if(request.getStatus() != null) {
             band.setStatus(request.getStatus());
@@ -438,7 +438,7 @@ public class BandManagementService {
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다."));
 
-        if (!member.getId().equals(band.getManager().getId())) {throw new IllegalArgumentException("조회권한이 없습니다");}
+        if (!member.equals(band.getManager())) {throw new IllegalArgumentException("조회권한이 없습니다"+ member.getId() + member.getNickname());}
 
         List<BandChat> bandChatList = bandChatRepository.findByBandAndManagerParticipant(band, member);
 

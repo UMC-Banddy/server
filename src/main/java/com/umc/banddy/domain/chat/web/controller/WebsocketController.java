@@ -24,6 +24,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.util.Optional;
 
 import static com.umc.banddy.domain.chat.converter.ChatConveter.toTimeMark;
@@ -40,12 +41,12 @@ public class WebsocketController {
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
-            @AuthenticationPrincipal MessageAuthenticationHeader principal,
+            Principal principal,
             @Valid @Payload ChatMessageRequest messageRequest,
             @DestinationVariable Long roomId
     ) {
-
-        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
 
         // 채팅 메세지 저장
         ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(),pair.getRight(), messageRequest);
@@ -71,10 +72,11 @@ public class WebsocketController {
     // 채팅방 구독
     @MessageMapping("chat/subscribe/{roomId}")
     public void subscribeChatRoom(
-            @AuthenticationPrincipal MessageAuthenticationHeader principal,
+            Principal principal,
             @DestinationVariable Long roomId
     ) {
-        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
         ChatRoom chatRoom = pair.getLeft();
         Member member = pair.getRight();
         websocketService.topicMessage(

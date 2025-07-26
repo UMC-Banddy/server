@@ -95,8 +95,8 @@ public class ChatRoomService {
         Member friend = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구입니다."));
         ChatRoom chatRoom = ChatRoom.builder()
-                .name(null)
-                .imageUrl(null)
+                .name("1대1채팅")
+                .imageUrl("")
                 .roomType(RoomType.PRIVATE)
                 .build();
 
