@@ -12,7 +12,7 @@ public class ChatRoomParticipantCache {
     // Key: roomId, Value: 참여자 이메일 Set (구독 여부와 무관)
     private final Map<Long, Set<String>> roomParticipantsMap = new ConcurrentHashMap<>();
 
-    // 참여자 등록
+    // 참여자 등록 (입장, 참여 관계 생성 시)
     public void addParticipant(Long roomId, String email) {
         roomParticipantsMap
                 .computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
