@@ -85,7 +85,7 @@ public class ChatContoller {
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit, currentMemberId));
+        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit));
     }
 
     @Operation(summary = "채팅방 조회")

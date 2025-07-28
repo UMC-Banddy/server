@@ -30,6 +30,7 @@ public class ChatMessageService {
     private final WebsocketService websocketService;
     private final ChatService chatService;
     private final ChatCustomRepository chatCustomRepository;
+    private final ChatRoomParticipantCache participantCachecache;
 
     // 채팅 메세지 저장
     @Transactional
@@ -64,6 +65,8 @@ public class ChatMessageService {
         chatMessageRepository.save(chatMessage);
         participantRepository.save(chatRoomParticipant);
 
+        participantCachecache.removeParticipant(chatRoom.getId(), member.getEmail());
+
         websocketService.topicMessage(
                 chatRoom.getId(),
                 ChatMessageResponse.builder()
@@ -73,6 +76,8 @@ public class ChatMessageService {
                         .senderName(null)
                         .build()
         );
+
+
 
         return ChatSystemResponse.builder()
                 .roomId(chatMessage.getId())
@@ -116,6 +121,8 @@ public class ChatMessageService {
         participantRepository.save(participant);
         chatMessageRepository.save(chatMessage);;
 
+        participantCachecache.addParticipant(chatRoom.getId(), member.getEmail());
+
         return ChatSystemResponse.builder()
                 .roomId(chatRoom.getId())
                 .message(chatMessage.getContent())
@@ -123,7 +130,7 @@ public class ChatMessageService {
                 .build();
     }
 
-    public CursorChatMessageResponse getChatMessages(Long roomId, Long cursor, Integer limit, Long currentMemberId) {
+    public CursorChatMessageResponse getChatMessages(Long roomId, Long cursor, Integer limit) {
 
         List<CursorChatMessage> ccm
                 = chatCustomRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
