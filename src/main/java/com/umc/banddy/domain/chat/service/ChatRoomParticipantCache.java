@@ -1,52 +1,52 @@
 package com.umc.banddy.domain.chat.service;
 
+import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class ChatRoomParticipantCache {
 
-    // Key: roomId, Value: 참여자 이메일 Set (구독 여부와 무관)
-    private final Map<Long, Set<String>> roomParticipantsMap = new ConcurrentHashMap<>();
+    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
 
-    // 참여자 등록 (입장, 참여 관계 생성 시)
-    public void addParticipant(Long roomId, String email) {
-        roomParticipantsMap
-                .computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet())
-                .add(email);
+    @Cacheable(value = "roomParticipants", key = "#roomId")
+    public Set<String> getParticipants(Long roomId) {
+        List<String> emails = chatRoomParticipantRepository.findActiveEmailsByRoomId(roomId);
+        return new HashSet<>(emails);
     }
 
-    // 캐시 참여자 제거
-    public void removeParticipant(Long roomId, String email) {
-        Set<String> participants = roomParticipantsMap.get(roomId);
-        if (participants != null) {
-            participants.remove(email);
-            if (participants.isEmpty()) {
-                roomParticipantsMap.remove(roomId);
-            }
-        }
-    }
+//    @CacheEvict(value = "roomParticipants", key = "#roomId")
+//    public void invalidateRoom(Long roomId) {
+//        // 참여자 변경 시 캐시 무효화
+//    }
 
-    // 캐시 참여자 조회
-    public boolean isParticipant(Long roomId, String email) {
-        Set<String> participants = roomParticipantsMap.get(roomId);
-        return participants != null && participants.contains(email);
-    }
-
-    // 전체 방에서 유저 제거
-    public void removeUserFromAllRooms(String email) {
-        for (Map.Entry<Long, Set<String>> entry : roomParticipantsMap.entrySet()) {
-            entry.getValue().remove(email);
-        }
-        // 정리
-        roomParticipantsMap.entrySet().removeIf(e -> e.getValue().isEmpty());
-    }
-
-    // 서버 리셋 등 전체 초기화
-    public void clear() {
-        roomParticipantsMap.clear();
-    }
+    //    private final Map<Long, Set<String>> roomParticipantsMap = new ConcurrentHashMap<>();
+//    // 참여자 조회: 캐시 miss 시 DB 조회 → 캐시 등록
+//    public Set<String> getParticipants(Long roomId) {
+//        return roomParticipantsCache.get(roomId, id -> {
+//            List<String> emails = chatRoomParticipantRepository.findEmailsByRoomId(id);
+//            return new HashSet<>(emails);
+//        });
+//    }
+//
+//    // 참여 여부 확인
+//    public boolean isParticipant(Long roomId, String email) {
+//        return getParticipants(roomId).contains(email);
+//    }
+//
+//    // 방 참여자 변경 시 캐시 무효화
+//    public void invalidateRoom(Long roomId) {
+//        roomParticipantsCache.invalidate(roomId);
+//    }
+//
+//    // 전체 캐시 초기화 (optional)
+//    public void clearAll() {
+//        roomParticipantsCache.invalidateAll();
+//    }
 }

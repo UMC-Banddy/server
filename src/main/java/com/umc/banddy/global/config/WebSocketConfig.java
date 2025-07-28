@@ -56,7 +56,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes("/app");
         config.enableSimpleBroker("/topic", "/queue","/user/queue")
-                .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]              .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]
+                .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]
                 .setTaskScheduler(this.messageBrokerTaskScheduler);; // 메시지 브로커 설정
         // topic 구독자에게 브로드캐스트, queue는 특정 사용자에게 메시지 전송, /user/queue는 개인 메시지 전송을 위한 설정
     }
@@ -73,7 +73,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
            public Message<?> preSend(Message<?> message, MessageChannel channel) {
                StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                if(StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
-                   System.out.println(">>> 클라이언트 CONNECT 감지: headers=" + headerAccessor.toNativeHeaderMap());
                    String token = headerAccessor.getFirstNativeHeader("Authorization");
 
                    if (token != null && token.startsWith("Bearer ")) {
@@ -81,7 +80,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                    }
 
                    if (token == null || token.isEmpty() || !jwtTokenUtil.validateToken(token)) {
-                       System.out.println("Authorization header 없음 또는 JWT 검증 실패");
                        throw new IllegalArgumentException("Authorization header 없음 또는 JWT 검증 실패");
                    } else {
                        Principal principal = new MessageAuthenticationHeader(
@@ -89,7 +87,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                jwtTokenUtil.getEmailFromToken(token)
                        );
                        headerAccessor.setUser(principal);
-                       System.out.println("Principal 설정됨: " + principal.getName());
                    }
                }
                return message;

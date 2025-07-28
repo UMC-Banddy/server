@@ -18,5 +18,4 @@ public class ChatMessageResponse {
     //private String type; // 메시지 타입 (예: TEXT, IMAGE 등)
     private Long roomId; // 메시지가 속한 채팅방 ID
     private LocalDateTime timestamp; // 메시지 전송 시간
-
 }

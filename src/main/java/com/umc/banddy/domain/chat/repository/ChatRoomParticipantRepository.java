@@ -51,12 +51,19 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
             Status status
     );
 
+    @Query("""
+    SELECT cp.member.email
+    FROM ChatRoomParticipant cp
+    WHERE cp.chatRoom.id = :roomId
+      AND cp.status = 'ACTIVE'
+    """)
+    List<String> findActiveEmailsByRoomId(@Param("roomId") Long roomId);
+
+    List<String> findEmailsByRoomId(Long id);
+
     List<ChatRoomParticipant> findByMember(Member member);
 
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
     List<ChatRoomParticipant> findByChatRoomIdIn(List<Long> roomIds);
-
-
-
 }

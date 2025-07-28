@@ -18,13 +18,21 @@ public class WebsocketService {
                 message
         );
     }
-    public <M> void queueMessage(Long receiverId, Long roomId, M message ) {
+    public <M> void queuePrivateMessage(String receiverEmail, Long roomId, M message ) {
         messagingTemplate.convertAndSendToUser(
-                memberRepository.findEmailById(receiverId),
+                receiverEmail,
                 "/queue/room/" + roomId,
                 message
         );
     }
+    public <M> void queueUnreadMessage(String receiverEmail, M message ) {
+        messagingTemplate.convertAndSendToUser(
+                receiverEmail,
+                "/queue/Unread/" + receiverEmail,
+                message
+        );
+    }
+
 //    public void timeMarkBroadcast(Long roomId, Long memberId) {
 //        TimeMarkResponse timeMarkResponse = TimeMarkResponse.builder()
 //                .memberId(memberId)

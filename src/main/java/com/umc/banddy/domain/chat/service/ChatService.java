@@ -2,7 +2,6 @@ package com.umc.banddy.domain.chat.service;
 
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
-import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.member.domain.Member;
@@ -10,10 +9,18 @@ import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.messaging.simp.user.SimpSession;
+import org.springframework.messaging.simp.user.SimpSubscription;
+import org.springframework.messaging.simp.user.SimpUser;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,8 +29,8 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomParticipantRepository participantRepository;
-    private final WebsocketService websocketService;
-    private final ChatMessageRepository chatMessageRepository;
+    private final SimpUserRegistry simpUserRegistry;
+
 
     public Pair<ChatRoom, Member> verifedChatRoomAndMember(Long roomId, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -63,5 +70,38 @@ public class ChatService {
         participant.setLastReadAt(LocalDateTime.now());
         return participant;
     }
+
+    public Set<String> getSubscribedUserEmails(Long roomId) {
+        String destination = "/topic/room/" + roomId;
+        Set<String> userEmails = new HashSet<>();
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    if (destination.equals(subscription.getDestination())) {
+                        userEmails.add(user.getName());
+                    }
+                }
+            }
+        }
+        return userEmails;
+    }
+
+    public boolean isUserSubscribedToRoom( Long roomId, String userEmail) {
+        String targetDestination = "/topic/room/" + roomId;
+
+        SimpUser user = simpUserRegistry.getUser(userEmail);
+        if (user == null) return false;
+
+        for (SimpSession session : user.getSessions()) {
+            for (SimpSubscription sub : session.getSubscriptions()) {
+                if (targetDestination.equals(sub.getDestination())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
 }

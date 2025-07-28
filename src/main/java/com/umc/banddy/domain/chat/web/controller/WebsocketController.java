@@ -63,8 +63,11 @@ public class WebsocketController {
             // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
                     .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
-            websocketService.queueMessage(receiverId, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
+            websocketService.queuePrivateMessage(receiverId, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
         }
+
+
+
 
         // 알림 전송 로직 부분
     }

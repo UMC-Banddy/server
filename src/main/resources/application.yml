@@ -34,6 +34,11 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+  cache:
+    cache-names:
+      - roomParticipants
+    caffeine:
+      spec: maximumSize=10000, expireAfterAccess=10m
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
