@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MemberSessionRepository extends JpaRepository<MemberSession, Long> {
     List<MemberSession> findByMemberId(Long memberId);
+
+    void deleteByMemberId(Long memberId);
 }

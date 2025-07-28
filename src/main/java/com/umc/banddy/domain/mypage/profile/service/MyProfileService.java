@@ -1,17 +1,24 @@
 package com.umc.banddy.domain.mypage.profile.service;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import com.umc.banddy.domain.member.enums.Gender;
+import com.umc.banddy.domain.member.enums.Level;
+import com.umc.banddy.domain.member.enums.SessionType;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
+import com.umc.banddy.domain.member.repository.SessionRepository;
 import com.umc.banddy.domain.music.track.repository.MemberTrackRepository;
 import com.umc.banddy.domain.other.profile.domain.mapping.MemberTag;
 import com.umc.banddy.domain.other.profile.repository.MemberTagRepository;
+import com.umc.banddy.domain.member.repository.MemberSessionRepository;
 import com.umc.banddy.domain.mypage.profile.converter.MyProfileConverter;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileResponse;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileUpdateRequest;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +31,8 @@ public class MyProfileService {
     private final MemberRepository memberRepository;
     private final MemberTrackRepository memberTrackRepository;
     private final MemberTagRepository memberTagRepository;
+    private final MemberSessionRepository memberSessionRepository;
+    private final SessionRepository sessionRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
     // 내 프로필 조회
@@ -43,28 +52,50 @@ public class MyProfileService {
         return MyProfileConverter.toMyProfileResponse(member, tags, savedTracks);
     }
 
-    // 내 프로필 수정
+    @Transactional
     public void updateMyProfile(HttpServletRequest request, MyProfileUpdateRequest dto) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
+        // 기존 필드 유지하면서 null 아닌 것만 업데이트
         Member updated = Member.builder()
                 .id(member.getId())
                 .email(member.getEmail())
                 .password(member.getPassword())
-                .nickname(dto.getNickname())
-                .age(dto.getAge())
-                .gender(Gender.valueOf(dto.getGender()))
-                .region(dto.getRegion())
-                .district(dto.getDistrict())
-                .bio(dto.getBio())
-                .profileImageUrl(member.getProfileImageUrl())
-                .mediaUrl(member.getMediaUrl())
                 .refreshToken(member.getRefreshToken())
+                .nickname(dto.getNickname() != null ? dto.getNickname() : member.getNickname())
+                .age(dto.getAge() != null ? dto.getAge() : member.getAge())
+                .gender(dto.getGender() != null ? Gender.valueOf(dto.getGender()) : member.getGender())
+                .region(dto.getRegion() != null ? dto.getRegion() : member.getRegion())
+                .district(dto.getDistrict() != null ? dto.getDistrict() : member.getDistrict())
+                .bio(dto.getBio() != null ? dto.getBio() : member.getBio())
+                .profileImageUrl(dto.getProfileImage() != null ? dto.getProfileImage() : member.getProfileImageUrl())
+                .mediaUrl(dto.getMediaUrl() != null ? dto.getMediaUrl() : member.getMediaUrl())
+                .status(member.getStatus())
+                .role(member.getRole())
+                .inactiveDate(member.getInactiveDate())
                 .build();
 
         memberRepository.save(updated);
+
+        // 세션 업데이트
+        if (dto.getAvailableSessions() != null) {
+            memberSessionRepository.deleteByMemberId(memberId);
+
+            for (MyProfileUpdateRequest.SessionInfo sessionInfo : dto.getAvailableSessions()) {
+                try {
+                    MemberSession newSession = MemberSession.builder()
+                            .member(updated)
+                            .sessionType(SessionType.valueOf(sessionInfo.getSessionType().trim()))
+                            .level(Level.valueOf(sessionInfo.getLevel().trim()))
+                            .build();
+                    memberSessionRepository.save(newSession);
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("올바르지 않은 세션 타입 또는 레벨입니다: " + sessionInfo.getSessionType());
+                }
+            }
+        }
     }
 }

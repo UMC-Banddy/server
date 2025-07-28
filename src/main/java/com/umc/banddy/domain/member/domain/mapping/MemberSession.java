@@ -2,6 +2,8 @@ package com.umc.banddy.domain.member.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.member.enums.Level;
+import com.umc.banddy.domain.member.enums.SessionType;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,6 +27,11 @@ public class MemberSession extends BaseEntity {
     @JoinColumn(name = "session_id")
     private Session session;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true)
+    private SessionType sessionType;
+
     @Column(length = 20)
-    private String level;
+    @Enumerated(EnumType.STRING)
+    private Level level;
 }
