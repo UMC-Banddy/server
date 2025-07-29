@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
-@Tag(name = "알림")
+@Tag(name = "알림", description = "사용자 알림 조회 API")
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -26,17 +26,15 @@ public class NotificationController {
     public ResponseEntity<List<NotificationResponse>> getNotifications(HttpServletRequest request) {
         String token = JwtTokenUtil.extractToken(request);
         if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(400).body(null);
         }
 
-        Long memberId;
         try {
-            memberId = jwtTokenUtil.getMemberIdFromToken(token);
+            Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+            List<NotificationResponse> notifications = notificationService.getAllNotifications(memberId);
+            return ResponseEntity.ok(notifications);
         } catch (Exception e) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(null);
         }
-
-        return ResponseEntity.ok(notificationService.getAllNotifications(memberId));
     }
 }
-

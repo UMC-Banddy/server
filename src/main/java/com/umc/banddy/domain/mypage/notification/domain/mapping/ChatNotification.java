@@ -1,8 +1,10 @@
 package com.umc.banddy.domain.mypage.notification.domain.mapping;
 
+import com.umc.banddy.domain.chat.domain.ChatMessage;
+import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.member.domain.Member;
-//import com.umc.banddy.domain.chat.domain.ChatMessage;
-//import com.umc.banddy.domain.chat.domain.ChatRoom;
+import com.umc.banddy.domain.mypage.notification.domain.Notification;
+import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,19 +17,27 @@ import lombok.*;
 public class ChatNotification extends BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long notificationId;
 
-//    @Enumerated(EnumType.STRING)
-//    private ReadStatus isRead;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "chat_room_id")
-//    private ChatRoom chatRoom;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "chat_message_id")
-//    private ChatMessage chatMessage;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "notification_id")
+    private Notification notification;
+
+    @Enumerated(EnumType.STRING)
+    private ReadStatus isRead;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_room_id")
+    private ChatRoom chatRoom;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_message_id")
+    private ChatMessage chatMessage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private Member sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")

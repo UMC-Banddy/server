@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BandNotificationRepository extends JpaRepository<BandNotification, Long> {
-    List<BandNotification> findByReceiverId(Long memberId);
+    List<BandNotification> findByNotificationReceiverId(Long memberId);
 }
