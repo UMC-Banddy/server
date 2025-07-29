@@ -12,7 +12,7 @@ import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.umc.banddy.domain.mypage.notification.domain.FriendNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
 import com.umc.banddy.domain.mypage.notification.repository.FriendNotificationRepository;
 
 import java.util.List;

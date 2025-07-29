@@ -1,12 +1,9 @@
 package com.umc.banddy.domain.band.notification.domain.mapping;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
-import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
+import com.umc.banddy.domain.mypage.notification.domain.Notification;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,21 +13,17 @@ import java.time.LocalDateTime;
 public class BandNotification {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long notificationId;
 
-    private String title;
-
-    @Enumerated(EnumType.STRING)
-    private ReadStatus isRead;
-
-    private LocalDateTime createdAt;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "notification_id")
+    private Notification notification;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "band_id")
+    @JoinColumn(name = "band_id", nullable = false)
     private Band band;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
-    private Member receiver;
+    @Column(nullable = false)
+    private String title;
 }

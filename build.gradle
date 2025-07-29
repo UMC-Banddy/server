@@ -34,6 +34,7 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-messaging' // 채팅 웹소켓 보안 지원
 	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8' //
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	//implementation 'software.amazon.awssdk:s3:2.20.156'
 	implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.2.0'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'

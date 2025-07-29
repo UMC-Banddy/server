@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.member.repository;
 
 import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.member.enums.SessionType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;

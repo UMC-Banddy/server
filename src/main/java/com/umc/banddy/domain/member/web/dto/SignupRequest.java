@@ -28,9 +28,6 @@ public class SignupRequest {
     @NotBlank
     private String region;
 
-    @NotBlank
-    private String district;
-
     @NotNull
     private Integer age;
 }

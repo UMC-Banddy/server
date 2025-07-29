@@ -32,8 +32,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/member", "/member/login", "/member/check-nickname",
+                                "/member", "/member/login", "/member/check-nickname", "/auth/send", "/auth/verify",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-resources", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -64,13 +65,14 @@ public class SecurityConfig {
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setAllowCredentials(false);
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*", "Authorization"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/ws/**", wsConfig);
+        source.registerCorsConfiguration("/ws-raw/**", wsConfig);
         source.registerCorsConfiguration("/**", config);
 
         return source;
