@@ -33,7 +33,6 @@ public class MemberCommandService {
                 .age(request.getAge())
                 .gender(request.getGender())
                 .region(request.getRegion())
-                .district(request.getDistrict())
                 .role(Role.USER)
                 .status(Status.ACTIVE)
                 .build();
