@@ -46,10 +46,11 @@ public class BandProfileConverter {
                 .collect(Collectors.toList());
 
         CompositionDto compositionDto = CompositionDto.builder()
-                .averageAge(String.valueOf(band.getAverageAge()))
-                //.job(band.getJob())
-                .maleCount(band.getMaleCount())
-                .femaleCount(band.getFemaleCount())
+                .averageAge(
+                        band.getAverageAge() != null ? String.valueOf(band.getAverageAge()) : "정보 없음"
+                )
+                .maleCount(band.getMaleCount() != null ? band.getMaleCount() : 0)
+                .femaleCount(band.getFemaleCount() != null ? band.getFemaleCount() : 0)
                 .build();
 
         return BandProfileResponse.builder()

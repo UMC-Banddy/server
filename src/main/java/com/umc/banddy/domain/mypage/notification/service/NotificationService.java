@@ -26,6 +26,12 @@ public class NotificationService {
         List<FriendNotification> friends = friendNotificationRepository.findByNotificationReceiverId(memberId);
         List<BandNotification> bands = bandNotificationRepository.findByNotificationReceiverId(memberId);
 
+        for (FriendNotification f : friends) {
+            System.out.println("💡 알림 ID: " + f.getNotification().getId());
+            System.out.println("💡 요청 ID: " + (f.getFriendRequest() != null ? f.getFriendRequest().getId() : "null"));
+            System.out.println("💡 요청 상태: " + (f.getFriendRequest() != null ? f.getFriendRequest().getStatus() : "null"));
+        }
+
         return NotificationConverter.mergeAndSort(chats, friends, bands);
     }
 }
