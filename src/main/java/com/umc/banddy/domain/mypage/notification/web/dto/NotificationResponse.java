@@ -12,6 +12,6 @@ public record NotificationResponse(
         NotificationType type,
         String imageUrl,
         LocalDateTime createdAt,
-        Long friendRequestId  //친구 요청을 알림을 위해 추가
+        Long senderId,
+        Long friendRequestId
 ) {}
-

@@ -12,41 +12,43 @@ import java.util.List;
 public class NotificationConverter {
 
     public static NotificationResponse fromChat(ChatNotification n) {
-        String profileImage = n.getNotification().getSender().getProfileImageUrl(); // sender 기준
-
+        var sender = n.getNotification().getSender();
         return NotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title("새 메시지가 도착했습니다.")
                 .type(NotificationType.CHAT)
-                .imageUrl(profileImage)
+                .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
+                .senderId(sender.getId())
                 .build();
     }
 
     public static NotificationResponse fromFriend(FriendNotification n) {
-        String profileImage = n.getSender().getProfileImageUrl();
-
+        var sender = n.getSender();
         return NotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
-                .title(n.getSender().getNickname() + "님이 친구 요청을 보냈습니다.")
+                .title(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .type(NotificationType.FRIEND)
-                .imageUrl(profileImage)
+                .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
+                .senderId(sender.getId())
                 .friendRequestId(n.getFriendRequest().getId())
                 .build();
     }
 
     public static NotificationResponse fromBand(BandNotification n) {
+        var sender = n.getNotification().getSender();
         return NotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title(n.getTitle())
                 .type(NotificationType.BAND)
                 .imageUrl(n.getBand().getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
+                .senderId(sender.getId())
                 .build();
     }
 
-    // 통합
+    //통합
     public static List<NotificationResponse> mergeAndSort(
             List<ChatNotification> chat,
             List<FriendNotification> friend,
