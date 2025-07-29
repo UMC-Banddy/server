@@ -1,6 +1,8 @@
 package com.umc.banddy.domain.chat.service;
 
+import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
+import com.umc.banddy.domain.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

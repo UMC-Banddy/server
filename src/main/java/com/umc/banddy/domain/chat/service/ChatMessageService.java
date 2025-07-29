@@ -61,7 +61,7 @@ public class ChatMessageService {
     public ChatSystemResponse exitChatRoom(ChatRoom chatRoom, Member member){
         ChatRoomParticipant chatRoomParticipant
                 = participantRepository
-                .findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member, Status.ACTIVE)
+                .findByChatRoomAndMemberAndStatus(chatRoom, member, Status.ACTIVE)
                 .orElseThrow(() -> new IllegalStateException("참여하지 않은 채팅방입니다."));
 
         chatRoomParticipant.setStatus(Status.INACTIVE);
