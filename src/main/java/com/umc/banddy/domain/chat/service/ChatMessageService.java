@@ -88,8 +88,9 @@ public class ChatMessageService {
         );
 
         return ChatSystemResponse.builder()
-                .roomId(chatMessage.getId())
+                .roomId(chatRoom.getId())
                 .message(chatMessage.getContent())
+                .timestamp(chatMessage.getCreatedAt())
                 .build();
     }
 
@@ -157,41 +158,62 @@ public class ChatMessageService {
 
     }
     public void sendChatMessage(Long roomId, Long userId, ChatMessageRequest messageRequest) {
+        //System.out.println("메세지 전송로직");
         String destination = "/topic/room/" + roomId;
         Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, userId);
 
-        // 채팅 메세지 저장
-        ChatMessage chatMessage = saveMessage(pair.getLeft(),pair.getRight(), messageRequest);
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
 
-        // 응답 생성
-        ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+        // 채팅 메세지 저장
+        ChatMessage chatMessage = saveMessage(chatRoom,member, messageRequest);
 
         Set<String> allParticipants =  participantCache.getParticipants(roomId); // 이메일 기준
         Set<String> subscribedUsers = chatService.getSubscribedUserEmails(roomId);
 
+        // 성능상 개선 여지 있음
         Set<String> unsubscribedUsers = new HashSet<>(allParticipants);
+        System.out.println("roomid 참여자"+allParticipants);
+        System.out.println("세션에 구독정보"+subscribedUsers);
         unsubscribedUsers.removeAll(subscribedUsers);
+        System.out.println("차집합 정보"+unsubscribedUsers);
 
+        RoomType roomType = chatRoom.getRoomType();
 
         // 전송 로직 분기
         // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
-        if (messageRequest.getRoomType().equals(RoomType.GROUP)) {
+        if (roomType.equals(RoomType.GROUP)) {
             // GROUP: 토픽 브로드캐스트
+            ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
             websocketService.topicMessage(roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-        } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE) || messageRequest.getRoomType().equals(RoomType.BAND)) {
+            // 비구독자 처리
+            UnreadResponse unreadResponse = UnreadResponse.builder()
+                    .senderId(member.getId())
+                    .roomId(chatRoom.getId())
+                    .content(chatMessage.getContent())
+                    .build();
+            for (String email : allParticipants) {
+                if (unsubscribedUsers.contains(email)) {
+                    System.out.println("비구독자"+email);
+                    websocketService.queueUnreadMessage(email, toWsMessage(unreadResponse, MessageType.MARK_AS_UNREAD));
+                }
+            }
+        } else if (roomType.equals(RoomType.PRIVATE) || roomType.equals(RoomType.BAND)) {
             // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
                     .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
+            // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
-            if (!unsubscribedUsers.contains(receiverEmail)) {
+            if (unsubscribedUsers.contains(receiverEmail)) {
+                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
                 websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-            }
-        }
-
-        // 4. 비구독자 처리
-        for (String email : allParticipants) {
-            if (!unsubscribedUsers.contains(email)) {
-                websocketService.queueUnreadMessage(email, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
+            }else{
+                UnreadResponse unreadResponse = UnreadResponse.builder()
+                        .senderId(member.getId())
+                        .roomId(chatRoom.getId())
+                        .content(chatMessage.getContent())
+                        .build();
+                websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.MARK_AS_UNREAD));
             }
         }
     }

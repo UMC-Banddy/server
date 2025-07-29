@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 public class WebsocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final MemberRepository memberRepository;
 
     public <M> void topicMessage(Long roomId, M message){
         messagingTemplate.convertAndSend(
@@ -26,9 +25,10 @@ public class WebsocketService {
         );
     }
     public <M> void queueUnreadMessage(String receiverEmail, M message ) {
+        System.out.println("[DEBUG] convertAndSendToUser 호출 대상 email = " +receiverEmail);
         messagingTemplate.convertAndSendToUser(
                 receiverEmail,
-                "/queue/Unread/" + receiverEmail,
+                "/queue/unread",
                 message
         );
     }

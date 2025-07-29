@@ -7,7 +7,6 @@ import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
 import com.umc.banddy.domain.chat.web.dto.Message.ChatSystemResponse;
 import com.umc.banddy.domain.chat.web.dto.Message.CursorChatMessageResponse;
-import com.umc.banddy.domain.friend.service.FriendService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,7 +87,7 @@ public class ChatContoller {
         return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit));
     }
 
-    @Operation(summary = "채팅방 조회")
+    @Operation(summary = "채팅방 목록 조회")
     @GetMapping("/rooms")
     public ResponseEntity <ChatRoomListResponse> getChatRooms(
             HttpServletRequest request
@@ -98,7 +97,7 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getMyChatRooms(currentMemberId));
     }
 
-    @Operation(summary = "친구 채팅방 조회")
+    @Operation(summary = "친구 채팅방 목록 조회")
     @GetMapping("/friends")
     public ResponseEntity <FriendsChatRoomResponse> getFriendsChatRooms(
             HttpServletRequest request
@@ -107,5 +106,17 @@ public class ChatContoller {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
     }
+
+//    @Operation(summary = "채팅방 정보 불러오기")
+//    @GetMapping("/rooms/{roomId}")
+//    public ResponseEntity <ParticipantInfos> getChatRoomInfo(
+//            @PathVariable Long roomId,
+//            HttpServletRequest request
+//    ){
+//        String token = JwtTokenUtil.extractToken(request);
+//        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+//        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
+//        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
+//    }
 
 }

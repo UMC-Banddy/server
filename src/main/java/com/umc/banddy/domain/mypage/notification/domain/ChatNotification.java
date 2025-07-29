@@ -36,3 +36,4 @@ public class ChatNotification extends BaseEntity {
     @JoinColumn(name = "receiver_id")
     private Member receiver;
 }
+    
