@@ -1,14 +1,11 @@
-package com.umc.banddy.domain.mypage.notification.domain;
+package com.umc.banddy.domain.mypage.notification.domain.mapping;
 
 import com.umc.banddy.domain.member.domain.Member;
 //import com.umc.banddy.domain.chat.domain.ChatMessage;
 //import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.global.entity.BaseEntity;
-import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter

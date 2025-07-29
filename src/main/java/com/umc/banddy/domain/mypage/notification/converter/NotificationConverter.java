@@ -1,7 +1,7 @@
 package com.umc.banddy.domain.mypage.notification.converter;
 
-import com.umc.banddy.domain.mypage.notification.domain.ChatNotification;
-import com.umc.banddy.domain.mypage.notification.domain.FriendNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
 import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
