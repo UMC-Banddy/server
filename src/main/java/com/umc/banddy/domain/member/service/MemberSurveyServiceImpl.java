@@ -2,6 +2,7 @@ package com.umc.banddy.domain.member.service;
 
 import com.umc.banddy.domain.member.domain.*;
 import com.umc.banddy.domain.member.domain.mapping.*;
+import com.umc.banddy.domain.member.enums.Level;
 import com.umc.banddy.domain.member.repository.*;
 import com.umc.banddy.domain.member.web.dto.SimpleKeywordDto;
 import com.umc.banddy.domain.member.web.dto.SimpleSessionDto;
@@ -116,7 +117,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                         memberSessionRepository.save(MemberSession.builder()
                                 .member(member)
                                 .session(session)
-                                .level(sessionReq.getLevel())
+                                .level(Level.valueOf(sessionReq.getLevel()))
                                 .build()));
             }
         }

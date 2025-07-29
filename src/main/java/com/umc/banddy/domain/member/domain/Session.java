@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.member.domain;
 
+import com.umc.banddy.domain.member.enums.SessionType;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

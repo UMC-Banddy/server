@@ -1,11 +1,14 @@
 package com.umc.banddy.domain.band.profile.domain;
 
+import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
+import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -77,4 +80,12 @@ public class Band extends BaseEntity {
     @Column(name = "female_count")
     private Integer femaleCount;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "member_id", nullable = true)
+    private Member manager;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "band", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BandSession> bandSessions = new ArrayList<>();
 }

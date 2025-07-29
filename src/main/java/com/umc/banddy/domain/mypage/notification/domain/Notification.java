@@ -1,8 +1,8 @@
 package com.umc.banddy.domain.mypage.notification.domain;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
-import com.umc.banddy.domain.friend.domain.FriendRequest;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,27 +12,26 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class FriendNotification extends BaseEntity {
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private NotificationType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ReadStatus isRead;
 
-    private String type; // e.g., REQUEST, ACCEPT 등
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
+    @JoinColumn(name = "sender_id", nullable = false)
     private Member sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
+    @JoinColumn(name = "receiver_id", nullable = false)
     private Member receiver;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "friend_request_id")
-    private FriendRequest friendRequest;
 }
 

@@ -3,38 +3,60 @@ package com.umc.banddy.domain.chat.repository;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
-    @Modifying
-    @Transactional
     @Query("""
-        UPDATE ChatRoomParticipant p
-           SET p.lastReadAt = :lastReadAt
-         WHERE p.chatRoom.id = :roomId
-           AND p.member.id   = :memberId
-        """)
-    int updateLastReadAt(
-            @Param("roomId")     Long roomId,
-            @Param("memberId")   Long memberId,
-            @Param("lastReadAt") LocalDateTime lastReadAt
+      select distinct p
+      from ChatRoomParticipant p
+      join fetch p.chatRoom r
+      join fetch r.participants rp
+      left  join fetch r.bandChat   bc
+      where p.member   = :member
+        and r.roomType in (
+          com.umc.banddy.domain.chat.domain.enums.RoomType.GROUP,
+          com.umc.banddy.domain.chat.domain.enums.RoomType.BAND
+        )
+    """)
+    List<ChatRoomParticipant> findAllGroupAndBandWithRoomParticipantsAndBandChatByMember(
+            @Param("member") Member member
     );
 
-//    @Query("select p from ChatRoomParticipant p where p.chatRoom.id = :roomId and p.member.email = :email")
-//    Optional<ChatRoomParticipant> findByChatRoomIdAndEmail(
-//            @Param("roomId") Long roomId,
-//            @Param("email") String email
-//    );
+    @Query("""
+        SELECT cp2
+        FROM ChatRoomParticipant cp1
+             JOIN cp1.chatRoom cr
+             JOIN cr.participants cp2
+        WHERE cp1.member.id    = :memberId
+          AND cp2.member.id   IN :friendIds
+          AND cr.roomType       = com.umc.banddy.domain.chat.domain.enums.RoomType.PRIVATE
+    """)
+    List<ChatRoomParticipant> findFriendParticipants(
+            @Param("memberId")  Long memberId,
+            @Param("friendIds") List<Long> friendIds
+    );
 
-    boolean existsByChatRoomAndMember(ChatRoom chatRoom, Member member);
+    boolean existsByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
+
+    Optional<ChatRoomParticipant> findTopByChatRoomAndMemberAndStatusOrderByIdDesc(
+            ChatRoom chatRoom,
+            Member member,
+            Status status
+    );
+
+    List<ChatRoomParticipant> findByMember(Member member);
 
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
+
+    List<ChatRoomParticipant> findByChatRoomIdIn(List<Long> roomIds);
+
+
+
 }

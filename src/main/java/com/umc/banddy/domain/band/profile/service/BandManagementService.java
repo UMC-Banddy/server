@@ -5,12 +5,21 @@ import com.umc.banddy.domain.band.profile.domain.mapping.*;
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
 import com.umc.banddy.domain.band.profile.enums.Gender;
 import com.umc.banddy.domain.band.profile.repository.*;
-import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentRequest;
-import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentResponse;
-import com.umc.banddy.domain.band.profile.web.dto.Recruitment.RecruitmentUpdateRequest;
+import com.umc.banddy.domain.band.profile.web.dto.Recruitment.*;
+import com.umc.banddy.domain.chat.domain.ChatMessage;
+import com.umc.banddy.domain.chat.domain.ChatRoom;
+import com.umc.banddy.domain.chat.domain.enums.PassFail;
+import com.umc.banddy.domain.chat.domain.enums.RoomType;
+import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
+import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
+import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
+import com.umc.banddy.domain.chat.service.ChatRoomService;
+import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.member.domain.Genre;
+import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
 import com.umc.banddy.domain.member.repository.GenreRepository;
+import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.repository.SessionRepository;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
@@ -20,10 +29,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,6 +39,7 @@ import java.util.stream.Stream;
 @Transactional
 public class BandManagementService {
 
+    private final MemberRepository memberRepository;
     private final BandRepository bandRepository;
 
     private final ArtistRepository artistRepository;
@@ -47,8 +54,16 @@ public class BandManagementService {
     private final BandJobRepository bandJobRepository;
     private final BandSnsRepository bandSnsRepository;
 
+    private final ChatRoomService chatRoomService;
+    private final ChatRoomRepository chatRoomRepository;
+    private final BandChatRepository bandChatRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
-    public RecruitmentResponse createRecruitment(RecruitmentRequest request){
+
+    public RecruitmentResponse createRecruitment(RecruitmentRequest request, Long memberId){
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
@@ -67,6 +82,7 @@ public class BandManagementService {
                 .maleCount(request.getMaleCount())
                 .femaleCount(request.getFemaleCount())
                 .averageAge(request.getAverageAge())
+                .manager(member)
                 .build();
 
         Band savedBand = bandRepository.save(band);
@@ -190,9 +206,15 @@ public class BandManagementService {
 
     }
 
-    public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request) {
+    public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request, Long memberId) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+
         Band band = bandRepository.findById(request.getBandId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
+
+        if(member.equals(band.getManager())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
 
         if(request.getStatus() != null) {
             band.setStatus(request.getStatus());
@@ -363,4 +385,106 @@ public class BandManagementService {
                 .createdAt(band.getCreatedAt())
                 .build();
     }
+
+    public BandApplicationResponse createChatRoomForApplication(Long bandId, Long memberId, String session){
+
+        Session sessionEntity = sessionRepository.findByName(session)
+                .orElseThrow(() -> new IllegalArgumentException("세션 정보가 존재하지 않습니다: " + session));
+
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+
+        BandSession bandSession = bandSessionRepository.findByBandIdAndSessionStatusAndSession(bandId, "RECRUITING",sessionEntity )
+                .orElseThrow(() -> new IllegalArgumentException("모집 중이지 않습니다"));
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(null)
+                .imageUrl(null)
+                .roomType(RoomType.PRIVATE)
+                .build();
+
+        ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+
+        // 참여자 추가
+        chatRoomService.saveParticipant(savedRoom, member);
+        chatRoomService.saveParticipant(savedRoom, band.getManager());
+
+        BandChat bandChat = BandChat.builder()
+                .isPass(PassFail.PENDING)
+                .chatRoom(savedRoom)
+                .band(band)
+                .bandSession(bandSession)
+                .build();
+
+        bandChatRepository.save(bandChat);
+
+        return BandApplicationResponse.builder()
+                .roomId(savedRoom.getId())
+                .name(savedRoom.getName())
+                .imageUrl(savedRoom.getImageUrl())
+                .createdAt(bandChat.getCreatedAt())
+                .build();
+    }
+
+    public ApplicationListResponse getApplicationList(Long bandId, Long memberId){
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다."));
+
+        if (!member.equals(band.getManager())) {throw new IllegalArgumentException("조회권한이 없습니다"+ member.getId() + member.getNickname());}
+
+        List<BandChat> bandChatList = bandChatRepository.findByBandAndManagerParticipant(band, member);
+
+        List<Long> roomIdList = bandChatList.stream()
+                .map(bandChat -> bandChat.getChatRoom().getId())
+                .toList();
+        List<String> sessions = bandSessionRepository.findSessionNamesByBandIdAndStatus(bandId,"RECRUITING");
+
+        List<ChatMessage> lastMessages = chatMessageRepository.findLastMessagePerChatRoom(roomIdList);
+
+        Map<Long, ChatMessage> lastMessageMap = lastMessages.stream()
+                .collect(Collectors.toMap(
+                        msg -> msg.getChatRoom().getId(),
+                        Function.identity()
+                ));
+
+        List<BandChatSummaryDto> bandChatSummaryDtos = new ArrayList<>();
+
+        for (BandChat bandChat : bandChatList) {
+            Long roomId = bandChat.getChatRoom().getId();
+            ChatMessage msg = lastMessageMap.get(bandChat.getChatRoom().getId());
+
+            bandChatSummaryDtos.add(
+                    BandChatSummaryDto.builder()
+                            .roomId(roomId)
+                            .nickname(bandChat.getChatRoom().getName())
+                            .imageUrl(bandChat.getChatRoom().getImageUrl())
+                            .session(bandChat.getBandSession().getSession().getName())
+                            .content(msg.getContent())
+                            .lastMessageAt(msg.getCreatedAt())
+                            .isPass(bandChat.getIsPass())
+                            .build()
+            );
+        }
+
+        return ApplicationListResponse.builder()
+                .bandName(band.getName())
+                .bandImage(band.getProfileImageUrl())
+                .sessions(sessions)
+                .status(band.getStatus())
+                .bandChatList(bandChatSummaryDtos)
+                .build();
+    }
+
+//    public ApplicationListResponse updateApplicant(Long memberId, ApplicantUpdateRequest applicantUpdateRequest, Long bandId){
+//
+//    }
+
 }

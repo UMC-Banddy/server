@@ -7,12 +7,13 @@ import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
-import com.umc.banddy.domain.chat.repository.MessagePagingRepository;
+import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
 import com.umc.banddy.domain.chat.web.dto.Message.*;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,25 +29,30 @@ public class ChatMessageService {
     private final ChatRoomParticipantRepository participantRepository;
     private final WebsocketService websocketService;
     private final ChatService chatService;
-    private final MessagePagingRepository messagePagingRepository;
+    private final ChatCustomRepository chatCustomRepository;
 
     // 채팅 메세지 저장
+    @Transactional
     public ChatMessage saveMessage(ChatRoom chatRoom, Member member, ChatMessageRequest messageRequest){
         ChatMessage chatMessage = ChatMessage.builder()
                 .member(member)
                 .chatRoom(chatRoom)
                 .content(messageRequest.getContent())
                 .build();
+        System.out.println("메세지 저장"+ chatMessage.getId());
+
         return chatMessageRepository.save(chatMessage);
     }
 
     // 채팅 응답 반환
     public ChatMessageResponse chatToResponse(ChatMessage chatMessage) {return toChatMessageResponse(chatMessage);}
 
+    @Transactional
     public ChatSystemResponse exitChatRoom(ChatRoom chatRoom, Member member){
         ChatRoomParticipant chatRoomParticipant
-                = chatService.verifedParticipant(chatRoom, member);
-
+                = participantRepository
+                .findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member, Status.ACTIVE)
+                .orElseThrow(() -> new IllegalStateException("참여하지 않은 채팅방입니다."));
         chatRoomParticipant.setStatus(Status.INACTIVE);
 
         ChatMessage chatMessage = ChatMessage.builder()
@@ -55,7 +61,8 @@ public class ChatMessageService {
                 .content(member.getNickname() + "님이 채팅방을 나갔습니다.")
                 .build();
 
-        chatMessageRepository.save(chatMessage);;
+        chatMessageRepository.save(chatMessage);
+        participantRepository.save(chatRoomParticipant);
 
         websocketService.topicMessage(
                 chatRoom.getId(),
@@ -73,9 +80,10 @@ public class ChatMessageService {
                 .build();
     }
 
+    @Transactional
     public ChatSystemResponse joinChatRoom(ChatRoom chatRoom, Member member){
 
-        if (participantRepository.existsByChatRoomAndMember(chatRoom, member)) {
+        if (participantRepository.findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member, Status.ACTIVE).isPresent()) {
             throw new IllegalStateException("이미 참여 중인 채팅방입니다.");
         }
 
@@ -96,7 +104,8 @@ public class ChatMessageService {
         websocketService.topicMessage(
                 chatRoom.getId(),
                 ChatMessageResponse.builder()
-                        .roomId(chatMessage.getId())
+                        .messageId(chatMessage.getId())
+                        .roomId(chatRoom.getId())
                         .content(chatMessage.getContent())
                         .senderId(member.getId())
                         .senderName("System")
@@ -117,7 +126,7 @@ public class ChatMessageService {
     public CursorChatMessageResponse getChatMessages(Long roomId, Long cursor, Integer limit, Long currentMemberId) {
 
         List<CursorChatMessage> ccm
-                = messagePagingRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
+                = chatCustomRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
 
         return CursorChatMessageResponse.builder()
                 .roomId(roomId)
