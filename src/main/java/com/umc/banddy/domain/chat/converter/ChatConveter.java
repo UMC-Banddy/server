@@ -19,7 +19,7 @@ public class ChatConveter {
                 .senderName(chatMessage.getMember().getNickname())
                 .content(chatMessage.getContent())
                 .roomId(chatMessage.getChatRoom().getId())
-//                .timestamp(chatMessage.getCreatedAt())
+                .timestamp(chatMessage.getCreatedAt())
                 .build();
     }
 

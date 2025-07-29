@@ -4,7 +4,6 @@ import com.umc.banddy.global.security.jwt.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +16,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @EnableWebSecurity
 @Configuration
@@ -61,8 +61,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:4040"      // 테스트 용
         ));
-        wsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
-        wsConfig.setAllowedHeaders(Arrays.asList("*"));
+        wsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();

@@ -37,7 +37,6 @@ public class WebsocketController {
     private final ChatService chatService;
     private final ChatMessageService chatMessageService;
     private final WebsocketService websocketService;
-    private final JwtTokenUtil jwtTokenUtil;
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
@@ -46,31 +45,11 @@ public class WebsocketController {
             @DestinationVariable Long roomId
     ) {
         MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
-        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
-
-        // 채팅 메세지 저장
-        ChatMessage chatMessage = chatMessageService.saveMessage(pair.getLeft(),pair.getRight(), messageRequest);
-
-        // 응답 생성
-        ChatMessageResponse chatMessageResponse = chatMessageService.chatToResponse(chatMessage);
-
-        // 전송 로직 분기
-        // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
-        if (messageRequest.getRoomType().equals(RoomType.GROUP)) {
-            // GROUP: 토픽 브로드캐스트
-            websocketService.topicMessage(roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-        } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE) || messageRequest.getRoomType().equals(RoomType.BAND)) {
-            // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
-            Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
-                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
-            websocketService.queueMessage(receiverId, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-        }
-
-        // 알림 전송 로직 부분
+        chatMessageService.sendChatMessage(roomId, auth.getMemberId(),messageRequest);
     }
 
     // 채팅방 구독
-    @MessageMapping("chat/subscribe/{roomId}")
+    @MessageMapping("/chat/subscribe/{roomId}")
     public void subscribeChatRoom(
             Principal principal,
             @DestinationVariable Long roomId
@@ -86,7 +65,7 @@ public class WebsocketController {
     }
 
     // 채팅방 구독 해제
-    @MessageMapping("chat/unsubscribe/{roomId}")
+    @MessageMapping("/chat/unsubscribe/{roomId}")
     public void unsubscribeChatRoom(
             @AuthenticationPrincipal MessageAuthenticationHeader principal,
             @DestinationVariable Long roomId

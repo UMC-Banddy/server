@@ -295,4 +295,16 @@ public class ChatRoomService {
                 .rooms(friendChatRooms)
                 .build();
     }
+
+//    public ParticipantInfos getChatRoomInfo(ChatRoom chatRoom, Member member){
+//
+//
+//
+//
+//
+//
+//        return ParticipantInfos.builder()
+//                .build();
+//    }
+
 }
