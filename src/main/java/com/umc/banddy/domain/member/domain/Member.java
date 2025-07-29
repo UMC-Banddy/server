@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
     @Column(length = 20)
     private String region;  // 시
 
-    @Column(length = 20)
+    @Column(length = 20, nullable = true)
     private String district; // 구
 
     @Column(length = 500)
