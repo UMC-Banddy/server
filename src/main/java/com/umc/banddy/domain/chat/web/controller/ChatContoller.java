@@ -107,16 +107,16 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
     }
 
-//    @Operation(summary = "채팅방 정보 불러오기")
-//    @GetMapping("/rooms/{roomId}")
-//    public ResponseEntity <ParticipantInfos> getChatRoomInfo(
-//            @PathVariable Long roomId,
-//            HttpServletRequest request
-//    ){
-//        String token = JwtTokenUtil.extractToken(request);
-//        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-//        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
-//        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
-//    }
+    @Operation(summary = "채팅방 참가자 정보 불러오기")
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity <ParticipantInfos> getChatRoomInfo(
+            @PathVariable Long roomId,
+            HttpServletRequest request
+    ){
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
+        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
+    }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
@@ -43,13 +44,7 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
             @Param("friendIds") List<Long> friendIds
     );
 
-    boolean existsByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
-
-    Optional<ChatRoomParticipant> findTopByChatRoomAndMemberAndStatusOrderByIdDesc(
-            ChatRoom chatRoom,
-            Member member,
-            Status status
-    );
+    Optional<ChatRoomParticipant> findByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
 
     @Query("""
     SELECT cp.member.email
@@ -59,9 +54,7 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
     """)
     List<String> findActiveEmailsByRoomId(@Param("roomId") Long roomId);
 
-    List<ChatRoomParticipant> findByMember(Member member);
-
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
-    List<ChatRoomParticipant> findByChatRoomIdIn(List<Long> roomIds);
+    List<ChatRoomParticipant> findAllByChatRoom(ChatRoom chatRoom);
 }

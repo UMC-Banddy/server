@@ -76,7 +76,7 @@ public class WebsocketController {
         Member member = pair.getRight();
 
         // 구독 해제 시점 갱신
-        ChatRoomParticipant participant= chatService.markLastRead(chatRoom,member);
+        ChatRoomParticipant participant = chatService.markLastRead(chatRoom,member);
 
         TimeMark timeMark = TimeMark.builder()
                 .memberId(member.getId())

@@ -18,12 +18,10 @@ import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +34,7 @@ public class ChatRoomService {
     private final MemberRepository memberRepository;
     private final FriendService friendService;
     private final FriendRepository friendRepository;
+    private final ChatRoomParticipantCache chatRoomParticipantCache;
 
     // 그룹 채팅방 생성
     public ChatRoomResponse createGroupChatRoom(Long memberId, ChatRoomRequest request){
@@ -296,15 +295,28 @@ public class ChatRoomService {
                 .build();
     }
 
-//    public ParticipantInfos getChatRoomInfo(ChatRoom chatRoom, Member member){
-//
-//
-//
-//
-//
-//
-//        return ParticipantInfos.builder()
-//                .build();
-//    }
+    @Transactional
+    public ParticipantInfos getChatRoomInfo(ChatRoom chatRoom, Member member){
+
+        List<ChatRoomParticipant> participants
+                = participantRepository.findAllByChatRoom(chatRoom);
+
+        List<ParticipantInfos.Info> infoList = new ArrayList<>();
+        for(ChatRoomParticipant participant : participants){
+            if(participant.getMember().getId().equals(member.getId())){
+                participant.setLastReadAt(LocalDateTime.now());
+            }
+            ParticipantInfos.Info info = ParticipantInfos.Info.builder()
+                    .memberId(participant.getMember().getId())
+                    .timestamp(participant.getLastReadAt())
+                    .build();
+            infoList.add(info);
+        }
+
+        return ParticipantInfos.builder()
+                .roomId(chatRoom.getId())
+                .infos(infoList)
+                .build();
+    }
 
 }

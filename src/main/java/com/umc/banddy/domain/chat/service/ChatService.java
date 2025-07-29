@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -45,8 +43,8 @@ public class ChatService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다. ID: " + roomId));
     }
 
-    public ChatRoomParticipant verifedParticipant(ChatRoom chatRoom, Member member, Status status) {
-        return participantRepository.findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member,Status.ACTIVE)
+    public ChatRoomParticipant verifiedParticipant(ChatRoom chatRoom, Member member, Status status) {
+        return participantRepository.findByChatRoomAndMemberAndStatus(chatRoom, member,Status.ACTIVE)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다. 채팅방 ID: " + chatRoom.getId() + ", 멤버 ID: " + member.getId()));
     }
     public Long extractRoomId(String dest) {
@@ -64,7 +62,7 @@ public class ChatService {
     }
     @Transactional
     public ChatRoomParticipant markLastRead(ChatRoom chatRoom , Member member) {
-        ChatRoomParticipant participant = participantRepository.findTopByChatRoomAndMemberAndStatusOrderByIdDesc(chatRoom, member, Status.ACTIVE)
+        ChatRoomParticipant participant = participantRepository.findByChatRoomAndMemberAndStatus(chatRoom, member, Status.ACTIVE)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
 
         participant.setLastReadAt(LocalDateTime.now());

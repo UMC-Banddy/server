@@ -41,8 +41,7 @@ public class ChatRoom extends BaseEntity {
     @JoinColumn(name = "chat_room_id")
     private List<ChatRoomParticipant> participants;
 
-    @OneToOne(mappedBy = "chatRoom", fetch = LAZY,
-            cascade = ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "chatRoom", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     private BandChat bandChat;
 
 }
