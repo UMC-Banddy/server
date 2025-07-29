@@ -22,7 +22,7 @@ public class OtherProfileController {
     private final OtherProfileService otherProfileService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    // ✅ 상대방 프로필 조회
+    // 상대방 프로필 조회
     @GetMapping("/{memberId}/profile")
     public ResponseEntity<OtherProfileResponse> getOtherProfile(
             @PathVariable("memberId") Long targetMemberId,
@@ -44,7 +44,7 @@ public class OtherProfileController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ 상대방이 저장한 곡 목록 조회
+    // 상대방이 저장한 곡 목록 조회
     @GetMapping("/{memberId}/profile/saved-tracks")
     public ResponseEntity<List<SavedTrackResponse>> getSavedTracks(
             @PathVariable("memberId") Long targetMemberId
@@ -53,22 +53,12 @@ public class OtherProfileController {
         return ResponseEntity.ok(savedTracks);
     }
 
-    // ✅ 사용자 태그 조회
+    // 상대방 태그 조회
     @GetMapping("/{memberId}/tags")
-    public ResponseEntity<MemberTagResponse> getMyTags(HttpServletRequest request) {
-        String token = JwtTokenUtil.extractToken(request);
-        if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Long memberId;
-        try {
-            memberId = jwtTokenUtil.getMemberIdFromToken(token);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        MemberTagResponse response = otherProfileService.getTagsByMemberId(memberId); // ✅ 수정된 부분
+    public ResponseEntity<MemberTagResponse> getTagsByMemberId(
+            @PathVariable("memberId") Long memberId
+    ) {
+        MemberTagResponse response = otherProfileService.getTagsByMemberId(memberId);
         return ResponseEntity.ok(response);
     }
 }
