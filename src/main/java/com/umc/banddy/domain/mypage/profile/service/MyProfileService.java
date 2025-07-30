@@ -1,7 +1,6 @@
 package com.umc.banddy.domain.mypage.profile.service;
 
 import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.domain.member.domain.Session;
 import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import com.umc.banddy.domain.member.enums.Gender;
 import com.umc.banddy.domain.member.enums.Level;
@@ -44,10 +43,7 @@ public class MyProfileService {
 
         List<MemberTag> tags = memberTagRepository.findByMemberId(memberId);
 
-        List<MemberTrack> savedTracks = memberTrackRepository.findByMemberIdOrderByCreatedAtDesc(memberId)
-                .stream()
-                .limit(3)
-                .toList();
+        List<MemberTrack> savedTracks = memberTrackRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
 
         return MyProfileConverter.toMyProfileResponse(member, tags, savedTracks);
     }

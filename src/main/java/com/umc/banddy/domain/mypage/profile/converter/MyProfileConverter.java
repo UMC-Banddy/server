@@ -22,7 +22,9 @@ public class MyProfileConverter {
         List<MyProfileResponse.SavedTrack> trackResponses = savedTracks.stream()
                 .map(t -> new MyProfileResponse.SavedTrack(
                         t.getTrack().getTitle(),
-                        t.getTrack().getImageUrl()))
+                        t.getTrack().getImageUrl(),
+                        t.getTrack().getExternalUrl()
+                ))
                 .collect(Collectors.toList());
 
         return new MyProfileResponse(

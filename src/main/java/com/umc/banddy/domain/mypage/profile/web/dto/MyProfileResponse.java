@@ -22,5 +22,6 @@ public class MyProfileResponse {
     public static class SavedTrack {
         private String title;
         private String imageUrl;
+        private String externalUrl;
     }
 }
