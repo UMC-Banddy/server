@@ -184,4 +184,17 @@ public class AlbumService {
                 .build();
     }
 
+    // 상대방 공개앨범 조회
+    @Transactional(readOnly = true)
+    public List<AlbumResponseDto> getSavedAlbumsByOtherMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return memberAlbumRepository.findAllByMemberAndIsPrivateFalse(member).stream()
+                .map(ma -> AlbumConverter.toAlbumResponseDto(ma.getAlbum(), ma.getId()))
+                .collect(Collectors.toList());
+    }
+
+
+
 }
