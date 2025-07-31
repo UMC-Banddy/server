@@ -1,9 +1,10 @@
 package com.umc.banddy.domain.other.profile.web.controller;
 
+import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
 import com.umc.banddy.domain.other.profile.service.OtherProfileService;
+import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
-import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +45,7 @@ public class OtherProfileController {
         return ResponseEntity.ok(response);
     }
 
-    // 상대방이 저장한 곡 목록 조회
+    // 상대방 저장한 곡 조회
     @GetMapping("/{memberId}/profile/saved-tracks")
     public ResponseEntity<List<SavedTrackResponse>> getSavedTracks(
             @PathVariable("memberId") Long targetMemberId
@@ -60,5 +61,14 @@ public class OtherProfileController {
     ) {
         MemberTagResponse response = otherProfileService.getTagsByMemberId(memberId);
         return ResponseEntity.ok(response);
+    }
+
+    // 상대방 저장한 공개 앨범 조회
+    @GetMapping("/{memberId}/profile/saved-albums")
+    public ResponseEntity<List<AlbumResponseDto>> getSavedAlbums(
+            @PathVariable("memberId") Long targetMemberId
+    ) {
+        List<AlbumResponseDto> savedAlbums = otherProfileService.getSavedAlbums(targetMemberId);
+        return ResponseEntity.ok(savedAlbums);
     }
 }
