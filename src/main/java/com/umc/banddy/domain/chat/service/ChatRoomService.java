@@ -15,7 +15,12 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.*;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.creation.*;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.roomList.BandManagerRoomInfoDto;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.roomList.ChatRoomInfo;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.roomList.ChatRoomInfoDto;
+import com.umc.banddy.domain.chat.web.dto.chatRoom.roomList.ChatRoomListResponse;
 import com.umc.banddy.domain.friend.domain.Friend;
 import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.friend.service.FriendService;
@@ -115,8 +120,8 @@ public class ChatRoomService {
             Member friend
     ) {
         ChatRoom chatRoom = ChatRoom.builder()
-                .name("1대1채팅")
-                .imageUrl("")
+                .name(null)
+                .imageUrl(null)
                 .roomType(RoomType.PRIVATE)
                 .build();
 

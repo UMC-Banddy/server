@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatRoom.creation;
 
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import lombok.AllArgsConstructor;
