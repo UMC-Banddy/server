@@ -59,29 +59,28 @@ public class ChatRoomService {
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
         // 참여자 등록
-        List<ChatRoomParticipant> participantList = new ArrayList<>();
-        List<ChatRoomResponse.RoomMemberinfo> memberinfos =new ArrayList<>();
+        List<Long> memberIds = request.getMemberIds();
+        memberIds.add(memberId);
 
-        for(Long memberIds : request.getMemberIds()){
-            Member member = memberRepository.findById(memberIds)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberIds));
+        List<Member> members = memberRepository.findAllById(memberIds); // 요청한 멤버 ID 포함
 
-            ChatRoomParticipant participant = ChatRoomParticipant.builder()
-                    .chatRoom(savedRoom)
-                    .member(member)
-                    .role(member.getId().equals(memberId)
-                            ? Role.ADMIN
-                            : Role.MEMBER) // 테스트 용
-                    .status(Status.ACTIVE)
-                    .lastReadAt(LocalDateTime.now()) // 초기값 설정
-                    .build();
-            participantList.add(participant);
-            memberinfos.add(
-                    ChatRoomResponse.RoomMemberinfo.builder()
+        List<ChatRoomParticipant> participantList  = members.stream()
+                .filter(member -> !member.getId().equals(memberId)) // 요청한 멤버는 제외
+                .map(member -> ChatRoomParticipant.builder()
+                        .chatRoom(savedRoom)
+                        .member(member)
+                        .role(Role.MEMBER) // 테스트 용
+                        .status(Status.ACTIVE)
+                        .lastReadAt(LocalDateTime.now()) // 초기값 설정
+                        .build())
+                .toList();
+        List<ChatRoomResponse.RoomMemberinfo> memberinfos = members.stream()
+                .map( member -> {
+                    return ChatRoomResponse.RoomMemberinfo.builder()
                             .userId(member.getId())
                             .userName(member.getNickname())
-                            .build());
-        }
+                            .build();
+                }).toList();
 
         participantRepository.saveAll(participantList);
         return ChatRoomResponse.builder()
@@ -476,7 +475,7 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public GroupChatRoomResponse joinBand(Long bandId, Long memberId, String session){
+    public BandJoinResponse joinBand(Long bandId, Long memberId, String session){
 
         Band band = bandRepository.findWithSessionsAndManager(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
@@ -488,6 +487,8 @@ public class ChatRoomService {
                 .imageUrl("")
                 .roomType(RoomType.BAND)
                 .build();
+
+        chatRoomRepository.save(chatRoom);
 
         BandSession bandSession= band.getBandSessions().stream()
                 .filter(bs -> bs.getSessionStatus().equals("RECRUITING"))
@@ -514,7 +515,7 @@ public class ChatRoomService {
                 .lastReadAt(LocalDateTime.now())  // 초기값
                 .build();
         participantRepository.save(bandManager);
-        return GroupChatRoomResponse.builder()
+        return BandJoinResponse.builder()
                 .roomId(chatRoom.getId())
                 .bandName(band.getName())
                 .bandProfileUrl(band.getProfileImageUrl())

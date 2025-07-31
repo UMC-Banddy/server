@@ -121,7 +121,7 @@ public class ChatContoller {
 
     @Operation(summary = "밴드 지원하기")
     @PostMapping("/bands/{bandId}/join")
-    public ResponseEntity<GroupChatRoomResponse> joinBand(
+    public ResponseEntity<BandJoinResponse> joinBand(
             @PathVariable Long bandId,
             @RequestBody @Valid BandJoinRequest bandJoinRequest,
             HttpServletRequest request

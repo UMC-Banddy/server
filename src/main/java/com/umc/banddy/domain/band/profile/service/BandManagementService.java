@@ -467,8 +467,8 @@ public class BandManagementService {
                             .nickname(bandChat.getChatRoom().getName())
                             .imageUrl(bandChat.getChatRoom().getImageUrl())
                             .session(bandChat.getBandSession().getSession().getName())
-                            .content(msg.getContent())
-                            .lastMessageAt(msg.getCreatedAt())
+                            .content(msg != null ? msg.getContent() : "")
+                            .lastMessageAt(msg != null ? msg.getCreatedAt() : null)
                             .passFail(bandChat.getPassFail())
                             .build()
             );
