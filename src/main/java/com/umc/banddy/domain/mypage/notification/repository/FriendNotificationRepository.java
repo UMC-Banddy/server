@@ -7,5 +7,7 @@ import java.util.List;
 
 public interface FriendNotificationRepository extends JpaRepository<FriendNotification, Long> {
     List<FriendNotification> findByNotificationReceiverId(Long memberId);
+
+    void deleteByFriendRequestIdAndType(Long friendRequestId, String type); // 수락 or 거절 시 삭제를 위해 추가
 }
 
