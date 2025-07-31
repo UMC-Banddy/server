@@ -17,6 +17,7 @@ public class OtherProfileResponse {
     private int age;
     private String gender;
     private String region;
+    private String district;
     private List<String> tags;
     private List<Session> sessions;
     private List<Artist> favoriteArtists;

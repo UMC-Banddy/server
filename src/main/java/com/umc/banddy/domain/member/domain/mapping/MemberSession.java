@@ -24,11 +24,11 @@ public class MemberSession extends BaseEntity {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
+    @JoinColumn(name = "session_id", nullable = false)
     private Session session;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private SessionType sessionType;
 
     @Column(length = 20)
