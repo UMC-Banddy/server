@@ -38,12 +38,18 @@ public class OtherProfileConverter {
                 .age(member.getAge())
                 .gender(member.getGender().name())
                 .region(member.getRegion())
+                .district(member.getDistrict())
                 .tags(tags.stream().map(MemberTag::getTag).toList())
                 .sessions(sessions.stream()
-                        .map(s -> new OtherProfileResponse.Session(
-                                s.getSession().getName(),
-                                s.getSession().getIcon()
-                        ))
+                        .map(s -> {
+                            if (s.getSession() == null) {
+                                return new OtherProfileResponse.Session("알 수 없음", null);
+                            }
+                            return new OtherProfileResponse.Session(
+                                    s.getSession().getName(),
+                                    s.getSession().getIcon()
+                            );
+                        })
                         .toList())
                 .favoriteArtists(artists.stream()
                         .map(a -> new OtherProfileResponse.Artist(

@@ -21,7 +21,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -51,11 +53,9 @@ public class MyProfileService {
     @Transactional
     public void updateMyProfile(HttpServletRequest request, MyProfileUpdateRequest dto) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
-
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
 
-        // 기존 필드 유지하면서 null 아닌 것만 업데이트
         Member updated = Member.builder()
                 .id(member.getId())
                 .email(member.getEmail())
@@ -79,12 +79,20 @@ public class MyProfileService {
         // 세션 업데이트
         if (dto.getAvailableSessions() != null) {
             memberSessionRepository.deleteByMemberId(memberId);
+            memberSessionRepository.flush(); // 삭제 즉시 반영
+
+            Set<String> sessionTypes = new HashSet<>();
 
             for (MyProfileUpdateRequest.SessionInfo sessionInfo : dto.getAvailableSessions()) {
+                String trimmedType = sessionInfo.getSessionType().trim();
+                if (!sessionTypes.add(trimmedType)) {
+                    throw new IllegalArgumentException("중복된 세션 타입이 있습니다: " + trimmedType);
+                }
+
                 try {
                     MemberSession newSession = MemberSession.builder()
                             .member(updated)
-                            .sessionType(SessionType.valueOf(sessionInfo.getSessionType().trim()))
+                            .sessionType(SessionType.valueOf(trimmedType))
                             .level(Level.valueOf(sessionInfo.getLevel().trim()))
                             .build();
                     memberSessionRepository.save(newSession);
