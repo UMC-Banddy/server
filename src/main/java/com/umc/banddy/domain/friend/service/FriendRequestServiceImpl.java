@@ -8,7 +8,10 @@ import com.umc.banddy.domain.friend.repository.FriendRequestRepository;
 import com.umc.banddy.domain.friend.web.dto.FriendRequestResponseDto;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.mypage.notification.domain.Notification;
+import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
+import com.umc.banddy.domain.mypage.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final NotificationRepository notificationRepository;
     private final FriendNotificationRepository friendNotificationRepository;
 
     @Override
@@ -57,15 +61,24 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new IllegalArgumentException("받는 회원 없음"));
 
-        FriendNotification notification = FriendNotification.builder()
+        Notification baseNotification = Notification.builder()
+                .type(NotificationType.FRIEND) //
+                .isRead(ReadStatus.UNREAD)
+                .sender(sender)
+                .receiver(receiver)
+                .build();
+        notificationRepository.save(baseNotification);
+
+        // FriendNotification 생성
+        FriendNotification friendNotification = FriendNotification.builder()
+                .notification(baseNotification)
                 .sender(sender)
                 .receiver(receiver)
                 .friendRequest(request)
                 .isRead(ReadStatus.UNREAD)
                 .type("REQUEST")
                 .build();
-
-        friendNotificationRepository.save(notification);
+        friendNotificationRepository.save(friendNotification);
     }
 
     @Override
@@ -86,6 +99,8 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .build();
 
         friendRepository.save(friend);
+        // 친구 요청 삭제
+        friendNotificationRepository.deleteByFriendRequestIdAndType(requestId, "REQUEST");
     }
 
     @Override
@@ -94,6 +109,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
         request.setStatus(FriendStatus.REJECTED);
+        friendNotificationRepository.deleteByFriendRequestIdAndType(requestId, "REQUEST"); //
     }
 
     @Override
