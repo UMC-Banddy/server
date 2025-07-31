@@ -24,7 +24,7 @@ public class ChatMessageRequest {
     // roomType이 GROUP일 땐 receiverId가 반드시 null
     @AssertTrue
     public boolean isReceiverValid() {
-        if (roomType == RoomType.PRIVATE) {
+        if (roomType == RoomType.PRIVATE || roomType == RoomType.BAND) {
             return receiverId != null;
         } else {
             return receiverId == null;

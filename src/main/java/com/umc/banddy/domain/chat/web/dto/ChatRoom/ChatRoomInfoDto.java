@@ -5,18 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @SuperBuilder
-public abstract class ChatRoomInfo {
+public class ChatRoomInfoDto extends ChatRoomInfo{
 
-    private String chatName;
+    private Long roomId;
+    private List<MemberInfo> memberInfos;
 
-    private String imageUrl;
-
-    private Long unreadCount;
-
-    private LocalDateTime lastMessageAt;
 }

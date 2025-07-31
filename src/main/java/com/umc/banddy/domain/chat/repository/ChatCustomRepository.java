@@ -41,4 +41,6 @@ public class ChatCustomRepository {
         return cursor != null ? QChatMessage.chatMessage.id.lt(cursor) : null;
     }
 
+    //
+
 }

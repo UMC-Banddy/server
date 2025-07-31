@@ -15,18 +15,15 @@ import java.util.Set;
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
     @Query("""
-      select distinct p
-      from ChatRoomParticipant p
-      join fetch p.chatRoom r
-      join fetch r.participants rp
-      left  join fetch r.bandChat   bc
-      where p.member   = :member
-        and r.roomType in (
-          com.umc.banddy.domain.chat.domain.enums.RoomType.GROUP,
-          com.umc.banddy.domain.chat.domain.enums.RoomType.BAND
-        )
-    """)
-    List<ChatRoomParticipant> findAllGroupAndBandWithRoomParticipantsAndBandChatByMember(
+        select distinct p
+        from ChatRoomParticipant p
+            join fetch p.chatRoom r
+            join fetch r.participants rp
+            left join fetch r.bandChat bc
+        where p.member = :member
+        and p.status = 'ACTIVE'
+        """)
+    List<ChatRoomParticipant> findAllWithRoomParticipantsAndBandChatByMember(
             @Param("member") Member member
     );
 

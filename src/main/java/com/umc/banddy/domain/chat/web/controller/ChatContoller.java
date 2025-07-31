@@ -39,7 +39,7 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.createGroupChatRoom(currentMemberId, chatRoomRequest));
     }
 
-    @Operation(summary = "개인 채팅방 생성", description = "개인 채팅방 생성 api")
+    @Operation(summary = "개인 채팅방 조회")
     @PostMapping("/rooms/friends")
     public ResponseEntity<PrivateChatRoomResponse> createPrivateChatRooms(
             @RequestBody @Valid PrivateChatRoomRequest privateChatRoomRequest,
@@ -47,7 +47,7 @@ public class ChatContoller {
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatRoomService.createPrivateChatRoom(currentMemberId, privateChatRoomRequest));
+        return ResponseEntity.ok(chatRoomService.getPrivateChatRoom(currentMemberId, privateChatRoomRequest.getMemberId()));
     }
 
     @Operation(summary="채팅 참여")
@@ -119,4 +119,15 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
     }
 
+    @Operation(summary = "밴드 지원하기")
+    @PostMapping("/bands/{bandId}/join")
+    public ResponseEntity<GroupChatRoomResponse> joinBand(
+            @PathVariable Long bandId,
+            @RequestBody @Valid BandJoinRequest bandJoinRequest,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatRoomService.joinBand(bandId, currentMemberId, bandJoinRequest.getSession()));
+    }
 }

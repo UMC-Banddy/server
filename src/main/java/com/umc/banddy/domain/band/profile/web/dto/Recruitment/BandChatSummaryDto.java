@@ -25,5 +25,5 @@ public class BandChatSummaryDto{
 
     private LocalDateTime lastMessageAt;
 
-    private PassFail isPass;
+    private PassFail passFail;
 }

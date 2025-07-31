@@ -41,19 +41,15 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage,Long> {
 
 
     @Query("""
-        select r.id                   as roomId,
-               max(c.createdAt)       as lastMessageAt
+        select r.id             as roomId,
+               max(c.createdAt) as lastMessageAt
         from   ChatMessage c
-        join   c.chatRoom r
-        join   r.participants p
-        where  p.member = :member
-          and  r.roomType in (
-                 com.umc.banddy.domain.chat.domain.enums.RoomType.GROUP,
-                 com.umc.banddy.domain.chat.domain.enums.RoomType.BAND
-               )
-        group  by r.id
+            join   c.chatRoom r
+            join   r.participants p
+            where  p.member = :member
+            group  by r.id
     """)
-    List<LastMessageProjection> findLastMessageAtForGroupAndBandByMember(
+    List<LastMessageProjection> findLastMessageAtByMember(
             @Param("member") Member member
     );
 
@@ -70,14 +66,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage,Long> {
         join   c.chatRoom r
         join   r.participants p
         where  p.member    = :member
-          and  r.roomType in (
-                 com.umc.banddy.domain.chat.domain.enums.RoomType.GROUP,
-                 com.umc.banddy.domain.chat.domain.enums.RoomType.BAND
-               )
           and  c.createdAt > p.lastReadAt
         group  by r.id
     """)
-    List<UnreadCountProjection> findUnreadCountsForGroupAndBandByMember(
+    List<UnreadCountProjection> findUnreadCountsByMember(
             @Param("member") Member member
     );
 }
