@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.mypage.notification.web.controller;
 
+import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.service.NotificationService;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
@@ -7,9 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,5 +35,14 @@ public class NotificationController {
         } catch (Exception e) {
             return ResponseEntity.status(401).body(null);
         }
+    }
+
+    @PatchMapping("/read")
+    public ResponseEntity<Void> markAsRead(
+            @RequestParam("type") NotificationType type,
+            @RequestParam("notificationId") Long notificationId
+    ) {
+        notificationService.markNotificationAsRead(type, notificationId);
+        return ResponseEntity.ok().build();
     }
 }

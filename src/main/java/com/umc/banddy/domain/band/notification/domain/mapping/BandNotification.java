@@ -2,6 +2,7 @@ package com.umc.banddy.domain.band.notification.domain.mapping;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
 import com.umc.banddy.domain.mypage.notification.domain.Notification;
+import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,4 +27,12 @@ public class BandNotification {
 
     @Column(nullable = false)
     private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_read", nullable = false)
+    private ReadStatus isRead;
+
+    public void markAsRead() {
+        this.isRead = ReadStatus.READ;
+    }
 }

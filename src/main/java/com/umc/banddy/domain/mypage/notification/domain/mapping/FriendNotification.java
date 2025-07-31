@@ -24,9 +24,10 @@ public class FriendNotification {
     private Notification notification;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "is_read", nullable = false)
     private ReadStatus isRead;
 
-    private String type; // e.g., REQUEST, ACCEPT 등
+    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id")
@@ -39,4 +40,8 @@ public class FriendNotification {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "friend_request_id")
     private FriendRequest friendRequest;
+
+    public void markAsRead() {
+        this.isRead = ReadStatus.READ;
+    }
 }

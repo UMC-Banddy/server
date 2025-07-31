@@ -7,7 +7,9 @@ import com.umc.banddy.domain.band.notification.repository.BandNotificationReposi
 import com.umc.banddy.domain.mypage.notification.repository.ChatNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.repository.FriendNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.converter.NotificationConverter;
+import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,12 +28,28 @@ public class NotificationService {
         List<FriendNotification> friends = friendNotificationRepository.findByNotificationReceiverId(memberId);
         List<BandNotification> bands = bandNotificationRepository.findByNotificationReceiverId(memberId);
 
-        for (FriendNotification f : friends) {
-            System.out.println("💡 알림 ID: " + f.getNotification().getId());
-            System.out.println("💡 요청 ID: " + (f.getFriendRequest() != null ? f.getFriendRequest().getId() : "null"));
-            System.out.println("💡 요청 상태: " + (f.getFriendRequest() != null ? f.getFriendRequest().getStatus() : "null"));
-        }
-
         return NotificationConverter.mergeAndSort(chats, friends, bands);
+    }
+
+    @Transactional
+    public void markNotificationAsRead(NotificationType type, Long id) {
+        switch (type) {
+            case CHAT -> {
+                ChatNotification n = chatNotificationRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("채팅 알림이 존재하지 않습니다."));
+                n.getNotification().markAsRead();
+            }
+            case FRIEND -> {
+                FriendNotification n = friendNotificationRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("친구 알림이 존재하지 않습니다."));
+                n.getNotification().markAsRead();
+            }
+            case BAND -> {
+                BandNotification n = bandNotificationRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("밴드 알림이 존재하지 않습니다."));
+                n.getNotification().markAsRead();
+            }
+            default -> throw new IllegalArgumentException("알 수 없는 알림 타입입니다.");
+        }
     }
 }
