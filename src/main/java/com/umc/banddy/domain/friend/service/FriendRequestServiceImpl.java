@@ -86,6 +86,8 @@ public class FriendRequestServiceImpl implements FriendRequestService {
                 .build();
 
         friendRepository.save(friend);
+        // 친구 요청 삭제
+        friendNotificationRepository.deleteByFriendRequestIdAndType(requestId, "REQUEST");
     }
 
     @Override
@@ -94,6 +96,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
         request.setStatus(FriendStatus.REJECTED);
+        friendNotificationRepository.deleteByFriendRequestIdAndType(requestId, "REQUEST"); //
     }
 
     @Override
