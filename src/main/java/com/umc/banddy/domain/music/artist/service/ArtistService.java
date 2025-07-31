@@ -124,7 +124,7 @@ public class ArtistService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Artist artist = artistRepository.findBySpotifyId(requestDto.getSpotifyId())
-                .orElseGet(() -> artistRepository.save(ArtistConverter.toArtist(requestDto)));
+                .orElseGet(() -> fetchAndSaveArtistFromSpotify(requestDto.getSpotifyId()));
 
         var memberArtistOpt = memberArtistRepository.findByMemberAndArtist(member, artist);
         boolean isSaved;
