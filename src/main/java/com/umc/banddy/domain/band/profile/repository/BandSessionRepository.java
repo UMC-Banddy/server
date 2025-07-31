@@ -28,4 +28,6 @@ public interface BandSessionRepository extends JpaRepository<BandSession, Long> 
             @Param("bandId") Long bandId,
             @Param("status") String status
     );
+
+    Optional<BandSession> findByBandAndSessionAndSessionStatus(Band band, Session foundSession, String sessionStatus);
 }

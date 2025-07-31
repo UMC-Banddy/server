@@ -173,10 +173,7 @@ public class ChatMessageService {
 
         // 성능상 개선 여지 있음
         Set<String> unsubscribedUsers = new HashSet<>(allParticipants);
-        System.out.println("roomid 참여자"+allParticipants);
-        System.out.println("세션에 구독정보"+subscribedUsers);
         unsubscribedUsers.removeAll(subscribedUsers);
-        System.out.println("차집합 정보"+unsubscribedUsers);
 
         RoomType roomType = chatRoom.getRoomType();
 
@@ -191,11 +188,11 @@ public class ChatMessageService {
                     .senderId(member.getId())
                     .roomId(chatRoom.getId())
                     .content(chatMessage.getContent())
+                    .timestamp(chatMessage.getCreatedAt())
                     .build();
             for (String email : allParticipants) {
                 if (unsubscribedUsers.contains(email)) {
-                    System.out.println("비구독자"+email);
-                    websocketService.queueUnreadMessage(email, toWsMessage(unreadResponse, MessageType.MARK_AS_UNREAD));
+                    websocketService.queueUnreadMessage(email, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
                 }
             }
         } else if (roomType.equals(RoomType.PRIVATE) || roomType.equals(RoomType.BAND)) {
@@ -212,8 +209,9 @@ public class ChatMessageService {
                         .senderId(member.getId())
                         .roomId(chatRoom.getId())
                         .content(chatMessage.getContent())
+                        .timestamp(chatMessage.getCreatedAt())
                         .build();
-                websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.MARK_AS_UNREAD));
+                websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
             }
         }
     }

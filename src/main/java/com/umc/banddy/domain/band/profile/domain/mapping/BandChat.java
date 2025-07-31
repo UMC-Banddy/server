@@ -20,10 +20,10 @@ public class BandChat extends BaseEntity {
     private Long id;
 
     @Column
-    private PassFail isPass;
+    private PassFail passFail;
 
-    @ManyToOne
-    @JoinColumn(name = "chat_room_id", nullable = false)
+    @OneToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "chat_room_id", nullable = false, unique = true)
     private ChatRoom chatRoom;
 
     @ManyToOne

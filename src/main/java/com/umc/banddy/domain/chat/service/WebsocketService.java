@@ -25,7 +25,6 @@ public class WebsocketService {
         );
     }
     public <M> void queueUnreadMessage(String receiverEmail, M message ) {
-        System.out.println("[DEBUG] convertAndSendToUser 호출 대상 email = " +receiverEmail);
         messagingTemplate.convertAndSendToUser(
                 receiverEmail,
                 "/queue/unread",

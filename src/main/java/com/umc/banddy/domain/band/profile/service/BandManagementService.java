@@ -414,7 +414,7 @@ public class BandManagementService {
         chatRoomService.saveParticipant(savedRoom, band.getManager());
 
         BandChat bandChat = BandChat.builder()
-                .isPass(PassFail.PENDING)
+                .passFail(PassFail.PENDING)
                 .chatRoom(savedRoom)
                 .band(band)
                 .bandSession(bandSession)
@@ -469,7 +469,7 @@ public class BandManagementService {
                             .session(bandChat.getBandSession().getSession().getName())
                             .content(msg.getContent())
                             .lastMessageAt(msg.getCreatedAt())
-                            .isPass(bandChat.getIsPass())
+                            .passFail(bandChat.getPassFail())
                             .build()
             );
         }
