@@ -53,7 +53,7 @@ public class OtherProfileService {
         List<MemberSession> sessions = memberSessionRepository.findByMemberId(targetMemberId);
         List<MemberArtist> artists = memberArtistRepository.findByMemberId(targetMemberId);
         List<MemberKeyword> keywords = memberKeywordRepository.findByMemberId(targetMemberId);
-        List<MemberGenre> genres = memberGenreRepository.findByMemberId(targetMemberId); // ✅ 장르 조회
+        List<MemberGenre> genres = memberGenreRepository.findByMemberId(targetMemberId);
 
         // SNS 링크 조회
         List<SnsLink> snsLinks = snsLinkRepository.findAll();

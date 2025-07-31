@@ -25,6 +25,7 @@ public class ChatNotification extends BaseEntity {
     private Notification notification;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "is_read", nullable = false)
     private ReadStatus isRead;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,4 +43,8 @@ public class ChatNotification extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")
     private Member receiver;
+
+    public void markAsRead() {
+        this.isRead = ReadStatus.READ;
+    }
 }
