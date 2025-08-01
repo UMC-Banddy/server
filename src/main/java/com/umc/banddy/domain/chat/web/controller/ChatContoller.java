@@ -133,15 +133,15 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
     }
 
-    @Operation(summary = "밴드 지원하기")
-    @PostMapping("/bands/{bandId}/join")
-    public ResponseEntity<BandJoinResponse> joinBand(
-            @PathVariable Long bandId,
-            @RequestBody @Valid BandJoinRequest bandJoinRequest,
-            HttpServletRequest request
-    ) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatRoomService.joinBand(bandId, currentMemberId, bandJoinRequest.getSession()));
-    }
+//    @Operation(summary = "밴드 지원하기")
+//    @PostMapping("/bands/{bandId}/join")
+//    public ResponseEntity<BandJoinResponse> joinBand(
+//            @PathVariable Long bandId,
+//            @RequestBody @Valid BandJoinRequest bandJoinRequest,
+//            HttpServletRequest request
+//    ) {
+//        String token = JwtTokenUtil.extractToken(request);
+//        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+//        return ResponseEntity.ok(chatRoomService.joinBand(bandId, currentMemberId, bandJoinRequest.getSession()));
+//    }
 }
