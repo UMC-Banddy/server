@@ -1,6 +1,6 @@
-package com.umc.banddy.domain.chat.web.dto.chatRoom.roomList;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
-import com.umc.banddy.domain.chat.web.dto.chatRoom.MemberInfo;
+import com.umc.banddy.domain.chat.web.dto.chatroom.MemberInfo;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

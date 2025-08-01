@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.chatRoom.roomList;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
 import lombok.AllArgsConstructor;

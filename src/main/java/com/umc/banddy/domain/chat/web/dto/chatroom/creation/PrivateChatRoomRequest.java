@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.chatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.creation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,8 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
-public class MemberInfo{
+public class PrivateChatRoomRequest {
+
     private Long memberId;
-    private String nickname;
-    private String profileImageUrl;
 }

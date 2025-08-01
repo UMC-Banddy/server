@@ -4,9 +4,9 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.service.ChatService;
-import com.umc.banddy.domain.chat.web.dto.chatRoom.*;
-import com.umc.banddy.domain.chat.web.dto.chatRoom.creation.*;
-import com.umc.banddy.domain.chat.web.dto.chatRoom.roomList.ChatRoomListResponse;
+import com.umc.banddy.domain.chat.web.dto.chatroom.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.ChatRoomListResponse;
 import com.umc.banddy.domain.chat.web.dto.message.ChatSystemResponse;
 import com.umc.banddy.domain.chat.web.dto.message.CursorChatMessageResponse;
 import com.umc.banddy.domain.member.domain.Member;
@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,15 +32,26 @@ public class ChatContoller {
 
 
     @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
-    @PostMapping("/rooms")
+    @PostMapping(path = "/rooms")
     public ResponseEntity<ChatRoomResponse> createChatRoom(
-            @RequestBody @Valid ChatRoomRequest chatRoomRequest,
+            @RequestBody @Valid  ChatRoomRequest chatRoomRequest,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(chatRoomService.createGroupChatRoom(currentMemberId, chatRoomRequest));
     }
+    @Operation(summary = " 단체 채팅방 정보 수정", description = "단체 채팅방 정보 수정 api")
+    @PatchMapping(path = "/rooms")
+    public ResponseEntity<UpdateGroupChatResponse> updateChatRoom(
+            @RequestBody @Valid UpdateGroupChatRequest updateGroupChatRequest,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, updateGroupChatRequest));
+    }
+
 
     @Operation(summary = "개인 채팅방 조회")
     @PostMapping("/rooms/friends")

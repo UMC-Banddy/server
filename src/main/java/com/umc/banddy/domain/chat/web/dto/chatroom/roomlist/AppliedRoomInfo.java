@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.chatRoom.roomList;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,15 +9,18 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class InterviewRoomInfo {
+public class AppliedRoomInfo {
 
-    private Long memberId;
+    private Long bandId;
+
+    private Long roomId;
+
+    private String bandName;
 
     private String profileImageUrl;
-
-    private String session;
 
     private LocalDateTime lastMessageAt;
 
     private Long unreadCount;
+
 }

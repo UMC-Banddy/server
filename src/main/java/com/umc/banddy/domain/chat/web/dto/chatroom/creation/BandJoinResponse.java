@@ -1,4 +1,4 @@
- package com.umc.banddy.domain.chat.web.dto.chatRoom.creation;
+ package com.umc.banddy.domain.chat.web.dto.chatroom.creation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -21,4 +21,5 @@ public interface BandChatRepository extends JpaRepository<BandChat, Long> {
 """)
     List<BandChat> findByBandAndManagerParticipant(@Param("band") Band band, @Param("manager") Member manager);
 
+
 }
