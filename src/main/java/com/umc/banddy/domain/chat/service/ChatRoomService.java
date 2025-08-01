@@ -383,12 +383,15 @@ public class ChatRoomService {
                 })
                 .collect(Collectors.toList());
 
-        List<ChatRoomInfo> combined = Stream.concat(
+
+        List<ChatRoomInfo> combined = Stream.concat(Stream.concat(
                         Stream.concat(
                                 privateChatRoomInfos.stream(),
                                 nonAdminBandRoomInfos.stream()
                         ),
                         adminBandRoomInfos.stream()
+                ),
+                        groupChatRoomInfos.stream()
                 )
                 .sorted(Comparator.comparing(
                         ChatRoomInfo::getLastMessageAt,
