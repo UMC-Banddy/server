@@ -52,7 +52,6 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, updateGroupChatRequest));
     }
 
-
     @Operation(summary = "개인 채팅방 조회")
     @PostMapping("/rooms/friends")
     public ResponseEntity<PrivateChatRoomResponse> createPrivateChatRooms(
