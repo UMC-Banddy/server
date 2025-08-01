@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.Message;
+package com.umc.banddy.domain.chat.web.dto.message;
 
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import jakarta.validation.constraints.AssertTrue;

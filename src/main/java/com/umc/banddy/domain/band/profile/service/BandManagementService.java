@@ -11,10 +11,8 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.enums.PassFail;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
-import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
-import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
@@ -25,9 +23,11 @@ import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.repository.TrackRepository;
+import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Function;
@@ -58,16 +58,24 @@ public class BandManagementService {
     private final ChatRoomRepository chatRoomRepository;
     private final BandChatRepository bandChatRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final S3Uploader s3Uploader;
 
 
+    @Transactional
     public RecruitmentResponse createRecruitment(RecruitmentRequest request, Long memberId){
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
 
+//        String profileImageUrl = (request.getImage() != null && !request.getImage().isEmpty())
+//                ? s3Uploader.upload(request.getImage(), "band-profile-images") : null;
+
+//        String profileImageUrl = (image != null && !image.isEmpty())
+//                ? s3Uploader.upload(image, "band-profile-images") : null;
+
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
-                .profileImageUrl(request.getProfileImageUrl())
+                .profileImageUrl(null)
                 .representativeSong(request.getRepresentativeSong())
                 .name(request.getName())
                 .description(request.getDescription())
@@ -206,6 +214,7 @@ public class BandManagementService {
 
     }
 
+    @Transactional
     public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request, Long memberId) {
 
         Member member = memberRepository.findById(memberId)
@@ -214,14 +223,20 @@ public class BandManagementService {
         Band band = bandRepository.findById(request.getBandId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
 
-        if(member.equals(band.getManager())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
+//        if(Objects.equals(member.getId(), band.getManager().getId())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
 
         if(request.getStatus() != null) {
             band.setStatus(request.getStatus());
         }
-        if(request.getProfileImageUrl() != null) {
-            band.setProfileImageUrl(request.getProfileImageUrl());
-        }
+
+//        if(request.getImage() != null && !request.getImage().isEmpty()) {
+//            String profileImageUrl = s3Uploader.upload(request.getImage(), "band-profile-images");
+//            band.setProfileImageUrl(profileImageUrl);
+//        }
+//        if(image != null && !image.isEmpty()) {
+//            String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
+//            band.setProfileImageUrl(profileImageUrl);
+//        }
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
                     .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다."));
@@ -467,8 +482,8 @@ public class BandManagementService {
                             .nickname(bandChat.getChatRoom().getName())
                             .imageUrl(bandChat.getChatRoom().getImageUrl())
                             .session(bandChat.getBandSession().getSession().getName())
-                            .content(msg.getContent())
-                            .lastMessageAt(msg.getCreatedAt())
+                            .content(msg != null ? msg.getContent() : "")
+                            .lastMessageAt(msg != null ? msg.getCreatedAt() : null)
                             .passFail(bandChat.getPassFail())
                             .build()
             );
@@ -482,9 +497,5 @@ public class BandManagementService {
                 .bandChatList(bandChatSummaryDtos)
                 .build();
     }
-
-//    public ApplicationListResponse updateApplicant(Long memberId, ApplicantUpdateRequest applicantUpdateRequest, Long bandId){
-//
-//    }
 
 }

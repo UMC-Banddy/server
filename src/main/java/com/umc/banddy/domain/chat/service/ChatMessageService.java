@@ -9,7 +9,7 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
-import com.umc.banddy.domain.chat.web.dto.Message.*;
+import com.umc.banddy.domain.chat.web.dto.message.*;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;

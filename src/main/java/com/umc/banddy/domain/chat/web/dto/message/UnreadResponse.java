@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.Message;
+package com.umc.banddy.domain.chat.web.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

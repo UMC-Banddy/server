@@ -4,7 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.banddy.domain.chat.domain.QChatMessage;
-import com.umc.banddy.domain.chat.web.dto.Message.CursorChatMessage;
+import com.umc.banddy.domain.chat.web.dto.message.CursorChatMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

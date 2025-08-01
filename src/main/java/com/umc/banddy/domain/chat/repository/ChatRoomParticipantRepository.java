@@ -4,6 +4,7 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,6 +43,9 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
     );
 
     Optional<ChatRoomParticipant> findByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
+
+    @EntityGraph(attributePaths = {"chatRoom","member"})
+    Optional<ChatRoomParticipant> findByChatRoom_IdAndMember_IdAndStatus(Long chatRoomId, Long memberId, Status status);
 
     @Query("""
     SELECT cp.member.email

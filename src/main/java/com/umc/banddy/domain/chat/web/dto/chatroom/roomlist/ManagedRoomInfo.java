@@ -1,6 +1,5 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
-import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

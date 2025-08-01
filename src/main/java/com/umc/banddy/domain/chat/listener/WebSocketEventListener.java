@@ -20,10 +20,6 @@ public class WebSocketEventListener {
     private final ChatService chatService;
     private final JwtTokenUtil jwtTokenUtil;
 
-//    @EventListener
-//    public void handleSessionConnectEvent(SessionConnectEvent event) {
-//
-//    }
 
     @EventListener
     public void handleSessionConnectedEvent(SessionConnectedEvent event) {

@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.creation;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ChatRoomListResponse {
-
-    private List<ChatRoomInfo> chatRoomInfos;
-
+public class FriendsChatRoomResponse {
+    private List<FriendChatRoom> rooms;
 }

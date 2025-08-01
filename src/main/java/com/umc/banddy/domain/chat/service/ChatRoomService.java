@@ -6,7 +6,6 @@ import com.umc.banddy.domain.band.profile.domain.mapping.BandChat;
 import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.band.profile.repository.BandChatRepository;
 import com.umc.banddy.domain.band.profile.repository.BandRepository;
-import com.umc.banddy.domain.band.profile.repository.BandSessionRepository;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.PassFail;
@@ -15,20 +14,26 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.*;
 import com.umc.banddy.domain.friend.domain.Friend;
 import com.umc.banddy.domain.friend.repository.FriendRepository;
-import com.umc.banddy.domain.friend.service.FriendService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
-import com.umc.banddy.domain.member.repository.SessionRepository;
+import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,18 +45,21 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomParticipantRepository participantRepository;
     private final MemberRepository memberRepository;
-    private final FriendService friendService;
     private final FriendRepository friendRepository;
-    private final ChatRoomParticipantCache chatRoomParticipantCache;
     private final BandRepository bandRepository;
-    private final SessionRepository sessionRepository;
-    private final BandSessionRepository bandSessionRepository;
     private final BandChatRepository bandChatRepository;
+    private final S3Uploader s3Uploader;
+
+
     // 그룹 채팅방 생성
-    public ChatRoomResponse createGroupChatRoom(Long memberId, ChatRoomRequest request){
+    public ChatRoomResponse createGroupChatRoom(Long memberId,  ChatRoomRequest request){
+
+//        MultipartFile image = request.getImage();
+//        String profileImageUrl = (image != null && !image.isEmpty())
+//                ? s3Uploader.upload(image, "group-chat-images") : null;
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(request.getRoomName())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(null)
                 .roomType(RoomType.GROUP)
                 .build();
 
@@ -59,41 +67,79 @@ public class ChatRoomService {
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
         // 참여자 등록
-        List<ChatRoomParticipant> participantList = new ArrayList<>();
-        List<ChatRoomResponse.RoomMemberinfo> memberinfos =new ArrayList<>();
+        List<Long> memberIds = request.getMemberIds();
+        memberIds.add(memberId);
 
-        for(Long memberIds : request.getMemberIds()){
-            Member member = memberRepository.findById(memberIds)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberIds));
+        List<Member> members = memberRepository.findAllById(memberIds); // 요청한 멤버 ID 포함
 
-            ChatRoomParticipant participant = ChatRoomParticipant.builder()
-                    .chatRoom(savedRoom)
-                    .member(member)
-                    .role(member.getId().equals(memberId)
-                            ? Role.ADMIN
-                            : Role.MEMBER) // 테스트 용
-                    .status(Status.ACTIVE)
-                    .lastReadAt(LocalDateTime.now()) // 초기값 설정
-                    .build();
-            participantList.add(participant);
-            memberinfos.add(
-                    ChatRoomResponse.RoomMemberinfo.builder()
-                            .userId(member.getId())
-                            .userName(member.getNickname())
-                            .build());
-        }
+        List<ChatRoomParticipant> participantList  = members.stream()
+                .filter(member -> !member.getId().equals(memberId)) // 요청한 멤버는 제외
+                .map(member -> ChatRoomParticipant.builder()
+                        .chatRoom(savedRoom)
+                        .member(member)
+                        .role(Role.MEMBER) // 테스트 용
+                        .status(Status.ACTIVE)
+                        .lastReadAt(LocalDateTime.now()) // 초기값 설정
+                        .build())
+                .toList();
+        List<ChatRoomResponse.RoomMemberinfo> memberinfos = members.stream()
+                .map( member -> {
+                    return ChatRoomResponse.RoomMemberinfo.builder()
+                            .memberId(member.getId())
+                            .memberName(member.getNickname())
+                            .build();
+                }).toList();
 
         participantRepository.saveAll(participantList);
         return ChatRoomResponse.builder()
                 .roomId(savedRoom.getId())
                 .roomName(savedRoom.getName())
-                .roomImageUrl(savedRoom.getImageUrl())
+                //.roomImageUrl(savedRoom.getImageUrl())
                 .lastMessageTime(LocalDateTime.now()) // 초기값 설정
                 //.pinnedAt(null)
                 .roomtype(savedRoom.getRoomType())
                 .memberinfos(memberinfos)
                 .build();
     }
+
+
+    public UpdateGroupChatResponse updateGroupChatRoom(
+            Long memberId,
+            UpdateGroupChatRequest request
+    ) {
+
+        ChatRoom chatRoom = chatRoomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+
+        if(chatRoom.getRoomType()!=RoomType.GROUP){
+            throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+        }
+//        MultipartFile image = request.getImage();
+//
+//        // 채팅방 정보 업데이트
+//        chatRoom.setName(request.getRoomName());
+//        if(image != null && !image.isEmpty()) {
+//            chatRoom.setImageUrl(s3Uploader.upload(image, "group-chat-images"));
+//        }
+
+        chatRoomRepository.save(chatRoom);
+
+        List<ChatRoomResponse.RoomMemberinfo> memberinfos = chatRoom.getParticipants().stream()
+                .map(p -> ChatRoomResponse.RoomMemberinfo.builder()
+                        .memberId(p.getMember().getId())
+                        .memberName(p.getMember().getNickname())
+                        .build())
+                .toList();
+
+        return UpdateGroupChatResponse.builder()
+                .roomId(chatRoom.getId())
+                .roomName(chatRoom.getName())
+                .roomProfileUrl(chatRoom.getImageUrl())
+                .build();
+    }
+
+
 
     // 1:1 채팅 방 조회
     public PrivateChatRoomResponse getPrivateChatRoom(Long memberId, Long friendId) {
@@ -116,8 +162,8 @@ public class ChatRoomService {
             Member friend
     ) {
         ChatRoom chatRoom = ChatRoom.builder()
-                .name("1대1채팅")
-                .imageUrl("")
+                .name(null)
+                .imageUrl(null)
                 .roomType(RoomType.PRIVATE)
                 .build();
 
@@ -168,8 +214,18 @@ public class ChatRoomService {
                 )
                 .flatMap(List::stream)
                 .toList();
+        // 그룹 채팅방
+        List<ChatRoom> groupRooms =
+                roomsByType.getOrDefault(RoomType.GROUP, Collections.emptyList());
+        // 개인 채팅방
+        List<ChatRoom> privateRooms =
+                roomsByType.getOrDefault(RoomType.PRIVATE, Collections.emptyList());
 
-        // 않읽은 메세지 수
+        // 밴드 채팅방
+        List<ChatRoom> bandRooms =
+                roomsByType.getOrDefault(RoomType.BAND, Collections.emptyList());
+
+        // 안읽은 메세지 수
         Map<Long, Long> unreadCountMap = getUnreadCountMap(member);
 
         // 마지막으로 보낸 메세지 시간
@@ -182,7 +238,7 @@ public class ChatRoomService {
                 ));
 
         // 응답 생성
-        List<ChatRoomInfoDto> chatRoomInfos = groupAndPrivateRooms.stream()
+        List<ChatRoomInfoDto> groupChatRoomInfos = groupRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
                             .map(p -> MemberInfo.builder()
@@ -194,6 +250,7 @@ public class ChatRoomService {
                                     .toList();
 
                     return ChatRoomInfoDto.builder()
+                            .roomType(String.valueOf(RoomType.GROUP))
                             .roomId(room.getId())
                             .chatName(room.getName())
                             .imageUrl(room.getImageUrl())
@@ -203,9 +260,31 @@ public class ChatRoomService {
                             .build();
                 }).collect(Collectors.toList());
 
-        // 밴드 채팅방
-        List<ChatRoom> bandRooms =
-                roomsByType.getOrDefault(RoomType.BAND, Collections.emptyList());
+        List<PrivateChatRoomInfoDto> privateChatRoomInfos = privateRooms.stream()
+                .map(room ->{
+
+                    MemberInfo memberInfo = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .map(p -> MemberInfo.builder()
+                                    .memberId(p.getMember().getId())
+                                    .nickname(p.getMember().getNickname())
+                                    .profileImageUrl(p.getMember().getProfileImageUrl())
+                                    .build())
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
+
+
+                    return PrivateChatRoomInfoDto.builder()
+                            .roomType(String.valueOf(RoomType.PRIVATE))
+                            .roomId(room.getId())
+                            .chatName(room.getName())
+                            .imageUrl(room.getImageUrl())
+                            .memberInfo(memberInfo)
+                            .unreadCount(unreadCountMap.get(room.getId()))
+                            .lastMessageAt(lastAtMap.get(room.getId()))
+                            .build();
+                }).collect(Collectors.toList());
+
         Map<Boolean, List<ChatRoom>> partitioned = bandRooms.stream()
                 .collect(Collectors.partitioningBy(
                         room -> room.getParticipants().stream()
@@ -227,6 +306,7 @@ public class ChatRoomService {
                             .toList();
 
                     return ChatRoomInfoDto.builder()
+                            .roomType("BAND-APPLICANT")
                             .roomId(room.getId())
                             .chatName(room.getBandChat().getBand().getName())
                             .imageUrl(room.getBandChat().getBand().getProfileImageUrl())
@@ -243,7 +323,6 @@ public class ChatRoomService {
                     Long bandId = entry.getKey();
                     List<ChatRoom> rooms = entry.getValue();
 
-                    // 공통 Band 정보는 아무 room 하나에서 꺼내면 됨
                     ChatRoom anyRoom = rooms.get(0);
                     Band band = anyRoom.getBandChat().getBand();
 
@@ -285,6 +364,7 @@ public class ChatRoomService {
 
                     // 밴드 단위 DTO 조립
                     return BandManagerRoomInfoDto.builder()
+                            .roomType("BAND-MANAGER")
                             .bandId(band.getId())
                             .bandName(band.getName())
                             .bandImageUrl(band.getProfileImageUrl())
@@ -305,7 +385,7 @@ public class ChatRoomService {
 
         List<ChatRoomInfo> combined = Stream.concat(
                         Stream.concat(
-                                chatRoomInfos.stream(),
+                                privateChatRoomInfos.stream(),
                                 nonAdminBandRoomInfos.stream()
                         ),
                         adminBandRoomInfos.stream()
@@ -475,19 +555,25 @@ public class ChatRoomService {
                 .build();
     }
 
+
     @Transactional
-    public GroupChatRoomResponse joinBand(Long bandId, Long memberId, String session){
+    public BandJoinResponse joinBand(Long bandId, Long memberId, String session){
 
         Band band = bandRepository.findWithSessionsAndManager(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
 
-        ChatRoom chatRoom = ChatRoom.builder()
-                .name(band.getName())
-                .imageUrl("")
-                .roomType(RoomType.BAND)
-                .build();
+        RoomType roomType = RoomType.BAND;
+
+        System.out.println(roomType );
+
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setName(band.getName() + " 밴드 채팅방");
+        chatRoom.setImageUrl(band.getProfileImageUrl());
+        chatRoom.setRoomType(roomType);
+
+        chatRoomRepository.save(chatRoom);
 
         BandSession bandSession= band.getBandSessions().stream()
                 .filter(bs -> bs.getSessionStatus().equals("RECRUITING"))
@@ -514,7 +600,7 @@ public class ChatRoomService {
                 .lastReadAt(LocalDateTime.now())  // 초기값
                 .build();
         participantRepository.save(bandManager);
-        return GroupChatRoomResponse.builder()
+        return BandJoinResponse.builder()
                 .roomId(chatRoom.getId())
                 .bandName(band.getName())
                 .bandProfileUrl(band.getProfileImageUrl())

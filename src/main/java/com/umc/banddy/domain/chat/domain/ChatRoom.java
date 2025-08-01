@@ -4,10 +4,7 @@ import com.umc.banddy.domain.band.profile.domain.mapping.BandChat;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,7 +17,8 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @AllArgsConstructor
 @Builder
-@NoArgsConstructor(access = PROTECTED)
+@Setter
+@NoArgsConstructor
 public class ChatRoom extends BaseEntity {
 
     @Id

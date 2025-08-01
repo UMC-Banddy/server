@@ -1,9 +1,12 @@
 package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +17,7 @@ import java.util.Map;
 public class RecruitmentRequest {
 
     private BandStatus status;
-    private String profileImageUrl;
+
     private String representativeSong;
     private String name;
     private LocalDateTime endDate;
