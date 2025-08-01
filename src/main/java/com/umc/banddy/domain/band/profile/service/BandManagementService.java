@@ -8,7 +8,9 @@ import com.umc.banddy.domain.band.profile.repository.*;
 import com.umc.banddy.domain.band.profile.web.dto.Recruitment.*;
 import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
+import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.PassFail;
+import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
@@ -27,7 +29,6 @@ import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Function;
@@ -419,7 +420,7 @@ public class BandManagementService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(null)
                 .imageUrl(null)
-                .roomType(RoomType.PRIVATE)
+                .roomType(RoomType.GROUP)
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
@@ -476,10 +477,16 @@ public class BandManagementService {
             Long roomId = bandChat.getChatRoom().getId();
             ChatMessage msg = lastMessageMap.get(bandChat.getChatRoom().getId());
 
+            ChatRoomParticipant participant = bandChat.getChatRoom().getParticipants().stream()
+                    .filter(p -> p.getRole() != Role.BANDMANAGER)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("참여자가 존재하지 않습니다."));
+
+
             bandChatSummaryDtos.add(
                     BandChatSummaryDto.builder()
                             .roomId(roomId)
-                            .nickname(bandChat.getChatRoom().getName())
+                            .nickname(participant.getMember().getNickname())
                             .imageUrl(bandChat.getChatRoom().getImageUrl())
                             .session(bandChat.getBandSession().getSession().getName())
                             .content(msg != null ? msg.getContent() : "")

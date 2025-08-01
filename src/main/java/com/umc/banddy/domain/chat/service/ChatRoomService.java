@@ -72,8 +72,7 @@ public class ChatRoomService {
 
         List<Member> members = memberRepository.findAllById(memberIds); // 요청한 멤버 ID 포함
 
-        List<ChatRoomParticipant> participantList  = members.stream()
-                .filter(member -> !member.getId().equals(memberId)) // 요청한 멤버는 제외
+        List<ChatRoomParticipant> participantList  = members.stream()// 요청한 멤버는 제외
                 .map(member -> ChatRoomParticipant.builder()
                         .chatRoom(savedRoom)
                         .member(member)
@@ -83,6 +82,7 @@ public class ChatRoomService {
                         .build())
                 .toList();
         List<ChatRoomResponse.RoomMemberinfo> memberinfos = members.stream()
+                .filter(member -> !member.getId().equals(memberId))
                 .map( member -> {
                     return ChatRoomResponse.RoomMemberinfo.builder()
                             .memberId(member.getId())
@@ -122,7 +122,7 @@ public class ChatRoomService {
 //        if(image != null && !image.isEmpty()) {
 //            chatRoom.setImageUrl(s3Uploader.upload(image, "group-chat-images"));
 //        }
-
+        chatRoom.setName(request.getRoomName());
         chatRoomRepository.save(chatRoom);
 
         List<ChatRoomResponse.RoomMemberinfo> memberinfos = chatRoom.getParticipants().stream()
