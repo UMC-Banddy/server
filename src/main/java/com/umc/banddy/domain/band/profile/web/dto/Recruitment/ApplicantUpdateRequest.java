@@ -5,18 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @AllArgsConstructor
 @Builder
 public class ApplicantUpdateRequest {
 
-    private List<ApplicantUpdate> applicantUpdate;
-
-    public static class ApplicantUpdate{
-
-        private Long memberId;
-        private String Status;
-    }
+    private Map<Long, String> applicantUpdate;
 
 }

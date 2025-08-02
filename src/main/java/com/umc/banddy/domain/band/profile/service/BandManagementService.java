@@ -18,6 +18,7 @@ import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.GenreRepository;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.repository.SessionRepository;
@@ -504,6 +505,28 @@ public class BandManagementService {
                 .status(band.getStatus())
                 .bandChatList(bandChatSummaryDtos)
                 .build();
+    }
+
+    public ApplicationListResponse updateApplicant(Long memberId, ApplicantUpdateRequest request, Long bandId) {
+
+        Map<Long, String> a = request.getApplicantUpdate();
+        List<Long> roomIds = new ArrayList<>(a.keySet());
+
+
+
+        List<ChatRoom> chatRooms = chatRoomRepository.findByIdIn(roomIds);
+
+        chatRooms.forEach(chatRoom -> {
+            String status = a.get(chatRoom.getId());
+            if (status != null) {
+                chatRoom.getBandChat().setPassFail(PassFail.valueOf(status));
+            }
+        });
+
+
+
+
+        return getApplicationList(bandId, memberId);
     }
 
 }
