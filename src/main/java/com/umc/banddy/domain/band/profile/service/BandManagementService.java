@@ -29,6 +29,7 @@ import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.function.Function;
@@ -63,7 +64,7 @@ public class BandManagementService {
 
 
     @Transactional
-    public RecruitmentResponse createRecruitment(RecruitmentRequest request, Long memberId){
+    public RecruitmentResponse createRecruitment(RecruitmentRequest request, MultipartFile image, Long memberId){
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
@@ -71,12 +72,12 @@ public class BandManagementService {
 //        String profileImageUrl = (request.getImage() != null && !request.getImage().isEmpty())
 //                ? s3Uploader.upload(request.getImage(), "band-profile-images") : null;
 
-//        String profileImageUrl = (image != null && !image.isEmpty())
-//                ? s3Uploader.upload(image, "band-profile-images") : null;
+        String profileImageUrl = (image != null && !image.isEmpty())
+                ? s3Uploader.upload(image, "band-profile-images") : null;
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
-                .profileImageUrl(null)
+                .profileImageUrl(profileImageUrl)
                 .representativeSong(request.getRepresentativeSong())
                 .name(request.getName())
                 .description(request.getDescription())
@@ -216,7 +217,7 @@ public class BandManagementService {
     }
 
     @Transactional
-    public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request, Long memberId) {
+    public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request, MultipartFile image, Long memberId) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
@@ -234,10 +235,10 @@ public class BandManagementService {
 //            String profileImageUrl = s3Uploader.upload(request.getImage(), "band-profile-images");
 //            band.setProfileImageUrl(profileImageUrl);
 //        }
-//        if(image != null && !image.isEmpty()) {
-//            String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
-//            band.setProfileImageUrl(profileImageUrl);
-//        }
+        if(image != null && !image.isEmpty()) {
+            String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
+            band.setProfileImageUrl(profileImageUrl);
+        }
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
                     .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다."));
