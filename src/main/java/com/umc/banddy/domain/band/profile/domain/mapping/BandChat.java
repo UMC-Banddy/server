@@ -12,6 +12,7 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Setter
 @Builder
 public class BandChat extends BaseEntity {
 
@@ -20,6 +21,7 @@ public class BandChat extends BaseEntity {
     private Long id;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private PassFail passFail;
 
     @OneToOne(cascade = CascadeType.PERSIST)

@@ -1,13 +1,12 @@
 package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
-@Getter
+@Getter @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ApplicationListResponse {
