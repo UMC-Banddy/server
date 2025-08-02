@@ -8,10 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver;
 
 @RestController
 @RequestMapping("/api")
@@ -22,29 +22,31 @@ public class BandManagementController {
     private final BandManagementService bandManagementService;
     private final ChatRoomService chatRoomService;
 
+
     @Operation(summary = "밴드 모집방 만들기")
-    @PostMapping(path = "/recruitments")
+    @PostMapping(path = "/recruitments", consumes = "multipart/form-data")
     public ResponseEntity<RecruitmentResponse> createBand(
-            @RequestBody  @Valid RecruitmentRequest recruit,
-//            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "data")  @Valid RecruitmentRequest recruit,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
 
-        return ResponseEntity.ok(bandManagementService.createRecruitment(recruit,currentMemberId));
+        return ResponseEntity.ok(bandManagementService.createRecruitment(recruit,image,currentMemberId));
     }
+
 
     @Operation(summary = "밴드 모집방 수정하기")
     @PatchMapping(path = "/recruitments")
     public ResponseEntity<RecruitmentResponse> updateBand(
-            @RequestBody  @Valid RecruitmentUpdateRequest recruit ,
-//            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestPart(value = "data")  RecruitmentUpdateRequest recruit ,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(bandManagementService.updateRecruitment(recruit,currentMemberId));
+        return ResponseEntity.ok(bandManagementService.updateRecruitment(recruit,image, currentMemberId));
     }
 
     @Operation(summary = "밴드 지원하기")

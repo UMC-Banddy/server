@@ -52,14 +52,13 @@ public class ChatRoomService {
 
 
     // 그룹 채팅방 생성
-    public ChatRoomResponse createGroupChatRoom(Long memberId,  ChatRoomRequest request){
+    public ChatRoomResponse createGroupChatRoom(Long memberId, MultipartFile image,  ChatRoomRequest request){
 
-//        MultipartFile image = request.getImage();
-//        String profileImageUrl = (image != null && !image.isEmpty())
-//                ? s3Uploader.upload(image, "group-chat-images") : null;
+        String profileImageUrl = (image != null && !image.isEmpty())
+                ? s3Uploader.upload(image, "group-chat-images") : null;
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(request.getRoomName())
-                .imageUrl(null)
+                .imageUrl(profileImageUrl)
                 .roomType(RoomType.GROUP)
                 .build();
 
@@ -94,7 +93,7 @@ public class ChatRoomService {
         return ChatRoomResponse.builder()
                 .roomId(savedRoom.getId())
                 .roomName(savedRoom.getName())
-                //.roomImageUrl(savedRoom.getImageUrl())
+                .roomImageUrl(savedRoom.getImageUrl())
                 .lastMessageTime(LocalDateTime.now()) // 초기값 설정
                 //.pinnedAt(null)
                 .roomtype(savedRoom.getRoomType())
@@ -105,6 +104,7 @@ public class ChatRoomService {
 
     public UpdateGroupChatResponse updateGroupChatRoom(
             Long memberId,
+            MultipartFile image,
             UpdateGroupChatRequest request
     ) {
 
@@ -117,20 +117,23 @@ public class ChatRoomService {
         }
 //        MultipartFile image = request.getImage();
 //
-//        // 채팅방 정보 업데이트
-//        chatRoom.setName(request.getRoomName());
-//        if(image != null && !image.isEmpty()) {
-//            chatRoom.setImageUrl(s3Uploader.upload(image, "group-chat-images"));
-//        }
+        // 채팅방 정보 업데이트
+        if(request.getRoomName() != null && !request.getRoomName().isEmpty()){
+            chatRoom.setName(request.getRoomName());
+        }
+        chatRoom.setName(request.getRoomName());
+        if(image != null && !image.isEmpty()) {
+            chatRoom.setImageUrl(s3Uploader.upload(image, "group-chat-images"));
+        }
         chatRoom.setName(request.getRoomName());
         chatRoomRepository.save(chatRoom);
 
-        List<ChatRoomResponse.RoomMemberinfo> memberinfos = chatRoom.getParticipants().stream()
-                .map(p -> ChatRoomResponse.RoomMemberinfo.builder()
-                        .memberId(p.getMember().getId())
-                        .memberName(p.getMember().getNickname())
-                        .build())
-                .toList();
+//        List<ChatRoomResponse.RoomMemberinfo> memberinfos = chatRoom.getParticipants().stream()
+//                .map(p -> ChatRoomResponse.RoomMemberinfo.builder()
+//                        .memberId(p.getMember().getId())
+//                        .memberName(p.getMember().getNickname())
+//                        .build())
+//                .toList();
 
         return UpdateGroupChatResponse.builder()
                 .roomId(chatRoom.getId())

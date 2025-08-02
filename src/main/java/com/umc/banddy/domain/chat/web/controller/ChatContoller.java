@@ -16,9 +16,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,24 +32,26 @@ public class ChatContoller {
 
 
     @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
-    @PostMapping(path = "/rooms")
+    @PostMapping(path = "/rooms", consumes = "multipart/form-data")
     public ResponseEntity<ChatRoomResponse> createChatRoom(
-            @RequestBody @Valid  ChatRoomRequest chatRoomRequest,
+            @RequestPart(value = "data") @Valid  ChatRoomRequest chatRoomRequest,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatRoomService.createGroupChatRoom(currentMemberId, chatRoomRequest));
+        return ResponseEntity.ok(chatRoomService.createGroupChatRoom(currentMemberId, image, chatRoomRequest));
     }
     @Operation(summary = " 단체 채팅방 정보 수정", description = "단체 채팅방 정보 수정 api")
-    @PatchMapping(path = "/rooms")
+    @PatchMapping(path = "/rooms", consumes = "multipart/form-data")
     public ResponseEntity<UpdateGroupChatResponse> updateChatRoom(
-            @RequestBody @Valid UpdateGroupChatRequest updateGroupChatRequest,
+            @RequestPart(value = "data")@Valid UpdateGroupChatRequest updateGroupChatRequest,
+            @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, updateGroupChatRequest));
+        return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, image, updateGroupChatRequest));
     }
 
     @Operation(summary = "개인 채팅방 조회")

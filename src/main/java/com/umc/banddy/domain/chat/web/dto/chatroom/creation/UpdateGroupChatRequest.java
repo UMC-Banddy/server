@@ -11,12 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Builder
 public class UpdateGroupChatRequest {
 
-//    @Schema(
-//            description = "업데이트할 프로필 이미지(선택)",
-//            type        = "string",
-//            format      = "binary"
-//    )
-//    private MultipartFile image;
     private Long roomId;
     private String roomName;
 }
