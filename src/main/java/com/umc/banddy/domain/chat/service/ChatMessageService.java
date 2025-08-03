@@ -158,8 +158,7 @@ public class ChatMessageService {
 
     }
     public void sendChatMessage(Long roomId, Long userId, ChatMessageRequest messageRequest) {
-        //System.out.println("메세지 전송로직");
-        String destination = "/topic/room/" + roomId;
+
         Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, userId);
 
         ChatRoom chatRoom = pair.getLeft();
@@ -202,9 +201,6 @@ public class ChatMessageService {
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
-                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
-                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-            }else{
                 UnreadResponse unreadResponse = UnreadResponse.builder()
                         .senderId(member.getId())
                         .roomId(chatRoom.getId())
@@ -212,6 +208,10 @@ public class ChatMessageService {
                         .timestamp(chatMessage.getCreatedAt())
                         .build();
                 websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
+
+            }else{
+                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
             }
         }
     }

@@ -55,9 +55,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes("/app");
-        config.enableSimpleBroker("/topic", "/queue","/user/queue")
+        config.enableSimpleBroker("/topic", "/queue")
                 .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]
-                .setTaskScheduler(this.messageBrokerTaskScheduler);; // 메시지 브로커 설정
+                .setTaskScheduler(this.messageBrokerTaskScheduler); // 메시지 브로커 설정
         // topic 구독자에게 브로드캐스트, queue는 특정 사용자에게 메시지 전송, /user/queue는 개인 메시지 전송을 위한 설정
         config.setUserDestinationPrefix("/user");
     }
