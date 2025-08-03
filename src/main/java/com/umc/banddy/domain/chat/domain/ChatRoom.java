@@ -35,7 +35,7 @@ public class ChatRoom extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RoomType roomType;
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany
     @JoinColumn(name = "chat_room_id")
     private List<ChatRoomParticipant> participants;
 
