@@ -194,8 +194,8 @@ public class ChatMessageService {
                     websocketService.queueUnreadMessage(email, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
                 }
             }
-        } else if (roomType.equals(RoomType.PRIVATE) || roomType.equals(RoomType.BAND)) {
-            // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
+        } else if (roomType.equals(RoomType.PRIVATE) ) {
+            // PRIVATE: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
                     .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
             // 캐싱 고려
@@ -209,10 +209,31 @@ public class ChatMessageService {
                         .build();
                 websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
 
-            }else{
+            } else {
                 ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
                 websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
             }
+        } else if (roomType.equals(RoomType.BAND)) {
+            // BAND: 세션 단위로 유저에게 개별 전송
+            Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
+                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
+            // 캐싱 고려
+            String receiverEmail = memberRepository.findEmailById(receiverId);
+            if (unsubscribedUsers.contains(receiverEmail)) {
+                UnreadBandResponse unreadbandResponse = UnreadBandResponse.builder()
+                        .senderId(member.getId())
+                        .roomId(chatRoom.getId())
+                        .bandId(chatRoom.getBandChat().getBand().getId())
+                        .content(chatMessage.getContent())
+                        .timestamp(chatMessage.getCreatedAt())
+                        .build();
+                websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadbandResponse, MessageType.UNREAD_MESSAGE));
+
+            } else {
+                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
+            }
+
         }
     }
 
