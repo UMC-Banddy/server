@@ -152,8 +152,16 @@ public class ChatRoomService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구입니다."));
 
         // 조회 후 없으면 생성
-        ChatRoom chatRoom = chatRoomRepository.findPrivateChatRoomByParticipants(member.getId(), friend.getId())
+        ChatRoom chatRoom = chatRoomRepository.findPrivateChatRoomByParticipants(member.getId(), friend.getId()).stream()
+                .findFirst()
                 .orElseGet(() -> createPrivateChatRoom(member, friend));
+
+        chatRoom.getParticipants().forEach(participant -> {
+            if (participant.getStatus() == Status.INACTIVE) {
+                participant.setStatus(Status.ACTIVE);
+            }
+        });
+
 
         return PrivateChatRoomResponse.builder()
                 .roomId(chatRoom.getId())
@@ -190,6 +198,27 @@ public class ChatRoomService {
 
         participantRepository.save(participant);
     }
+
+    public void saveBandParticipant(ChatRoom chatRoom, Member member, Member Manager) {
+        ChatRoomParticipant participantMember = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .role(Role.MEMBER)  // 기본 역할 설정
+                .status(Status.ACTIVE)  // 기본 상태 설정
+                .lastReadAt(LocalDateTime.now())  // 초기값
+                .build();
+        ChatRoomParticipant participantManager = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .role(Role.BANDMANAGER)  // 기본 역할 설정
+                .status(Status.ACTIVE)  // 기본 상태 설정
+                .lastReadAt(LocalDateTime.now())  // 초기값
+                .build();
+        List<ChatRoomParticipant> participants = List.of(participantMember, participantManager);
+
+        participantRepository.saveAll(participants);
+    }
+
 
     public ChatRoomListResponse getMyChatRooms(Long memberId){
 
@@ -241,6 +270,7 @@ public class ChatRoomService {
                 ));
 
         // 응답 생성
+        // 그룹 채팅방 정보 생성
         List<ChatRoomInfoDto> groupChatRoomInfos = groupRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
@@ -263,6 +293,7 @@ public class ChatRoomService {
                             .build();
                 }).collect(Collectors.toList());
 
+        // 개인 채팅방 정보 생성
         List<PrivateChatRoomInfoDto> privateChatRoomInfos = privateRooms.stream()
                 .map(room ->{
 
@@ -280,8 +311,8 @@ public class ChatRoomService {
                     return PrivateChatRoomInfoDto.builder()
                             .roomType(String.valueOf(RoomType.PRIVATE))
                             .roomId(room.getId())
-                            .chatName(room.getName())
-                            .imageUrl(room.getImageUrl())
+                            .chatName(memberInfo.getNickname())
+                            .imageUrl(memberInfo.getProfileImageUrl())
                             .memberInfo(memberInfo)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
@@ -321,10 +352,8 @@ public class ChatRoomService {
 
         List<BandManagerRoomInfoDto> adminBandRoomInfos = adminBandRooms.stream()
                 .collect(Collectors.groupingBy(room -> room.getBandChat().getBand().getId()))
-                .entrySet().stream()
-                .map(entry -> {
-                    Long bandId = entry.getKey();
-                    List<ChatRoom> rooms = entry.getValue();
+                .values().stream()
+                .map(rooms -> {
 
                     ChatRoom anyRoom = rooms.get(0);
                     Band band = anyRoom.getBandChat().getBand();
@@ -334,7 +363,7 @@ public class ChatRoomService {
                             .map(room -> {
                                 MemberInfo memberInfo = room.getParticipants().stream()
                                         .map(ChatRoomParticipant::getMember)
-                                       // .filter(member1 -> !member1.getId().equals(memberId))
+                                        .filter(member1 -> !member1.getId().equals(memberId))
                                         .map(member1 -> MemberInfo.builder()
                                                 .memberId(member1.getId())
                                                 .nickname(member1.getNickname())
@@ -346,7 +375,7 @@ public class ChatRoomService {
                                 return BandManagerRoomInfoDto.BandChatRoomInfo.builder()
                                         .roomId(room.getId())
                                         .memberInfo(memberInfo)
-                                        .session(room.getBandChat().getBandSession().getSession().toString())
+                                        .session(room.getBandChat().getBandSession().getSession().getName())
                                         .passFail(room.getBandChat().getPassFail())
                                         .lastMessageAt(lastAtMap.get(room.getId()))
                                         .UnreadCount(unreadCountMap.get(room.getId()))
@@ -375,7 +404,7 @@ public class ChatRoomService {
                             .bandSessionList(
                                     band.getBandSessions().stream()
                                             .filter(session -> "RECRUITING".equals(session.getSessionStatus()))
-                                            .map(session -> session.getBand().getName())
+                                            .map(session -> session.getSession().getName())
                                             .distinct()
                                             .toList()
                             )

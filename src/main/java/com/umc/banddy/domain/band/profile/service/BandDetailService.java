@@ -26,7 +26,7 @@ public class BandDetailService {
     private final BandTagRepository bandTagRepository;
     private final BandTrackRepository bandTrackRepository;
 
-    public BandDetailResponse getBandDetail(Long bandId, Long loginMemberId) {
+    public BandDetailResponse getBandDetail(Long loginMemberId, Long bandId) {
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
 

@@ -11,10 +11,6 @@ public abstract class ChatRoomInfo {
 
     private String roomType;
 
-    private String chatName;
-
-    private String imageUrl;
-
     private Long unreadCount;
 
     private LocalDateTime lastMessageAt;

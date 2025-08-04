@@ -30,7 +30,6 @@ public class ChatContoller {
     private final JwtTokenUtil jwtTokenUtil;
     private final ChatMessageService chatMessageService;
 
-
     @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
     @PostMapping(path = "/rooms", consumes = "multipart/form-data")
     public ResponseEntity<ChatRoomResponse> createChatRoom(

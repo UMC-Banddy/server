@@ -11,6 +11,10 @@ import java.util.List;
 public class ChatRoomInfoDto extends ChatRoomInfo {
 
     private Long roomId;
+
+    private String chatName;
+
+    private String imageUrl;
     private List<MemberInfo> memberInfos;
 
 }

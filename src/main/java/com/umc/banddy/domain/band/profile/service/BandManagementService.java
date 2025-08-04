@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -428,9 +429,7 @@ public class BandManagementService {
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
         // 참여자 추가
-        chatRoomService.saveParticipant(savedRoom, member);
-        chatRoomService.saveParticipant(savedRoom, band.getManager());
-
+        chatRoomService.saveBandParticipant(chatRoom, member, band.getManager());
         BandChat bandChat = BandChat.builder()
                 .passFail(PassFail.PENDING)
                 .chatRoom(savedRoom)
