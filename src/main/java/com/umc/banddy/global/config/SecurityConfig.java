@@ -66,7 +66,11 @@ public class SecurityConfig {
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site",
+            "http://3.38.234.135",
+            "http://3.38.234.135:80",
+            "http://3.38.234.135:8080",
+            "http://3.38.234.135:8081" ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*", "Authorization"));
         config.setAllowCredentials(true);
