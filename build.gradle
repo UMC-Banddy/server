@@ -36,6 +36,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	//implementation 'software.amazon.awssdk:s3:2.20.156'
 	implementation 'se.michaelthelin.spotify:spotify-web-api-java:9.2.0'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
