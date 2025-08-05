@@ -13,9 +13,15 @@ public class BandApplicationResponse {
 
     private Long roomId;
 
-    private String name;
+    private Long bandId;
 
-    private String imageUrl;
+    private String bandName;
+
+    private String bandImageUrl;
+
+    private String managerName;
+
+    private String managerImageUrl;
 
     private LocalDateTime createdAt;
 }

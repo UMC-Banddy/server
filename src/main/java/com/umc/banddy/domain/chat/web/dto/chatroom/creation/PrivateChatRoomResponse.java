@@ -10,4 +10,5 @@ import lombok.Getter;
 public class PrivateChatRoomResponse {
 
     private Long roomId;
+
 }
