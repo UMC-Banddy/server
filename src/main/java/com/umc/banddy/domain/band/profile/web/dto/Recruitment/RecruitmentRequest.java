@@ -25,9 +25,9 @@ public class RecruitmentRequest {
     private String description;
 
     private List<String> session;
-    private List<Long> genre;
-    private List<Long> artist;
-    private List<Long> track;
+    private List<String> genres;
+    private List<String> artistSpotifyIds;
+    private List<String> trackSpotifyIds;
 
     private int ageStart;
     private int ageEnd;

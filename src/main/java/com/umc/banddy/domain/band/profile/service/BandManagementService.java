@@ -18,7 +18,6 @@ import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
-import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.GenreRepository;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.repository.SessionRepository;
@@ -139,14 +138,14 @@ public class BandManagementService {
                 .toList();
 
         // 밴드 장르 저장
-        List<Genre> GenreAll = genreRepository.findByIdIn(request.getGenre());
-        Map<Long, Genre> genreMap = GenreAll.stream()
-                .collect(Collectors.toMap(Genre::getId, Function.identity()));
+        List<Genre> GenreAll = genreRepository.findByNameIn(request.getGenres());
+        Map<String, Genre> genreMap = GenreAll.stream()
+                .collect(Collectors.toMap(Genre::getName, Function.identity()));
 
-        List<BandGenre> genres = request.getGenre().stream()
-                .map(genreId -> {
-                    Genre g = genreMap.get(genreId);
-                    if (g == null) throw new IllegalArgumentException("장르이 존재하지 않습니다: " + genreId );
+        List<BandGenre> genres = request.getGenres().stream()
+                .map(genreName -> {
+                    Genre g = genreMap.get(genreName);
+                    if (g == null) throw new IllegalArgumentException("장르이 존재하지 않습니다: " + genreName);
                 return BandGenre.builder()
                             .band(savedBand)
                             .genre(g)
@@ -155,11 +154,11 @@ public class BandManagementService {
 
 
         // 밴드 아티스트 저장
-        List<Artist> ArtistAll = artistRepository.findByIdIn(request.getArtist());
-        Map<Long, Artist> artistMap = ArtistAll.stream()
-                .collect(Collectors.toMap(Artist::getId, Function.identity()));
+        List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
+        Map<String, Artist> artistMap = ArtistAll.stream()
+                .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
 
-        List<BandArtist> artists = request.getArtist().stream()
+        List<BandArtist> artists = request.getArtistSpotifyIds().stream()
                 .map(artistId -> {
                     Artist a = artistMap.get(artistId);
                     if (a == null) throw new IllegalArgumentException("아티스트가 존재하지 않습니다: " + artistId );
@@ -170,11 +169,11 @@ public class BandManagementService {
                 }).toList();
 
         // 밴드 트랙 저장
-        List<Track> TrackAll = trackRepository.findByIdIn(request.getTrack());
-        Map<Long, Track> trackMap = TrackAll.stream()
-                .collect(Collectors.toMap(Track::getId, Function.identity()));
+        List<Track> TrackAll = trackRepository.findBySpotifyIdIn(request.getTrackSpotifyIds());
+        Map<String, Track> trackMap = TrackAll.stream()
+                .collect(Collectors.toMap(Track::getSpotifyId, Function.identity()));
 
-        List<BandTrack> tracks = request.getTrack().stream()
+        List<BandTrack> tracks = request.getTrackSpotifyIds().stream()
                 .map(trackId -> {
                     Track t = trackMap.get(trackId);
                     if (t == null) throw new IllegalArgumentException("노래가 존재하지 않습니다: " + trackId );
@@ -287,13 +286,21 @@ public class BandManagementService {
             bandSessionRepository.deleteAllByBand(band);
 
         }
-        if (request.getGenre() != null) {
+        if (request.getGenres() != null) {
+            Map<String,Long> genreMap = genreRepository.findGenreMapByNameIn(request.getGenres()).stream()
+                    .collect(Collectors.toMap(
+                            GenreRepository.GenreIdName::getName,
+                            GenreRepository.GenreIdName::getId
+                    ));
             List<BandGenre> existing = bandGenreRepository.findByBandId(band.getId());
             Set<Long> existingIds = existing.stream()
                     .map(bg -> bg.getGenre().getId())
                     .collect(Collectors.toSet());
 
-            Set<Long> newIds = new HashSet<>(request.getGenre());
+            Set<Long> newIds = request.getGenres().stream()
+                    .map(genreMap::get)            // 이름에 대응하는 ID 가져오기
+                    .filter(Objects::nonNull)     // 매핑 안 된 이름(null)들은 걸러내고
+                    .collect(Collectors.toSet());  // 바로 Set<Long> 생성
 
             Set<Long> toDelete = new HashSet<>(existingIds);
             toDelete.removeAll(newIds);
@@ -314,13 +321,21 @@ public class BandManagementService {
                 bandGenreRepository.saveAll(inserts);
             }
         }
-        if (request.getArtist() != null) {
+        if (request.getArtistSpotifyIds() != null) {
+            Map<String,Long> artistMap = artistRepository.findArtistMapBySpotifyIdIn(request.getArtistSpotifyIds()).stream()
+                    .collect(Collectors.toMap(
+                            ArtistRepository.ArtistIdSpotifyId::getSpotifyId,
+                            ArtistRepository.ArtistIdSpotifyId::getId
+                    ));
             List<BandArtist> existing = bandArtistRepository.findByBandId(band.getId());
             Set<Long> existingIds = existing.stream()
                     .map(ba -> ba.getArtist().getId())
                     .collect(Collectors.toSet());
 
-            Set<Long> newIds = new HashSet<>(request.getArtist());
+            Set<Long> newIds = request.getArtistSpotifyIds().stream()
+                    .map(artistMap::get)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
             Set<Long> toDelete = new HashSet<>(existingIds);
             toDelete.removeAll(newIds);
             if (!toDelete.isEmpty()) {
@@ -336,13 +351,21 @@ public class BandManagementService {
                 bandArtistRepository.saveAll(inserts);
             }
         }
-        if (request.getTrack() != null) {
+        if (request.getTrackSpotifyIds() != null) {
+            Map<String,Long> trackMap = trackRepository.findTrackMapBySpotifyIdIn(request.getTrackSpotifyIds()).stream()
+                    .collect(Collectors.toMap(
+                            TrackRepository.TrackIdSpotifyId::getSpotifyId,
+                            TrackRepository.TrackIdSpotifyId::getId
+                    ));
             List<BandTrack> existing = bandTrackRepository.findByBandId(band.getId());
             Set<Long> existingIds = existing.stream()
                     .map(bt -> bt.getTrack().getId())
                     .collect(Collectors.toSet());
 
-            Set<Long> newIds = new HashSet<>(request.getTrack());
+            Set<Long> newIds = request.getTrackSpotifyIds().stream()
+                    .map(trackMap::get)            // 각 Spotify ID에 매핑된 Track ID
+                    .filter(Objects::nonNull)      // 매핑 안 된(없는) ID는 필터링
+                    .collect(Collectors.toSet());
             Set<Long> toDelete = new HashSet<>(existingIds);
             toDelete.removeAll(newIds);
             if (!toDelete.isEmpty()) {
@@ -410,7 +433,6 @@ public class BandManagementService {
         Session sessionEntity = sessionRepository.findByName(session)
                 .orElseThrow(() -> new IllegalArgumentException("세션 정보가 존재하지 않습니다: " + session));
 
-
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(()->new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
 
@@ -441,9 +463,12 @@ public class BandManagementService {
 
         return BandApplicationResponse.builder()
                 .roomId(savedRoom.getId())
-                .name(savedRoom.getName())
-                .imageUrl(savedRoom.getImageUrl())
-                .createdAt(bandChat.getCreatedAt())
+                .bandId(band.getId())
+                .bandName(band.getName())
+                .bandImageUrl(band.getProfileImageUrl())
+                .managerName(band.getManager().getNickname())
+                .managerImageUrl(band.getManager().getProfileImageUrl())
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 

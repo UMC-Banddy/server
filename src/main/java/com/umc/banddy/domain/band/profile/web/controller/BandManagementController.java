@@ -38,9 +38,9 @@ public class BandManagementController {
 
 
     @Operation(summary = "밴드 모집방 수정하기")
-    @PatchMapping(path = "/recruitments")
+    @PatchMapping(path = "/recruitments", consumes = "multipart/form-data")
     public ResponseEntity<RecruitmentResponse> updateBand(
-            @RequestPart(value = "data")  RecruitmentUpdateRequest recruit ,
+            @RequestPart(value = "data")                RecruitmentUpdateRequest recruit ,
             @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
@@ -72,6 +72,7 @@ public class BandManagementController {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(bandManagementService.getApplicationList(bandId, currentMemberId));
     }
+
     @Operation(summary = "밴드 합격 불합격 처리")
     @PatchMapping("/recruitments/{bandId}")
     public ResponseEntity<ApplicationListResponse> updateApplicantStatus(
