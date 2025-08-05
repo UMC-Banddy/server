@@ -18,14 +18,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Grant permission
+      - name: Grant permission to Gradle
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
         run: ./gradlew clean bootJar
-
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/banddy:latest .
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -33,8 +30,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest .
+
       - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/banddy:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/myapp:latest
 
       - name: Deploy to EC2 and run deploy.sh
         uses: appleboy/ssh-action@v1
@@ -44,4 +44,4 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/banddy:latest
-            bash ~/deploy.sh
+            sudo bash /home/ubuntu/deploy.sh
