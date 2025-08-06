@@ -2,7 +2,9 @@ name: CI/CD Deploy
 
 on:
   push:
-    branches: [develop] 
+    branches: [develop]
+    paths-ignore:
+      - 'README.md'
     
 jobs:
   build-and-deploy:
