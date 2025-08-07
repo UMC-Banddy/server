@@ -53,7 +53,7 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, image, updateGroupChatRequest));
     }
 
-    @Operation(summary = "개인 채팅방 조회")
+    @Operation(summary = "개인 채팅방 생성, 입장", description = "친구페이지에서 개인 채팅방 입장, 채팅방이 없는 경우도 자동 생성 api")
     @PostMapping("/rooms/friends")
     public ResponseEntity<PrivateChatRoomResponse> createPrivateChatRooms(
             @RequestBody @Valid PrivateChatRoomRequest privateChatRoomRequest,
@@ -132,6 +132,46 @@ public class ChatContoller {
         Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
         return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
     }
+
+    @Operation(summary = "채팅방 고정하기")
+    @PatchMapping("/rooms/pin")
+    public ResponseEntity <?> pinChatRoom(
+            @RequestParam(required = false) Long bandId,
+            @RequestParam(required = false) Long chatId,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        if( bandId == null && chatId != null) {
+           return ResponseEntity.ok(chatRoomService.pinChatRoom( chatId, currentMemberId));
+        }else if(bandId != null && chatId == null) {
+            return ResponseEntity.ok(chatRoomService.pinBandChatRoom(currentMemberId, bandId));
+        }else{
+            return ResponseEntity.badRequest().body("bandId or chatId must be provided");
+        }
+    }
+    @Operation(summary = "채팅방 고정 해제")
+    @PatchMapping("/rooms/unpin")
+    public ResponseEntity <?> unpinChatRoom(
+            @RequestParam(required = false) Long bandId,
+            @RequestParam(required = false) Long chatId,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        if( bandId == null && chatId != null) {
+            return ResponseEntity.ok(chatRoomService.unpinChatRoom( chatId, currentMemberId));
+        }else if(bandId != null && chatId == null) {
+            return ResponseEntity.ok(chatRoomService.unpinBandChatRoom(currentMemberId, bandId));
+        }else{
+            return ResponseEntity.badRequest().body("bandId or chatId must be provided");
+        }
+    }
+
+
+
+
+
 
 //    @Operation(summary = "밴드 지원하기")
 //    @PostMapping("/bands/{bandId}/join")

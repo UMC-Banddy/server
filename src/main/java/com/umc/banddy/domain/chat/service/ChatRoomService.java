@@ -25,8 +25,6 @@ import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -80,10 +78,10 @@ public class ChatRoomService {
                         .lastReadAt(LocalDateTime.now()) // 초기값 설정
                         .build())
                 .toList();
-        List<ChatRoomResponse.RoomMemberinfo> memberinfos = members.stream()
+        List<ChatRoomResponse.RoomMemberInfo> memberinfos = members.stream()
                 .filter(member -> !member.getId().equals(memberId))
                 .map( member -> {
-                    return ChatRoomResponse.RoomMemberinfo.builder()
+                    return ChatRoomResponse.RoomMemberInfo.builder()
                             .memberId(member.getId())
                             .memberName(member.getNickname())
                             .build();
@@ -95,9 +93,8 @@ public class ChatRoomService {
                 .roomName(savedRoom.getName())
                 .roomImageUrl(savedRoom.getImageUrl())
                 .lastMessageTime(LocalDateTime.now()) // 초기값 설정
-                //.pinnedAt(null)
                 .roomtype(savedRoom.getRoomType())
-                .memberinfos(memberinfos)
+                .memberInfos(memberinfos)
                 .build();
     }
 
@@ -161,8 +158,6 @@ public class ChatRoomService {
                 participant.setStatus(Status.ACTIVE);
             }
         });
-
-
         return PrivateChatRoomResponse.builder()
                 .roomId(chatRoom.getId())
                 .build();
@@ -642,6 +637,72 @@ public class ChatRoomService {
                 .managerId(bandManager.getId())
                 .managerName(band.getManager().getNickname())
                 .managerProfileUrl(band.getManager().getProfileImageUrl())
+                .build();
+    }
+
+    @Transactional
+    public PinChatResponse pinChatRoom(Long roomId, Long memberId){
+
+        ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
+                roomId, memberId, Status.ACTIVE
+        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+
+        if (participant.getPinnedAt() == null) {
+            participant.setPinnedAt(LocalDateTime.now());
+        }
+
+        return PinChatResponse.builder()
+                .roomId(roomId)
+                .pinnedAt(participant.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinBandChatRoomResponse pinBandChatRoom(Long bandId, Long memberId){
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+        if(!band.getManager().getId().equals(memberId)){
+            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+        }
+        band.setPinnedAt(LocalDateTime.now());
+
+        return PinBandChatRoomResponse.builder()
+                .bandId(bandId)
+                .pinnedAt(band.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinChatResponse unpinChatRoom(Long roomId, Long memberId){
+
+        ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
+                roomId, memberId, Status.ACTIVE
+        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+
+        if (participant.getPinnedAt() == null) {
+            participant.setPinnedAt(LocalDateTime.now());
+        }
+
+        return PinChatResponse.builder()
+                .roomId(roomId)
+                .pinnedAt(participant.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinBandChatRoomResponse unpinBandChatRoom(Long bandId, Long memberId){
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+        if(!band.getManager().getId().equals(memberId)){
+            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+        }
+        band.setPinnedAt(LocalDateTime.now());
+
+        return PinBandChatRoomResponse.builder()
+                .bandId(bandId)
+                .pinnedAt(band.getPinnedAt())
                 .build();
     }
 
