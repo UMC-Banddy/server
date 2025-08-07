@@ -15,6 +15,7 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
+import com.umc.banddy.domain.chat.web.dto.chatroom.BasicChatRoomInfo;
 import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
@@ -428,7 +429,7 @@ public class BandManagementService {
                 .build();
     }
 
-    public BandApplicationResponse createChatRoomForApplication(Long bandId, Long memberId, String session){
+    public BasicChatRoomInfo createChatRoomForApplication(Long bandId, Long memberId, String session){
 
         Session sessionEntity = sessionRepository.findByName(session)
                 .orElseThrow(() -> new IllegalArgumentException("세션 정보가 존재하지 않습니다: " + session));
@@ -461,15 +462,7 @@ public class BandManagementService {
 
         bandChatRepository.save(bandChat);
 
-        return BandApplicationResponse.builder()
-                .roomId(savedRoom.getId())
-                .bandId(band.getId())
-                .bandName(band.getName())
-                .bandImageUrl(band.getProfileImageUrl())
-                .managerName(band.getManager().getNickname())
-                .managerImageUrl(band.getManager().getProfileImageUrl())
-                .createdAt(LocalDateTime.now())
-                .build();
+        return chatRoomService.getChatRoomInfo(chatRoom.getId(), memberId);
     }
 
     public ApplicationListResponse getApplicationList(Long bandId, Long memberId){
