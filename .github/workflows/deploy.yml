@@ -5,6 +5,8 @@ on:
     branches: [develop]
     paths-ignore:
       - 'README.md'
+  workflow_dispatch:
+
     
 jobs:
   build-and-deploy:
