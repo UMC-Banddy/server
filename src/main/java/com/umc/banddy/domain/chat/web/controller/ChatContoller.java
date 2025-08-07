@@ -92,13 +92,16 @@ public class ChatContoller {
     @GetMapping("/rooms/{roomId}/messages")
     public ResponseEntity<CursorChatMessageResponse> getChatMessages(
             @PathVariable Long roomId,
-            @RequestParam(required = false, defaultValue = "0") Long cursor,
+            @RequestParam(required = false) Long cursor,
             @RequestParam(required = false, defaultValue = "20") Integer limit,
             HttpServletRequest request
     ) {
+        // 초기 요청인 경우(Long.MAX_VALUE = 9_223_372_036_854_775_807)
+        long effectiveCursor = (cursor == null) ? Long.MAX_VALUE : cursor;
+
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit));
+        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, effectiveCursor, limit));
     }
 
     @Operation(summary = "채팅방 목록 조회")
@@ -121,16 +124,15 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
     }
 
-    @Operation(summary = "채팅방 참가자 정보 불러오기")
+    @Operation(summary = "채팅방 입장시 필요 정보 불러오기")
     @GetMapping("/rooms/{roomId}")
-    public ResponseEntity <ParticipantInfos> getChatRoomInfo(
+    public ResponseEntity <BasicChatRoomInfo> getChatRoomInfo(
             @PathVariable Long roomId,
             HttpServletRequest request
     ){
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
-        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
+        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(roomId, currentMemberId));
     }
 
     @Operation(summary = "채팅방 고정하기")

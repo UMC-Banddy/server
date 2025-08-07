@@ -24,13 +24,34 @@ public class RecruitmentRequest {
     private Boolean autoClose;
     private String description;
 
+
     private List<String> session;
+
     private List<String> genres;
+    @Schema(
+            description = "선택할 아티스트의 Spotify ID 목록",
+            type = "array",
+            allowableValues = {
+                    "7tshn3Sr182m8lyxYKANjA",
+                    "50Zu2bK9y5UAtD0jcqk5VX"
+            },
+            example = "[\"7tshn3Sr182m8lyxYKANjA\", \"50Zu2bK9y5UAtD0jcqk5VX\"]"
+    )
     private List<String> artistSpotifyIds;
+    @Schema(
+            description = "추가할 트랙의 Spotify ID 목록",
+            type = "array",
+            allowableValues = {
+                    "5rNyAQzncPBVdEgEG4okNK",
+                    "3P3guXf2RRhjPK0R2UlLZV"
+            },
+            example = "[\"5rNyAQzncPBVdEgEG4okNK\", \"3P3guXf2RRhjPK0R2UlLZV\"]"
+    )
     private List<String> trackSpotifyIds;
 
     private int ageStart;
     private int ageEnd;
+
     private String gender;
     private String region;
     private String district;

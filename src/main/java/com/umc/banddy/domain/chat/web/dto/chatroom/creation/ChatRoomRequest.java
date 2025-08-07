@@ -12,12 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ChatRoomRequest {
-//    @Schema(
-//            description = "업데이트할 프로필 이미지(선택)",
-//            type        = "string",
-//            format      = "binary"
-//    )
-//    private MultipartFile image;
+
     private List<Long> memberIds;
     private String roomName;
 }
