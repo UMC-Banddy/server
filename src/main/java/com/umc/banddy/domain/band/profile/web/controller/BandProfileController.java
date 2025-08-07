@@ -32,8 +32,13 @@ public class BandProfileController {
 
     // 밴드 상세정보 조회
     @GetMapping("/{bandId}/detail")
-    public ResponseEntity<BandDetailResponse> getBandDetail(@PathVariable Long bandId) {
-        BandDetailResponse response = bandDetailService.getBandDetail(bandId);
+    public ResponseEntity<BandDetailResponse> getBandDetail(
+            @PathVariable Long bandId,
+            HttpServletRequest request
+    ) {
+        Long loginMemberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
+        BandDetailResponse response = bandDetailService.getBandDetail(loginMemberId, bandId); // ✅ OK
         return ResponseEntity.ok(response);
     }
+
 }
