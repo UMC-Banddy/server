@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.chat.domain;
 
+import com.umc.banddy.domain.chat.domain.enums.Type;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import static lombok.AccessLevel.PROTECTED;
 
@@ -24,8 +26,11 @@ public class ChatMessage extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-    // 일단 텍스트만 지원한다고 가정
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'TEXT'")
+    private Type type;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)

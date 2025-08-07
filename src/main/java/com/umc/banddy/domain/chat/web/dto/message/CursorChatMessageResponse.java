@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.Message;
+package com.umc.banddy.domain.chat.web.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 public class CursorChatMessageResponse {
 
-    private Long roomId;
     private List<CursorChatMessage> messages;
     private boolean hasNext;
     private Long lastMessageId;

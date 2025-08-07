@@ -34,11 +34,11 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage,Long> {
             @Param("lastReadMessageId") Long lastReadMessageId
     );
 
+
     interface LastMessageProjection {
         Long            getRoomId();
         LocalDateTime   getLastMessageAt();
     }
-
 
     @Query("""
         select r.id             as roomId,

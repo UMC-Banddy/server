@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.Message;
+package com.umc.banddy.domain.chat.web.dto.chatroom;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class ChatSystemResponse {
+public class PinChatResponse {
+
     private Long roomId;
-    private String message;
-    private LocalDateTime timestamp;
+    private LocalDateTime pinnedAt;
 }

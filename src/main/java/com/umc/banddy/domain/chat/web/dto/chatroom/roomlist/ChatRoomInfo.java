@@ -1,22 +1,20 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @SuperBuilder
 public abstract class ChatRoomInfo {
 
-    private String chatName;
 
-    private String imageUrl;
+    private String roomType;
 
     private Long unreadCount;
+
+    private LocalDateTime pinnedAt;
 
     private LocalDateTime lastMessageAt;
 }

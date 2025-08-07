@@ -4,7 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.umc.banddy.domain.chat.domain.QChatMessage;
-import com.umc.banddy.domain.chat.web.dto.Message.CursorChatMessage;
+import com.umc.banddy.domain.chat.web.dto.message.CursorChatMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -30,15 +30,18 @@ public class ChatCustomRepository {
                 .from(QChatMessage.chatMessage)
                 .where(
                         QChatMessage.chatMessage.chatRoom.id.eq(roomId),
-                        cursor != null ? QChatMessage.chatMessage.id.lt(cursor) : null
+                        ltCursor(cursor)
                 )
-                .orderBy(QChatMessage.chatMessage.id.asc())
+                .orderBy(QChatMessage.chatMessage.id.desc())
                 .limit(limit + 1)
                 .fetch();
     }
 
+
     private BooleanExpression ltCursor(Long cursor) {
-        return cursor != null ? QChatMessage.chatMessage.id.lt(cursor) : null;
+        return (cursor != null && cursor > 0)
+                ? QChatMessage.chatMessage.id.lt(cursor)
+                : null;
     }
 
     //

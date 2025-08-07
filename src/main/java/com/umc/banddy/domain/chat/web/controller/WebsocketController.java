@@ -1,20 +1,16 @@
 package com.umc.banddy.domain.chat.web.controller;
 
 
-import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
-import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.service.WebsocketService;
-import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageRequest;
-import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageResponse;
+import com.umc.banddy.domain.chat.web.dto.message.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.member.domain.Member;
-import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
@@ -25,7 +21,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-import java.util.Optional;
 
 import static com.umc.banddy.domain.chat.converter.ChatConveter.toTimeMark;
 import static com.umc.banddy.domain.chat.converter.ChatConveter.toWsMessage;

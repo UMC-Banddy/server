@@ -1,22 +1,38 @@
 package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @AllArgsConstructor
 @Builder
 public class ApplicantUpdateRequest {
 
-    private List<ApplicantUpdate> applicantUpdate;
+    @NotEmpty
+    private List<ApplicantUpdateDto> applicantUpdate;
 
-    public static class ApplicantUpdate{
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "단일 지원자 업데이트 정보")
+    public static class ApplicantUpdateDto {
 
-        private Long memberId;
-        private String Status;
+        @NotNull
+        @Schema(description = "채팅방 ID", example = "15")
+        private Long roomId;
+
+        @NotNull
+        @Schema(
+                description    = "지원 상태",
+                allowableValues = {"PASS", "FAIL"},
+                example        = "FAIL"
+        )
+        private String status;
     }
 
 }

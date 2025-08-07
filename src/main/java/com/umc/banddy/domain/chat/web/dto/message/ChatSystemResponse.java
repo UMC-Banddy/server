@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.Message;
+package com.umc.banddy.domain.chat.web.dto.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class UnreadResponse {
-
-    private Long senderId;
+public class ChatSystemResponse {
     private Long roomId;
-    private String content;
+    private String message;
     private LocalDateTime timestamp;
-
 }

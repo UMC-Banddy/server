@@ -6,7 +6,6 @@ import com.umc.banddy.domain.band.profile.domain.mapping.BandChat;
 import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.band.profile.repository.BandChatRepository;
 import com.umc.banddy.domain.band.profile.repository.BandRepository;
-import com.umc.banddy.domain.band.profile.repository.BandSessionRepository;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.PassFail;
@@ -15,20 +14,24 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
-import com.umc.banddy.domain.chat.web.dto.ChatRoom.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
+import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.*;
 import com.umc.banddy.domain.friend.domain.Friend;
 import com.umc.banddy.domain.friend.repository.FriendRepository;
-import com.umc.banddy.domain.friend.service.FriendService;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
-import com.umc.banddy.domain.member.repository.SessionRepository;
+import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,18 +43,22 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomParticipantRepository participantRepository;
     private final MemberRepository memberRepository;
-    private final FriendService friendService;
     private final FriendRepository friendRepository;
-    private final ChatRoomParticipantCache chatRoomParticipantCache;
     private final BandRepository bandRepository;
-    private final SessionRepository sessionRepository;
-    private final BandSessionRepository bandSessionRepository;
     private final BandChatRepository bandChatRepository;
+    private final S3Uploader s3Uploader;
+    private final ChatRoomParticipantCache chatRoomParticipantCache;
+    private final ChatMessageService chatMessageService;
+
+
     // 그룹 채팅방 생성
-    public ChatRoomResponse createGroupChatRoom(Long memberId, ChatRoomRequest request){
+    public ChatRoomResponse createGroupChatRoom(Long memberId, MultipartFile image,  ChatRoomRequest request){
+
+        String profileImageUrl = (image != null && !image.isEmpty())
+                ? s3Uploader.upload(image, "group-chat-images") : null;
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(request.getRoomName())
-                .imageUrl(request.getImageUrl())
+                .imageUrl(profileImageUrl)
                 .roomType(RoomType.GROUP)
                 .build();
 
@@ -59,29 +66,28 @@ public class ChatRoomService {
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
         // 참여자 등록
-        List<ChatRoomParticipant> participantList = new ArrayList<>();
-        List<ChatRoomResponse.RoomMemberinfo> memberinfos =new ArrayList<>();
+        List<Long> memberIds = request.getMemberIds();
+        memberIds.add(memberId);
 
-        for(Long memberIds : request.getMemberIds()){
-            Member member = memberRepository.findById(memberIds)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberIds));
+        List<Member> members = memberRepository.findAllById(memberIds); // 요청한 멤버 ID 포함
 
-            ChatRoomParticipant participant = ChatRoomParticipant.builder()
-                    .chatRoom(savedRoom)
-                    .member(member)
-                    .role(member.getId().equals(memberId)
-                            ? Role.ADMIN
-                            : Role.MEMBER) // 테스트 용
-                    .status(Status.ACTIVE)
-                    .lastReadAt(LocalDateTime.now()) // 초기값 설정
-                    .build();
-            participantList.add(participant);
-            memberinfos.add(
-                    ChatRoomResponse.RoomMemberinfo.builder()
-                            .userId(member.getId())
-                            .userName(member.getNickname())
-                            .build());
-        }
+        List<ChatRoomParticipant> participantList  = members.stream()// 요청한 멤버는 제외
+                .map(member -> ChatRoomParticipant.builder()
+                        .chatRoom(savedRoom)
+                        .member(member)
+                        .role(Role.MEMBER) // 테스트 용
+                        .status(Status.ACTIVE)
+                        .lastReadAt(LocalDateTime.now()) // 초기값 설정
+                        .build())
+                .toList();
+        List<ChatRoomResponse.RoomMemberInfo> memberinfos = members.stream()
+                .filter(member -> !member.getId().equals(memberId))
+                .map( member -> {
+                    return ChatRoomResponse.RoomMemberInfo.builder()
+                            .memberId(member.getId())
+                            .memberName(member.getNickname())
+                            .build();
+                }).toList();
 
         participantRepository.saveAll(participantList);
         return ChatRoomResponse.builder()
@@ -89,26 +95,73 @@ public class ChatRoomService {
                 .roomName(savedRoom.getName())
                 .roomImageUrl(savedRoom.getImageUrl())
                 .lastMessageTime(LocalDateTime.now()) // 초기값 설정
-                //.pinnedAt(null)
                 .roomtype(savedRoom.getRoomType())
-                .memberinfos(memberinfos)
+                .memberInfos(memberinfos)
                 .build();
     }
 
+
+    public UpdateGroupChatResponse updateGroupChatRoom(
+            Long memberId,
+            MultipartFile image,
+            UpdateGroupChatRequest request
+    ) {
+
+        ChatRoom chatRoom = chatRoomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+
+
+        if(chatRoom.getRoomType()!=RoomType.GROUP){
+            throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+        }
+//        MultipartFile image = request.getImage();
+//
+        // 채팅방 정보 업데이트
+        if(request.getRoomName() != null && !request.getRoomName().isEmpty()){
+            chatRoom.setName(request.getRoomName());
+        }
+        chatRoom.setName(request.getRoomName());
+        if(image != null && !image.isEmpty()) {
+            chatRoom.setImageUrl(s3Uploader.upload(image, "group-chat-images"));
+        }
+        chatRoom.setName(request.getRoomName());
+        chatRoomRepository.save(chatRoom);
+
+//        List<ChatRoomResponse.RoomMemberinfo> memberinfos = chatRoom.getParticipants().stream()
+//                .map(p -> ChatRoomResponse.RoomMemberinfo.builder()
+//                        .memberId(p.getMember().getId())
+//                        .memberName(p.getMember().getNickname())
+//                        .build())
+//                .toList();
+
+        return UpdateGroupChatResponse.builder()
+                .roomId(chatRoom.getId())
+                .roomName(chatRoom.getName())
+                .roomProfileUrl(chatRoom.getImageUrl())
+                .build();
+    }
+
+
+
     // 1:1 채팅 방 조회
-    public PrivateChatRoomResponse getPrivateChatRoom(Long memberId, Long friendId) {
+    public BasicChatRoomInfo getPrivateChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         Member friend = memberRepository.findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구입니다."));
 
         // 조회 후 없으면 생성
-        ChatRoom chatRoom = chatRoomRepository.findPrivateChatRoomByParticipants(member.getId(), friend.getId())
+        ChatRoom chatRoom = chatRoomRepository.findPrivateChatRoomByParticipants(member.getId(), friend.getId()).stream()
+                .findFirst()
                 .orElseGet(() -> createPrivateChatRoom(member, friend));
 
-        return PrivateChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .build();
+        chatRoom.getParticipants().forEach(participant -> {
+            if (participant.getStatus() == Status.INACTIVE) {
+                participant.setStatus(Status.ACTIVE);
+            }
+        });
+
+        return getChatRoomInfo(chatRoom.getId(), memberId );
     }
     // 개인 채팅방 생성
     public ChatRoom createPrivateChatRoom(
@@ -116,8 +169,8 @@ public class ChatRoomService {
             Member friend
     ) {
         ChatRoom chatRoom = ChatRoom.builder()
-                .name("1대1채팅")
-                .imageUrl("")
+                .name(null)
+                .imageUrl(null)
                 .roomType(RoomType.PRIVATE)
                 .build();
 
@@ -142,10 +195,34 @@ public class ChatRoomService {
         participantRepository.save(participant);
     }
 
+    public void saveBandParticipant(ChatRoom chatRoom, Member member, Member Manager) {
+        ChatRoomParticipant participantMember = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .role(Role.MEMBER)  // 기본 역할 설정
+                .status(Status.ACTIVE)  // 기본 상태 설정
+                .lastReadAt(LocalDateTime.now())  // 초기값
+                .build();
+        ChatRoomParticipant participantManager = ChatRoomParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .role(Role.BANDMANAGER)  // 기본 역할 설정
+                .status(Status.ACTIVE)  // 기본 상태 설정
+                .lastReadAt(LocalDateTime.now())  // 초기값
+                .build();
+        List<ChatRoomParticipant> participants = List.of(participantMember, participantManager);
+
+        participantRepository.saveAll(participants);
+    }
+
+
     public ChatRoomListResponse getMyChatRooms(Long memberId){
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // 3) 내가 매니저로 있는 모든 밴드
+        List<Band> managedBands = bandRepository.findAllActiveByManagerId(memberId);
 
         // 내 참여 정보 불러오기
         List<ChatRoomParticipant> participants
@@ -168,8 +245,18 @@ public class ChatRoomService {
                 )
                 .flatMap(List::stream)
                 .toList();
+        // 그룹 채팅방
+        List<ChatRoom> groupRooms =
+                roomsByType.getOrDefault(RoomType.GROUP, Collections.emptyList());
+        // 개인 채팅방
+        List<ChatRoom> privateRooms =
+                roomsByType.getOrDefault(RoomType.PRIVATE, Collections.emptyList());
 
-        // 않읽은 메세지 수
+        // 밴드 채팅방
+        List<ChatRoom> bandRooms =
+                roomsByType.getOrDefault(RoomType.BAND, Collections.emptyList());
+
+        // 안읽은 메세지 수
         Map<Long, Long> unreadCountMap = getUnreadCountMap(member);
 
         // 마지막으로 보낸 메세지 시간
@@ -182,7 +269,8 @@ public class ChatRoomService {
                 ));
 
         // 응답 생성
-        List<ChatRoomInfoDto> chatRoomInfos = groupAndPrivateRooms.stream()
+        // 그룹 채팅방 정보 생성
+        List<ChatRoomInfoDto> groupChatRoomInfos = groupRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
                             .map(p -> MemberInfo.builder()
@@ -193,19 +281,58 @@ public class ChatRoomService {
                                     )
                                     .toList();
 
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
+
                     return ChatRoomInfoDto.builder()
+                            .roomType(String.valueOf(RoomType.GROUP))
                             .roomId(room.getId())
                             .chatName(room.getName())
                             .imageUrl(room.getImageUrl())
                             .memberInfos(memberInfos)
+                            .pinnedAt(myPinnedAt)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
                             .build();
                 }).collect(Collectors.toList());
 
-        // 밴드 채팅방
-        List<ChatRoom> bandRooms =
-                roomsByType.getOrDefault(RoomType.BAND, Collections.emptyList());
+        // 개인 채팅방 정보 생성
+        List<PrivateChatRoomInfoDto> privateChatRoomInfos = privateRooms.stream()
+                .map(room ->{
+
+                    MemberInfo memberInfo = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .map(p -> MemberInfo.builder()
+                                    .memberId(p.getMember().getId())
+                                    .nickname(p.getMember().getNickname())
+                                    .profileImageUrl(p.getMember().getProfileImageUrl())
+                                    .build())
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
+
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
+
+                    return PrivateChatRoomInfoDto.builder()
+                            .roomType(String.valueOf(RoomType.PRIVATE))
+                            .roomId(room.getId())
+                            .chatName(memberInfo.getNickname())
+                            .imageUrl(memberInfo.getProfileImageUrl())
+                            .memberInfo(memberInfo)
+                            .pinnedAt(myPinnedAt)
+                            .unreadCount(unreadCountMap.get(room.getId()))
+                            .lastMessageAt(lastAtMap.get(room.getId()))
+                            .build();
+                }).collect(Collectors.toList());
+
         Map<Boolean, List<ChatRoom>> partitioned = bandRooms.stream()
                 .collect(Collectors.partitioningBy(
                         room -> room.getParticipants().stream()
@@ -226,45 +353,145 @@ public class ChatRoomService {
                             )
                             .toList();
 
+
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
                     return ChatRoomInfoDto.builder()
+                            .roomType("BAND-APPLICANT")
                             .roomId(room.getId())
                             .chatName(room.getBandChat().getBand().getName())
                             .imageUrl(room.getBandChat().getBand().getProfileImageUrl())
                             .memberInfos(memberInfos)
+                            .pinnedAt(myPinnedAt)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
                             .build();
                 }).collect(Collectors.toList());
 
-        List<BandManagerRoomInfoDto> adminBandRoomInfos = adminBandRooms.stream()
-                .collect(Collectors.groupingBy(room -> room.getBandChat().getBand().getId()))
-                .entrySet().stream()
-                .map(entry -> {
-                    Long bandId = entry.getKey();
-                    List<ChatRoom> rooms = entry.getValue();
 
-                    // 공통 Band 정보는 아무 room 하나에서 꺼내면 됨
-                    ChatRoom anyRoom = rooms.get(0);
-                    Band band = anyRoom.getBandChat().getBand();
+        Map<Long, List<ChatRoom>> adminRoomsByBandId = adminBandRooms.stream()
+                .collect(Collectors.groupingBy(r -> r.getBandChat().getBand().getId()));
 
-                    // 각 방에 대한 ChatRoomInfo 생성
-                    List<BandManagerRoomInfoDto.BandChatRoomInfo> chatRoomInfos1 = rooms.stream()
+//        List<BandManagerRoomInfoDto> adminBandRoomInfos = adminBandRooms.stream()
+//                .collect(Collectors.groupingBy(room -> room.getBandChat().getBand().getId()))
+//                .values().stream()
+//                .map(rooms -> {
+//
+//                    ChatRoom anyRoom = rooms.get(0);
+//                    Band band = anyRoom.getBandChat().getBand();
+//
+//                    // 각 방에 대한 ChatRoomInfo 생성
+//                    List<BandManagerRoomInfoDto.BandChatRoomInfo> chatRoomInfos1 = rooms.stream()
+//                            .map(room -> {
+//                                MemberInfo memberInfo = room.getParticipants().stream()
+//                                        .map(ChatRoomParticipant::getMember)
+//                                        .filter(member1 -> !member1.getId().equals(memberId))
+//                                        .map(member1 -> MemberInfo.builder()
+//                                                .memberId(member1.getId())
+//                                                .nickname(member1.getNickname())
+//                                                .profileImageUrl(member1.getProfileImageUrl())
+//                                                .build())
+//                                        .findFirst()
+//                                        .orElse(null);
+//
+//                                return BandManagerRoomInfoDto.BandChatRoomInfo.builder()
+//                                        .roomId(room.getId())
+//                                        .memberInfo(memberInfo)
+//                                        .session(room.getBandChat().getBandSession().getSession().getName())
+//                                        .passFail(room.getBandChat().getPassFail())
+//                                        .lastMessageAt(lastAtMap.get(room.getId()))
+//                                        .UnreadCount(unreadCountMap.get(room.getId()))
+//                                        .build();
+//                            })
+//                            .toList();
+//
+//                    // 1. 전체 UnreadCount 합산
+//                    long totalUnread = chatRoomInfos1.stream()
+//                            .mapToLong(info -> Optional.ofNullable(info.getUnreadCount()).orElse(0L))
+//                            .sum();
+//
+//                    LocalDateTime latest = chatRoomInfos1.stream()
+//                            .map(BandManagerRoomInfoDto.BandChatRoomInfo::getLastMessageAt)
+//                            .filter(Objects::nonNull)
+//                            .max(LocalDateTime::compareTo)
+//                            .orElse(null);
+//
+//                    // 밴드 단위 DTO 조립
+//                    return BandManagerRoomInfoDto.builder()
+//                            .roomType("BAND-MANAGER")
+//                            .bandId(band.getId())
+//                            .bandName(band.getName())
+//                            .bandImageUrl(band.getProfileImageUrl())
+//                            .status(band.getStatus())
+//                            .bandSessionList(
+//                                    band.getBandSessions().stream()
+//                                            .filter(session -> "RECRUITING".equals(session.getSessionStatus()))
+//                                            .map(session -> session.getSession().getName())
+//                                            .distinct()
+//                                            .toList()
+//                            )
+//                            .chatRoomInfo(chatRoomInfos1)
+//                            .lastMessageAt(latest)
+//                            .unreadCount(totalUnread)
+//                            .build();
+//                })
+//                .collect(Collectors.toList());
+        List<BandManagerRoomInfoDto> allAdminBandRoomInfos = managedBands.stream()
+                .map(band -> {
+                    List<ChatRoom> rooms = adminRoomsByBandId.getOrDefault(band.getId(), Collections.emptyList());
+
+                    // 세션 이름 목록(모집 중인 것만)
+                    List<String> recruitingSessions = band.getBandSessions().stream()
+                            .filter(s -> "RECRUITING".equals(s.getSessionStatus()))
+                            .map(s -> s.getSession().getName())
+                            .distinct()
+                            .toList();
+
+
+                    if (rooms.isEmpty()) {
+                        // 채팅방이 하나도 없을 때
+                        return BandManagerRoomInfoDto.builder()
+                                .roomType("BAND-MANAGER")
+                                .bandId(band.getId())
+                                .bandName(band.getName())
+                                .bandImageUrl(band.getProfileImageUrl())
+                                .status(band.getStatus())
+                                .bandSessionList(recruitingSessions)
+                                .chatRoomInfo(Collections.emptyList())
+                                .pinnedAt(band.getPinnedAt())
+                                .unreadCount(0L)
+                                .lastMessageAt(null)
+                                .build();
+                    }
+
+                    List<BandManagerRoomInfoDto.BandChatRoomInfo> chatInfos = rooms.stream()
                             .map(room -> {
                                 MemberInfo memberInfo = room.getParticipants().stream()
                                         .map(ChatRoomParticipant::getMember)
-                                       // .filter(member1 -> !member1.getId().equals(memberId))
-                                        .map(member1 -> MemberInfo.builder()
-                                                .memberId(member1.getId())
-                                                .nickname(member1.getNickname())
-                                                .profileImageUrl(member1.getProfileImageUrl())
+                                        .filter(m -> !m.getId().equals(memberId))
+                                        .map(m -> MemberInfo.builder()
+                                                .memberId(m.getId())
+                                                .nickname(m.getNickname())
+                                                .profileImageUrl(m.getProfileImageUrl())
                                                 .build())
                                         .findFirst()
+                                        .orElse(null);
+
+                                LocalDateTime myPinnedAt = room.getParticipants().stream()
+                                        .filter(p -> p.getMember().getId().equals(memberId))
+                                        .findFirst()
+                                        .map(ChatRoomParticipant::getPinnedAt)
                                         .orElse(null);
 
                                 return BandManagerRoomInfoDto.BandChatRoomInfo.builder()
                                         .roomId(room.getId())
                                         .memberInfo(memberInfo)
-                                        .session(room.getBandChat().getBandSession().getSession().toString())
+                                        .pinnedAt( myPinnedAt)
+                                        .session(room.getBandChat().getBandSession().getSession().getName())
                                         .passFail(room.getBandChat().getPassFail())
                                         .lastMessageAt(lastAtMap.get(room.getId()))
                                         .UnreadCount(unreadCountMap.get(room.getId()))
@@ -272,141 +499,56 @@ public class ChatRoomService {
                             })
                             .toList();
 
-                    // 1. 전체 UnreadCount 합산
-                    long totalUnread = chatRoomInfos1.stream()
+                    long totalUnread = chatInfos.stream()
                             .mapToLong(info -> Optional.ofNullable(info.getUnreadCount()).orElse(0L))
                             .sum();
-
-                    LocalDateTime latest = chatRoomInfos1.stream()
+                    LocalDateTime latest = chatInfos.stream()
                             .map(BandManagerRoomInfoDto.BandChatRoomInfo::getLastMessageAt)
                             .filter(Objects::nonNull)
                             .max(LocalDateTime::compareTo)
                             .orElse(null);
 
-                    // 밴드 단위 DTO 조립
+
                     return BandManagerRoomInfoDto.builder()
+                            .roomType("BAND-MANAGER")
                             .bandId(band.getId())
                             .bandName(band.getName())
                             .bandImageUrl(band.getProfileImageUrl())
                             .status(band.getStatus())
-                            .bandSessionList(
-                                    band.getBandSessions().stream()
-                                            .filter(session -> "RECRUITING".equals(session.getSessionStatus()))
-                                            .map(session -> session.getBand().getName())
-                                            .distinct()
-                                            .toList()
-                            )
-                            .chatRoomInfo(chatRoomInfos1)
-                            .lastMessageAt(latest)
+                            .bandSessionList(recruitingSessions)
+                            .chatRoomInfo(chatInfos)
+                            .pinnedAt(band.getPinnedAt())
                             .unreadCount(totalUnread)
+                            .lastMessageAt(latest)
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
 
-        List<ChatRoomInfo> combined = Stream.concat(
+
+        List<ChatRoomInfo> combined = Stream.concat(Stream.concat(
                         Stream.concat(
-                                chatRoomInfos.stream(),
-                                nonAdminBandRoomInfos.stream()
-                        ),
-                        adminBandRoomInfos.stream()
-                )
+                                privateChatRoomInfos.stream(),
+                                nonAdminBandRoomInfos.stream()),
+                                allAdminBandRoomInfos.stream()),
+                        groupChatRoomInfos.stream())
+                .toList();
+
+        List<ChatRoomInfo> pinnedRooms = combined.stream()
+                .filter(info -> info.getPinnedAt() != null)
+                .sorted(Comparator.comparing(ChatRoomInfo::getPinnedAt).reversed())
+                .toList();
+        List<ChatRoomInfo> unpinnedRooms = combined.stream()
+                .filter(info -> info.getPinnedAt() == null)
                 .sorted(Comparator.comparing(
                         ChatRoomInfo::getLastMessageAt,
                         Comparator.nullsFirst(Comparator.reverseOrder())
                 ))
                 .toList();
 
-//
-//
-//
-//                .map(room ->{
-//                    List<MemberInfo> memberInfos = room.getParticipants().stream()
-//                            .map(p -> MemberInfo.builder()
-//                                    .memberId(p.getMember().getId())
-//                                    .nickname(p.getMember().getNickname())
-//                                    .profileImageUrl(p.getMember().getProfileImageUrl())
-//                                    .build()
-//                            )
-//                            .toList();
-//
-//                    return BandManagerRoomInfoDto.builder()
-//                            .roomId(room.getId())
-//                            .chatName(room.getBandChat().getBand().getName())
-//                            .imageUrl(room.getBandChat().getBand().getProfileImageUrl())
-//                            .memberInfos(memberInfos)
-//                            .unreadCount(unreadCountMap.get(room.getId()))
-//                            .lastMessageAt(lastAtMap.get(room.getId()))
-//                            .build();
-//                }).collect(Collectors.toList());
-//
-//
-//
-//        Map<Boolean, List<ChatRoom>> partitioned = bandRooms.stream()
-//                .collect(Collectors.partitioningBy(
-//                        room -> room.getBandChat().getBand().getManager().equals(member)
-//                ));
-//
-//
-//        Map<Long, List<ChatRoom>> roomsByBand = partitioned.get(true).stream()
-//                .collect(Collectors.groupingBy(
-//                        room -> room.getBandChat().getBand().getId()
-//                ));
-//
-//        List<ManagedRoomInfo> managedRoomInfos = roomsByBand.entrySet().stream()
-//                .map(entry -> {
-//                    Long bandId = entry.getKey();
-//                    List<ChatRoom> rooms = entry.getValue();
-//                    Band band = rooms.get(0).getBandChat().getBand(); // 모두 동일한 밴드
-//
-//                    List<InterviewRoomInfo> roomInfos = rooms.stream()
-//                            .map(room -> {
-//                                ChatRoomParticipant other = room.getParticipants().stream()
-//                                        .filter(p -> !p.getMember().equals(member))
-//                                        .findFirst()
-//                                        .orElseThrow(() -> new IllegalStateException("상대 참가자가 없습니다."));
-//
-//                                return InterviewRoomInfo.builder()
-//                                        .memberId(other.getMember().getId())
-//                                        .profileImageUrl(other.getMember().getProfileImageUrl())
-//                                        .session(room.getBandChat().getBandSession().getSession().toString())      // 세션 정보
-//                                        .lastMessageAt(lastAtMap.get(room.getId()))
-//                                        .unreadCount(unreadCountMap.getOrDefault(room.getId(), 0L))
-//                                        .build();
-//                                    }
-//                            )
-//                            .toList();
-//
-//                    return ManagedRoomInfo.builder()
-//                            .bandId(bandId)
-//                            .bandName(band.getName())
-//                            .profileImageUrl(band.getProfileImageUrl())
-//                            .bandStatus(band.getStatus())
-//                            .recruitingSession(
-//                                    band.getBandSessions().stream()
-//                                            .map(bandSession -> bandSession.getSession().toString())
-//                                            .toList()
-//                            )
-//                            .rooms(roomInfos)
-//                            .build();
-//                })
-//                .toList();
-//
-//        List<AppliedRoomInfo> appliedRoomInfos = partitioned.get(false).stream()
-//                .map(room -> {
-//                    Band band = room.getBandChat().getBand();
-//                    return AppliedRoomInfo.builder()
-//                            .bandId(band.getId())
-//                            .roomId(room.getId())
-//                            .bandName(band.getName())
-//                            .profileImageUrl(band.getProfileImageUrl())
-//                            .unreadCount(unreadCountMap.getOrDefault(room.getId(), 0L))
-//                            .lastMessageAt(lastAtMap.get(room.getId()))
-//                            .build();
-//                })
-//                .toList();
-
+        List<ChatRoomInfo> sorted = Stream.concat(pinnedRooms.stream(), unpinnedRooms.stream())
+                .toList();
         return ChatRoomListResponse.builder()
-                .chatRoomInfos(combined)
+                .chatRoomInfos(sorted)
                 .build();
 
     }
@@ -452,42 +594,62 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public ParticipantInfos getChatRoomInfo(ChatRoom chatRoom, Member member){
+    public BasicChatRoomInfo getChatRoomInfo(Long roomId, Long memberId){
 
         List<ChatRoomParticipant> participants
-                = participantRepository.findAllByChatRoom(chatRoom);
+                = participantRepository.findAllActiveByChatRoomId(roomId);
+
+        Member member = participants.stream()
+                .map(ChatRoomParticipant::getMember)
+                .filter(m -> m.getId().equals(memberId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
 
         List<ParticipantInfos.Info> infoList = new ArrayList<>();
         for(ChatRoomParticipant participant : participants){
             if(participant.getMember().getId().equals(member.getId())){
                 participant.setLastReadAt(LocalDateTime.now());
+                continue;
             }
             ParticipantInfos.Info info = ParticipantInfos.Info.builder()
                     .memberId(participant.getMember().getId())
+                    .nickname(participant.getMember().getNickname())
+                    .imageUrl(participant.getMember().getProfileImageUrl())
                     .timestamp(participant.getLastReadAt())
                     .build();
             infoList.add(info);
         }
 
-        return ParticipantInfos.builder()
-                .roomId(chatRoom.getId())
-                .infos(infoList)
+        return BasicChatRoomInfo.builder()
+                .roomId(roomId)
+                .messageList(chatMessageService.getChatMessages(roomId,Long.MAX_VALUE,20))
+                .participantInfos(
+                        ParticipantInfos.builder()
+                                .infos(infoList)
+                                .build()
+                        )
                 .build();
     }
 
+
     @Transactional
-    public GroupChatRoomResponse joinBand(Long bandId, Long memberId, String session){
+    public BandJoinResponse joinBand(Long bandId, Long memberId, String session){
 
         Band band = bandRepository.findWithSessionsAndManager(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
 
-        ChatRoom chatRoom = ChatRoom.builder()
-                .name(band.getName())
-                .imageUrl("")
-                .roomType(RoomType.BAND)
-                .build();
+        RoomType roomType = RoomType.BAND;
+
+        System.out.println(roomType );
+
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setName(band.getName() + " 밴드 채팅방");
+        chatRoom.setImageUrl(band.getProfileImageUrl());
+        chatRoom.setRoomType(roomType);
+
+        chatRoomRepository.save(chatRoom);
 
         BandSession bandSession= band.getBandSessions().stream()
                 .filter(bs -> bs.getSessionStatus().equals("RECRUITING"))
@@ -514,13 +676,79 @@ public class ChatRoomService {
                 .lastReadAt(LocalDateTime.now())  // 초기값
                 .build();
         participantRepository.save(bandManager);
-        return GroupChatRoomResponse.builder()
+        return BandJoinResponse.builder()
                 .roomId(chatRoom.getId())
                 .bandName(band.getName())
                 .bandProfileUrl(band.getProfileImageUrl())
                 .managerId(bandManager.getId())
                 .managerName(band.getManager().getNickname())
                 .managerProfileUrl(band.getManager().getProfileImageUrl())
+                .build();
+    }
+
+    @Transactional
+    public PinChatResponse pinChatRoom(Long roomId, Long memberId){
+
+        ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
+                roomId, memberId, Status.ACTIVE
+        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+
+        if (participant.getPinnedAt() == null) {
+            participant.setPinnedAt(LocalDateTime.now());
+        }
+
+        return PinChatResponse.builder()
+                .roomId(roomId)
+                .pinnedAt(participant.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinBandChatRoomResponse pinBandChatRoom(Long bandId, Long memberId){
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+        if(!memberId.equals(band.getManager().getId())){
+            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+        }
+        band.setPinnedAt(LocalDateTime.now());
+
+        return PinBandChatRoomResponse.builder()
+                .bandId(bandId)
+                .pinnedAt(band.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinChatResponse unpinChatRoom(Long roomId, Long memberId){
+
+        ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
+                roomId, memberId, Status.ACTIVE
+        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+
+        if (participant.getPinnedAt() != null) {
+            participant.setPinnedAt(null);
+        }
+
+        return PinChatResponse.builder()
+                .roomId(roomId)
+                .pinnedAt(participant.getPinnedAt())
+                .build();
+    }
+
+    @Transactional
+    public PinBandChatRoomResponse unpinBandChatRoom(Long bandId, Long memberId){
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+        if(!band.getManager().getId().equals(memberId)){
+            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+        }
+        band.setPinnedAt(null);
+
+        return PinBandChatRoomResponse.builder()
+                .bandId(bandId)
+                .pinnedAt(band.getPinnedAt())
                 .build();
     }
 

@@ -1,4 +1,4 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.creation;
 
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import lombok.AllArgsConstructor;
@@ -17,14 +17,13 @@ public class ChatRoomResponse {
     private String roomName;
     private String roomImageUrl;
     private LocalDateTime lastMessageTime;
-    //private LocalDateTime pinnedAt;
     private RoomType roomtype;
-    private List<RoomMemberinfo> memberinfos;
+    private List<RoomMemberInfo> memberInfos;
 
     @Getter
     @Builder
-    public static class RoomMemberinfo {
-        private Long userId;
-        private String userName;
+    public static class RoomMemberInfo {
+        private Long memberId;
+        private String memberName;
     }
 }
