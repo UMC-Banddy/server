@@ -51,12 +51,8 @@ public class BandBookmarkService {
     /**
      * 저장한 밴드 목록 조회
      */
-    public List<BandBookmarkResponse> getBookmarks(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
-
-        List<BandBookmark> bookmarks = bandBookmarkRepository.findByMember(member);
-
+    public List<BandBookmarkResponse> getBookmarkedBands(Long memberId) {
+        List<BandBookmark> bookmarks = bandBookmarkRepository.findByMemberId(memberId);
         return BandBookmarkConverter.toResponseList(bookmarks);
     }
 

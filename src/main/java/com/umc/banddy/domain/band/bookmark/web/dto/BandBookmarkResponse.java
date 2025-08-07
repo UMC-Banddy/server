@@ -14,4 +14,5 @@ public class BandBookmarkResponse {
     private String imageUrl;
     private BandStatus status;
     private boolean isSoundOn;
+    private String memberSummary;
 }

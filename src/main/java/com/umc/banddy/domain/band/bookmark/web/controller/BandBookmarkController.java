@@ -19,7 +19,7 @@ public class BandBookmarkController {
     private final BandBookmarkService bandBookmarkService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    // 1. 밴드 저장
+    // 밴드 저장
     @PostMapping("/{bandId}/bookmark")
     public ResponseEntity<Map<String, Object>> saveBookmark(@PathVariable Long bandId, HttpServletRequest request) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
@@ -30,15 +30,15 @@ public class BandBookmarkController {
         ));
     }
 
-    // 2. 저장한 밴드 목록 조회
+    //저장한 밴드 정보 조회
     @GetMapping("/bookmarks")
-    public ResponseEntity<List<BandBookmarkResponse>> getBookmarks(HttpServletRequest request) {
+    public ResponseEntity<List<BandBookmarkResponse>> getBookmarkedBands(HttpServletRequest request) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
-        List<BandBookmarkResponse> response = bandBookmarkService.getBookmarks(memberId);
-        return ResponseEntity.ok(response);
+        List<BandBookmarkResponse> responses = bandBookmarkService.getBookmarkedBands(memberId);
+        return ResponseEntity.ok(responses);
     }
 
-    // 3. 저장한 밴드 삭제
+    // 저장한 밴드 삭제
     @DeleteMapping("/{bandId}/bookmark")
     public ResponseEntity<Map<String, Object>> deleteBookmark(@PathVariable Long bandId, HttpServletRequest request) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
