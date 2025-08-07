@@ -67,6 +67,10 @@ cloud:
       bucket: ${S3_BUCKET}
 
 management:
+  metrics:
+    enable:
+      processor: false
+
   endpoints:
     web:
       exposure:
