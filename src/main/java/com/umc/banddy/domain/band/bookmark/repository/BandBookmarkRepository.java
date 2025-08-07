@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface BandBookmarkRepository extends JpaRepository<BandBookmark, Long> {
 
-    List<BandBookmark> findByMember(Member member);
+    List<BandBookmark> findByMemberId(Long memberId);
 
     Optional<BandBookmark> findByMemberAndBand(Member member, Band band);
 
