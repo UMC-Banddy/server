@@ -19,6 +19,7 @@ public class BandBookmarkConverter {
                 .status(bookmark.getBand().getStatus())
                 .isSoundOn(bookmark.isSoundOn())
                 .memberSummary(memberSummary)
+                .memberCount(totalCount)
                 .build();
     }
 
