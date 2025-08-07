@@ -6,10 +6,11 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
+import com.umc.banddy.domain.chat.domain.enums.Type;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
-import com.umc.banddy.domain.chat.web.dto.Message.*;
+import com.umc.banddy.domain.chat.web.dto.message.*;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
@@ -71,20 +72,25 @@ public class ChatMessageService {
                 .member(member)
                 .chatRoom(chatRoom)
                 .content(member.getNickname() + "님이 채팅방을 나갔습니다.")
+                .type(Type.SYSTEM)
                 .build();
 
         chatMessageRepository.save(chatMessage);
 
         websocketService.topicMessage(
                 chatRoom.getId(),
-                ChatMessageResponse.builder()
-                        .messageId(chatMessage.getId())
-                        .roomId(chatRoom.getId())
-                        .content(chatMessage.getContent())
-                        .senderId(member.getId())
-                        .senderName("System")
-                        .timestamp(chatMessage.getCreatedAt())
-                        .build()
+                toWsMessage(
+                        ChatMessageResponse.builder()
+                                .messageId(chatMessage.getId())
+                                .roomId(chatRoom.getId())
+                                .content(chatMessage.getContent())
+                                .senderId(member.getId())
+                                .senderName("System")
+                                .timestamp(chatMessage.getCreatedAt())
+                                .build()
+                , MessageType.SYSTEM
+                )
+
         );
 
         return ChatSystemResponse.builder()
@@ -121,20 +127,25 @@ public class ChatMessageService {
                 .member(member)
                 .chatRoom(chatRoom)
                 .content(member.getNickname() + "님이 채팅방에 참여하셨습니다.")
+                .type(Type.SYSTEM)
                 .build();
 
         chatMessageRepository.save(chatMessage);;
 
         websocketService.topicMessage(
                 chatRoom.getId(),
-                ChatMessageResponse.builder()
-                        .messageId(chatMessage.getId())
-                        .roomId(chatRoom.getId())
-                        .content(chatMessage.getContent())
-                        .senderId(member.getId())
-                        .senderName("System")
-                        .timestamp(chatMessage.getCreatedAt())
-                        .build()
+                toWsMessage(
+                        ChatMessageResponse.builder()
+                                .messageId(chatMessage.getId())
+                                .roomId(chatRoom.getId())
+                                .content(chatMessage.getContent())
+                                .senderId(member.getId())
+                                .type(Type.SYSTEM)
+                                .senderName("System")
+                                .timestamp(chatMessage.getCreatedAt())
+                                .build()
+                , MessageType.SYSTEM
+                )
         );
 
         return ChatSystemResponse.builder()
@@ -150,16 +161,14 @@ public class ChatMessageService {
                 = chatCustomRepository.findByRoomIdWithCursorAsDto(roomId, cursor, limit);
 
         return CursorChatMessageResponse.builder()
-                .roomId(roomId)
                 .messages(ccm)
                 .hasNext(ccm.size() == limit)
                 .lastMessageId(ccm.isEmpty() ? null : ccm.get(ccm.size() - 1).getMessageId())
                 .build();
-
     }
+
     public void sendChatMessage(Long roomId, Long userId, ChatMessageRequest messageRequest) {
-        //System.out.println("메세지 전송로직");
-        String destination = "/topic/room/" + roomId;
+
         Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, userId);
 
         ChatRoom chatRoom = pair.getLeft();
@@ -178,7 +187,6 @@ public class ChatMessageService {
         RoomType roomType = chatRoom.getRoomType();
 
         // 전송 로직 분기
-        // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
         if (roomType.equals(RoomType.GROUP)) {
             // GROUP: 토픽 브로드캐스트
             ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
@@ -195,16 +203,13 @@ public class ChatMessageService {
                     websocketService.queueUnreadMessage(email, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
                 }
             }
-        } else if (roomType.equals(RoomType.PRIVATE) || roomType.equals(RoomType.BAND)) {
-            // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
+        } else if (roomType.equals(RoomType.PRIVATE) ) {
+            // PRIVATE: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
                     .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
-                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
-                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
-            }else{
                 UnreadResponse unreadResponse = UnreadResponse.builder()
                         .senderId(member.getId())
                         .roomId(chatRoom.getId())
@@ -212,7 +217,31 @@ public class ChatMessageService {
                         .timestamp(chatMessage.getCreatedAt())
                         .build();
                 websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
+
+            } else {
+                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
             }
+        } else if (roomType.equals(RoomType.BAND)) {
+            // BAND: 세션 단위로 유저에게 개별 전송
+            Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
+                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
+            // 캐싱 고려
+            String receiverEmail = memberRepository.findEmailById(receiverId);
+            if (unsubscribedUsers.contains(receiverEmail)) {
+                UnreadBandResponse unreadbandResponse = UnreadBandResponse.builder()
+                        .senderId(member.getId())
+                        .roomId(chatRoom.getId())
+                        .bandId(chatRoom.getBandChat().getBand().getId())
+                        .content(chatMessage.getContent())
+                        .timestamp(chatMessage.getCreatedAt())
+                        .build();
+                websocketService.queueUnreadMessage(receiverEmail, toWsMessage(unreadbandResponse, MessageType.UNREAD_MESSAGE));
+            } else {
+                ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+                websocketService.queuePrivateMessage(receiverEmail, roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
+            }
+
         }
     }
 

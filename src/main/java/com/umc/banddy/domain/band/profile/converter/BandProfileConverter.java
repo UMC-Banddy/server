@@ -42,7 +42,7 @@ public class BandProfileConverter {
                 .collect(Collectors.toList());
 
         List<String> jobList = jobs.stream()
-                .map(bj -> bj.getJob())
+                .map(BandJob::getJob)
                 .collect(Collectors.toList());
 
         CompositionDto compositionDto = CompositionDto.builder()

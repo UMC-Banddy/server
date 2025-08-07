@@ -101,6 +101,7 @@ public class ArtistFolderService {
                             .name(ma.getArtist().getName())
                             .genre(ma.getArtist().getGenre())
                             .imageUrl(ma.getArtist().getImageUrl())
+                            .externalUrl(ma.getArtist().getExternalUrl())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -144,6 +145,7 @@ public class ArtistFolderService {
                             .name(ma.getArtist().getName())
                             .genre(ma.getArtist().getGenre())
                             .imageUrl(ma.getArtist().getImageUrl())
+                            .externalUrl(ma.getArtist().getExternalUrl())
                             .build();
                 })
                 .collect(Collectors.toList());

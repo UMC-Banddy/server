@@ -70,12 +70,14 @@ public class ChatService {
     }
 
     public Set<String> getSubscribedUserEmails(Long roomId) {
-        String destination = "/topic/room/" + roomId;
+        String topicDestination = "/topic/room/" + roomId;
+        String queueDestination = "/user/queue/room/" + roomId;
         Set<String> userEmails = new HashSet<>();
         for (SimpUser user : simpUserRegistry.getUsers()) {
             for (SimpSession session : user.getSessions()) {
                 for (SimpSubscription subscription : session.getSubscriptions()) {
-                    if (destination.equals(subscription.getDestination())) {
+                    String dest = subscription.getDestination();
+                    if (topicDestination.equals(dest) || queueDestination.equals(dest)) {
                         userEmails.add(user.getName());
                     }
                 }

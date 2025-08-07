@@ -2,7 +2,7 @@ package com.umc.banddy.domain.chat.converter;
 
 import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
-import com.umc.banddy.domain.chat.web.dto.Message.ChatMessageResponse;
+import com.umc.banddy.domain.chat.web.dto.message.ChatMessageResponse;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.chat.web.dto.WsMessage;

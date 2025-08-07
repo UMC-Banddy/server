@@ -4,13 +4,13 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
@@ -43,6 +43,9 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
 
     Optional<ChatRoomParticipant> findByChatRoomAndMemberAndStatus(ChatRoom chatRoom, Member member, Status status);
 
+    @EntityGraph(attributePaths = {"chatRoom","member"})
+    Optional<ChatRoomParticipant> findByChatRoom_IdAndMember_IdAndStatus(Long chatRoomId, Long memberId, Status status);
+
     @Query("""
     SELECT cp.member.email
     FROM ChatRoomParticipant cp
@@ -54,4 +57,16 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
     List<ChatRoomParticipant> findAllByChatRoom(ChatRoom chatRoom);
+
+    @Query("""
+        SELECT p
+        FROM ChatRoomParticipant p
+         JOIN FETCH p.chatRoom cr
+         JOIN FETCH p.member m
+        WHERE cr.id = :roomId
+          AND p.status = com.umc.banddy.domain.member.enums.Status.ACTIVE
+        """)
+    List<ChatRoomParticipant> findAllActiveByChatRoomId(
+            @Param("roomId") Long roomId
+    );
 }

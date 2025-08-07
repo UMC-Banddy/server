@@ -31,6 +31,9 @@ public class ChatRoomParticipant {
     @Column(nullable = false)
     private Status status;
 
+    @Column(nullable = true)
+    private LocalDateTime pinnedAt; //erd에 없음
+
     @Column(nullable = false)
     private LocalDateTime lastReadAt; //erd에 없음
 

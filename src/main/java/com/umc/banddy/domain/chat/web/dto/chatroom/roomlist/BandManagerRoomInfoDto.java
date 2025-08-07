@@ -1,9 +1,9 @@
-package com.umc.banddy.domain.chat.web.dto.ChatRoom;
+package com.umc.banddy.domain.chat.web.dto.chatroom.roomlist;
 
 
-import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
 import com.umc.banddy.domain.chat.domain.enums.PassFail;
+import com.umc.banddy.domain.chat.web.dto.chatroom.MemberInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @SuperBuilder
-public class BandManagerRoomInfoDto extends ChatRoomInfo{
+public class BandManagerRoomInfoDto extends ChatRoomInfo {
 
 
     private Long bandId;
@@ -37,6 +37,7 @@ public class BandManagerRoomInfoDto extends ChatRoomInfo{
         private String session;
         private PassFail passFail;
         private LocalDateTime lastMessageAt;
+        private LocalDateTime pinnedAt;
         private Long UnreadCount;
     }
 }

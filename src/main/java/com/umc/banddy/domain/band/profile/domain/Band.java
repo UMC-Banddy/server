@@ -88,6 +88,9 @@ public class Band extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = true)
     private Member manager;
 
+    @Column(name = "pinned_at", nullable = true)
+    private LocalDateTime pinnedAt;
+
     @Builder.Default
     @OneToMany(mappedBy = "band", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL, orphanRemoval = true)

@@ -1,9 +1,11 @@
 package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
 import com.umc.banddy.domain.band.profile.enums.BandStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +18,12 @@ public class RecruitmentUpdateRequest {
 
     private Long bandId;
     private BandStatus status;
-    private String profileImageUrl;
+//    @Schema(
+//            description = "업데이트할 프로필 이미지(선택)",
+//            type        = "string",
+//            format      = "binary"
+//    )
+//    private MultipartFile image;
     private String representativeSong;
     private String name;
     private LocalDateTime endDate;
@@ -24,9 +31,9 @@ public class RecruitmentUpdateRequest {
     private String description;
 
     private List<String> session;
-    private List<Long> genre;
-    private List<Long> artist;
-    private List<Long> track;
+    private List<String> genres;
+    private List<String> artistSpotifyIds;
+    private List<String> trackSpotifyIds;
 
     private Integer ageStart;
     private Integer ageEnd;
