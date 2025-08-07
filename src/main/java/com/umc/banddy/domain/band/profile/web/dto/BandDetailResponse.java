@@ -17,6 +17,7 @@ public class BandDetailResponse {
     private String ageRange;
     private String genderCondition;
     private String region;
+    private String district;
 
     private String description;
     private String endDate;
