@@ -3,6 +3,7 @@ package com.umc.banddy.domain.band.profile.web.controller;
 import com.umc.banddy.domain.band.profile.service.BandManagementService;
 import com.umc.banddy.domain.band.profile.web.dto.Recruitment.*;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
+import com.umc.banddy.domain.chat.web.dto.chatroom.BasicChatRoomInfo;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,7 +82,7 @@ public class BandManagementController {
     - ** 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
   """)
     @PostMapping("/bands/{bandId}/join")
-    public ResponseEntity<BandApplicationResponse> createBandApplication(
+    public ResponseEntity<BasicChatRoomInfo> createBandApplication(
             @PathVariable Long bandId,
             @RequestBody @Valid BandApplicationRequest bandApplicationRequest,
             HttpServletRequest request
