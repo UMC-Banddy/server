@@ -7,6 +7,7 @@ import com.umc.banddy.domain.band.profile.web.dto.BandDetailResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,12 +32,8 @@ public class BandProfileController {
 
     // 밴드 상세정보 조회
     @GetMapping("/{bandId}/detail")
-    public BandDetailResponse getBandDetail(
-            @PathVariable Long bandId,
-            HttpServletRequest request
-    ) {
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return bandDetailService.getBandDetail(currentMemberId, bandId);
+    public ResponseEntity<BandDetailResponse> getBandDetail(@PathVariable Long bandId) {
+        BandDetailResponse response = bandDetailService.getBandDetail(bandId);
+        return ResponseEntity.ok(response);
     }
 }

@@ -66,37 +66,44 @@ public class BandProfileConverter {
     // 밴드 상세 응답
     public static BandDetailResponse toDetailResponse(
             Band band,
-            boolean isBookmarked,
-            List<BandSession> sessions,
-            List<BandTag> tags,
-            List<BandTrack> tracks
+            List<BandSns> snsList
     ) {
+        String ageRange = (band.getAgeStart() != null)
+                ? band.getAgeStart() + "대 이상"
+                : "연령 무관";
+
+        String gender = switch (band.getGender()) {
+            case MALE -> "남성만";
+            case FEMALE -> "여성만";
+            case OTHER -> "성별 무관";
+            default -> "미지정";
+        };
+
+        String region = band.getRegion();
+        if (band.getDistrict() != null && !band.getDistrict().isEmpty()) {
+            region += " " + band.getDistrict();
+        }
+
+        List<BandDetailResponse.SnsDto> snsDtoList = snsList.stream()
+                .map(sns -> BandDetailResponse.SnsDto.builder()
+                        .platform(sns.getPlatform())
+                        .snsLink(sns.getSnsLink())
+                        .build())
+                .collect(Collectors.toList());
+
         return BandDetailResponse.builder()
                 .bandId(band.getId())
-                .name(band.getName())
-                .imageUrl(band.getProfileImageUrl())
+                .bandName(band.getName())
+                .profileImageUrl(band.getProfileImageUrl())
                 .description(band.getDescription())
-                .isBookmarked(isBookmarked)
-                .recruitingSessions(
-                        sessions.stream()
-                                .map(bs -> bs.getSession().getName())
-                                .collect(Collectors.toList())
-                ) // 모집 중인 세션 (변경 없음)
-                .tags(
-                        tags.stream()
-                                .map(bt -> bt.getTag().getName())
-                                .collect(Collectors.toList())
-                )
-                .tracks(
-                        tracks.stream()
-                                .map(bt -> BandDetailResponse.TrackDto.builder()
-                                        .trackId(bt.getTrack().getId())
-                                        .title(bt.getTrack().getTitle())
-                                        .artist(bt.getTrack().getArtist())
-                                        .imageUrl(bt.getTrack().getImageUrl())
-                                        .build())
-                                .collect(Collectors.toList())
-                )
+                .ageRange(ageRange)
+                .genderCondition(gender)
+                .region(region)
+                .endDate(band.getEndDate() != null
+                        ? band.getEndDate().toLocalDate().toString().replace("-", ".") // yy.MM.dd 포맷
+                        : null)
+                .snsList(snsDtoList)
                 .build();
     }
+
 }
