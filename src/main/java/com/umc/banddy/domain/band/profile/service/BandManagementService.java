@@ -531,24 +531,31 @@ public class BandManagementService {
                 .build();
     }
 
-    public ApplicationListResponse updateApplicant(Long memberId, ApplicantUpdateRequest request, Long bandId) {
-
-        Map<Long, String> a = request.getApplicantUpdate();
-        List<Long> roomIds = new ArrayList<>(a.keySet());
-
-
+    @Transactional
+    public ApplicationListResponse updateApplicant(
+            Long memberId,
+            ApplicantUpdateRequest request,
+            Long bandId
+    ) {
+        List<Long> roomIds = request.getApplicantUpdate().stream()
+                .map(ApplicantUpdateRequest.ApplicantUpdateDto::getRoomId)
+                .toList();
 
         List<ChatRoom> chatRooms = chatRoomRepository.findByIdIn(roomIds);
 
+        Map<Long, String> statusMap = request.getApplicantUpdate().stream()
+                .collect(Collectors.toMap(
+                        ApplicantUpdateRequest.ApplicantUpdateDto::getRoomId,
+                        ApplicantUpdateRequest.ApplicantUpdateDto::getStatus
+                ));
+
         chatRooms.forEach(chatRoom -> {
-            String status = a.get(chatRoom.getId());
-            if (status != null) {
-                chatRoom.getBandChat().setPassFail(PassFail.valueOf(status));
+            String statusStr = statusMap.get(chatRoom.getId());
+            if (statusStr != null) {
+                chatRoom.getBandChat()
+                        .setPassFail(PassFail.valueOf(statusStr));
             }
         });
-
-
-
 
         return getApplicationList(bandId, memberId);
     }
