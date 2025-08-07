@@ -144,7 +144,7 @@ public class ChatRoomService {
 
 
     // 1:1 채팅 방 조회
-    public PrivateChatRoomResponse getPrivateChatRoom(Long memberId, Long friendId) {
+    public BasicChatRoomInfo getPrivateChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
         Member friend = memberRepository.findById(friendId)
@@ -160,9 +160,8 @@ public class ChatRoomService {
                 participant.setStatus(Status.ACTIVE);
             }
         });
-        return PrivateChatRoomResponse.builder()
-                .roomId(chatRoom.getId())
-                .build();
+
+        return getChatRoomInfo(chatRoom.getId(), memberId );
     }
     // 개인 채팅방 생성
     public ChatRoom createPrivateChatRoom(
@@ -282,12 +281,20 @@ public class ChatRoomService {
                                     )
                                     .toList();
 
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
+
                     return ChatRoomInfoDto.builder()
                             .roomType(String.valueOf(RoomType.GROUP))
                             .roomId(room.getId())
                             .chatName(room.getName())
                             .imageUrl(room.getImageUrl())
                             .memberInfos(memberInfos)
+                            .pinnedAt(myPinnedAt)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
                             .build();
@@ -307,6 +314,12 @@ public class ChatRoomService {
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
 
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
 
                     return PrivateChatRoomInfoDto.builder()
                             .roomType(String.valueOf(RoomType.PRIVATE))
@@ -314,6 +327,7 @@ public class ChatRoomService {
                             .chatName(memberInfo.getNickname())
                             .imageUrl(memberInfo.getProfileImageUrl())
                             .memberInfo(memberInfo)
+                            .pinnedAt(myPinnedAt)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
                             .build();
@@ -339,12 +353,20 @@ public class ChatRoomService {
                             )
                             .toList();
 
+
+                    LocalDateTime myPinnedAt = room.getParticipants().stream()
+                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .findFirst()
+                            .map(ChatRoomParticipant::getPinnedAt)
+                            .orElse(null);
+
                     return ChatRoomInfoDto.builder()
                             .roomType("BAND-APPLICANT")
                             .roomId(room.getId())
                             .chatName(room.getBandChat().getBand().getName())
                             .imageUrl(room.getBandChat().getBand().getProfileImageUrl())
                             .memberInfos(memberInfos)
+                            .pinnedAt(myPinnedAt)
                             .unreadCount(unreadCountMap.get(room.getId()))
                             .lastMessageAt(lastAtMap.get(room.getId()))
                             .build();
@@ -429,6 +451,7 @@ public class ChatRoomService {
                             .distinct()
                             .toList();
 
+
                     if (rooms.isEmpty()) {
                         // 채팅방이 하나도 없을 때
                         return BandManagerRoomInfoDto.builder()
@@ -439,6 +462,7 @@ public class ChatRoomService {
                                 .status(band.getStatus())
                                 .bandSessionList(recruitingSessions)
                                 .chatRoomInfo(Collections.emptyList())
+                                .pinnedAt(band.getPinnedAt())
                                 .unreadCount(0L)
                                 .lastMessageAt(null)
                                 .build();
@@ -457,9 +481,16 @@ public class ChatRoomService {
                                         .findFirst()
                                         .orElse(null);
 
+                                LocalDateTime myPinnedAt = room.getParticipants().stream()
+                                        .filter(p -> p.getMember().getId().equals(memberId))
+                                        .findFirst()
+                                        .map(ChatRoomParticipant::getPinnedAt)
+                                        .orElse(null);
+
                                 return BandManagerRoomInfoDto.BandChatRoomInfo.builder()
                                         .roomId(room.getId())
                                         .memberInfo(memberInfo)
+                                        .pinnedAt( myPinnedAt)
                                         .session(room.getBandChat().getBandSession().getSession().getName())
                                         .passFail(room.getBandChat().getPassFail())
                                         .lastMessageAt(lastAtMap.get(room.getId()))
@@ -477,6 +508,7 @@ public class ChatRoomService {
                             .max(LocalDateTime::compareTo)
                             .orElse(null);
 
+
                     return BandManagerRoomInfoDto.builder()
                             .roomType("BAND-MANAGER")
                             .bandId(band.getId())
@@ -485,6 +517,7 @@ public class ChatRoomService {
                             .status(band.getStatus())
                             .bandSessionList(recruitingSessions)
                             .chatRoomInfo(chatInfos)
+                            .pinnedAt(band.getPinnedAt())
                             .unreadCount(totalUnread)
                             .lastMessageAt(latest)
                             .build();
@@ -498,14 +531,24 @@ public class ChatRoomService {
                                 nonAdminBandRoomInfos.stream()),
                                 allAdminBandRoomInfos.stream()),
                         groupChatRoomInfos.stream())
+                .toList();
+
+        List<ChatRoomInfo> pinnedRooms = combined.stream()
+                .filter(info -> info.getPinnedAt() != null)
+                .sorted(Comparator.comparing(ChatRoomInfo::getPinnedAt).reversed())
+                .toList();
+        List<ChatRoomInfo> unpinnedRooms = combined.stream()
+                .filter(info -> info.getPinnedAt() == null)
                 .sorted(Comparator.comparing(
                         ChatRoomInfo::getLastMessageAt,
                         Comparator.nullsFirst(Comparator.reverseOrder())
                 ))
                 .toList();
 
+        List<ChatRoomInfo> sorted = Stream.concat(pinnedRooms.stream(), unpinnedRooms.stream())
+                .toList();
         return ChatRoomListResponse.builder()
-                .chatRoomInfos(combined)
+                .chatRoomInfos(sorted)
                 .build();
 
     }
@@ -566,6 +609,7 @@ public class ChatRoomService {
         for(ChatRoomParticipant participant : participants){
             if(participant.getMember().getId().equals(member.getId())){
                 participant.setLastReadAt(LocalDateTime.now());
+                continue;
             }
             ParticipantInfos.Info info = ParticipantInfos.Info.builder()
                     .memberId(participant.getMember().getId())
@@ -664,7 +708,7 @@ public class ChatRoomService {
 
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
-        if(!band.getManager().getId().equals(memberId)){
+        if(!memberId.equals(band.getManager().getId())){
             throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
         }
         band.setPinnedAt(LocalDateTime.now());
@@ -682,8 +726,8 @@ public class ChatRoomService {
                 roomId, memberId, Status.ACTIVE
         ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
 
-        if (participant.getPinnedAt() == null) {
-            participant.setPinnedAt(LocalDateTime.now());
+        if (participant.getPinnedAt() != null) {
+            participant.setPinnedAt(null);
         }
 
         return PinChatResponse.builder()
@@ -700,7 +744,7 @@ public class ChatRoomService {
         if(!band.getManager().getId().equals(memberId)){
             throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
         }
-        band.setPinnedAt(LocalDateTime.now());
+        band.setPinnedAt(null);
 
         return PinBandChatRoomResponse.builder()
                 .bandId(bandId)

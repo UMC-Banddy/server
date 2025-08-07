@@ -9,9 +9,12 @@ import java.time.LocalDateTime;
 @SuperBuilder
 public abstract class ChatRoomInfo {
 
+
     private String roomType;
 
     private Long unreadCount;
+
+    private LocalDateTime pinnedAt;
 
     private LocalDateTime lastMessageAt;
 }

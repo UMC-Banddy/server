@@ -37,6 +37,7 @@ public class BandManagerRoomInfoDto extends ChatRoomInfo {
         private String session;
         private PassFail passFail;
         private LocalDateTime lastMessageAt;
+        private LocalDateTime pinnedAt;
         private Long UnreadCount;
     }
 }
