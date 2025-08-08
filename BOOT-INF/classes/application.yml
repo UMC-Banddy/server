@@ -2,9 +2,6 @@ spring:
   application:
     name: banddy
 
-  profiles:
-    active: s3
-
   config:
     import: optional:file:./.env[.properties]
 
@@ -37,38 +34,7 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-  cache:
-    cache-names:
-      - roomParticipants
-    caffeine:
-      spec: maximumSize=10000, expireAfterAccess=10m
-
-  servlet:
-    multipart:
-      enabled: true
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
-    org.springframework.security: DEBUG
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
-
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY_ID}
-      secret-key: ${AWS_SECRET_ACCESS_KEY}
-    region:
-      static: ap-northeast-2
-    s3:
-      bucket: ${S3_BUCKET}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-
