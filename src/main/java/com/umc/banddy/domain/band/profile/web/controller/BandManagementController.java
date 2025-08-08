@@ -117,5 +117,4 @@ public class BandManagementController {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId));
     }
-
 }
