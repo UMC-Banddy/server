@@ -45,11 +45,12 @@ public class ChatMessageService {
 
     // 채팅 메세지 저장
     @Transactional
-    public ChatMessage saveMessage(ChatRoom chatRoom, Member member, ChatMessageRequest messageRequest){
+    public ChatMessage saveMessage(ChatRoom chatRoom, Member member, String content, Type type) {
         ChatMessage chatMessage = ChatMessage.builder()
                 .member(member)
                 .chatRoom(chatRoom)
-                .content(messageRequest.getContent())
+                .type(type)
+                .content(content)
                 .build();
         return chatMessageRepository.save(chatMessage);
     }
@@ -68,14 +69,7 @@ public class ChatMessageService {
         chatRoomParticipant.setStatus(Status.INACTIVE);
         participantRepository.save(chatRoomParticipant);
 
-        ChatMessage chatMessage = ChatMessage.builder()
-                .member(member)
-                .chatRoom(chatRoom)
-                .content(member.getNickname() + "님이 채팅방을 나갔습니다.")
-                .type(Type.SYSTEM)
-                .build();
-
-        chatMessageRepository.save(chatMessage);
+        ChatMessage chatMessage = saveMessage(chatRoom, member, member.getNickname() + "님이 채팅방을 나갔습니다.", Type.SYSTEM);
 
         websocketService.topicMessage(
                 chatRoom.getId(),
@@ -85,6 +79,7 @@ public class ChatMessageService {
                                 .roomId(chatRoom.getId())
                                 .content(chatMessage.getContent())
                                 .senderId(member.getId())
+                                .type(Type.SYSTEM)
                                 .senderName("System")
                                 .timestamp(chatMessage.getCreatedAt())
                                 .build()
@@ -123,14 +118,7 @@ public class ChatMessageService {
 
         participantRepository.save(participant);
 
-        ChatMessage chatMessage = ChatMessage.builder()
-                .member(member)
-                .chatRoom(chatRoom)
-                .content(member.getNickname() + "님이 채팅방에 참여하셨습니다.")
-                .type(Type.SYSTEM)
-                .build();
-
-        chatMessageRepository.save(chatMessage);;
+        ChatMessage chatMessage =  saveMessage(chatRoom, member, member.getNickname() + "님이 채팅방에 참여하셨습니다.", Type.SYSTEM);
 
         websocketService.topicMessage(
                 chatRoom.getId(),
@@ -175,7 +163,7 @@ public class ChatMessageService {
         Member member = pair.getRight();
 
         // 채팅 메세지 저장
-        ChatMessage chatMessage = saveMessage(chatRoom,member, messageRequest);
+        ChatMessage chatMessage = saveMessage(chatRoom,member, messageRequest.getContent(), Type.TEXT);
 
         Set<String> allParticipants =  participantCache.getParticipants(roomId); // 이메일 기준
         Set<String> subscribedUsers = chatService.getSubscribedUserEmails(roomId);
