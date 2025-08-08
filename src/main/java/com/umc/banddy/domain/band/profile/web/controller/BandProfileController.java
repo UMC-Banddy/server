@@ -37,7 +37,7 @@ public class BandProfileController {
             HttpServletRequest request
     ) {
         Long loginMemberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
-        BandDetailResponse response = bandDetailService.getBandDetail(loginMemberId, bandId); // ✅ OK
+        BandDetailResponse response = bandDetailService.getBandDetail(loginMemberId, bandId);
         return ResponseEntity.ok(response);
     }
 
