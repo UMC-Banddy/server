@@ -68,9 +68,27 @@ public class BandProfileConverter {
             Band band,
             List<BandSns> snsList
     ) {
-        String ageRange = (band.getAgeStart() != null)
-                ? band.getAgeStart() + "대 이상"
-                : "연령 무관";
+        // 연령 조건 계산
+        String ageRange;
+        if (band.getAgeStart() != null && band.getAgeEnd() != null) {
+            int startDecade = (band.getAgeStart() / 10) * 10;
+            int endDecade = (band.getAgeEnd() / 10) * 10;
+
+            if (startDecade == endDecade) {
+                ageRange = startDecade + "대 이상";
+            } else {
+                ageRange = startDecade + "대 이상 - " + endDecade + "대 이하";
+            }
+        } else if (band.getAgeStart() != null) {
+            int startDecade = (band.getAgeStart() / 10) * 10;
+            ageRange = startDecade + "대 이상";
+        } else if (band.getAgeEnd() != null) {
+            int endDecade = (band.getAgeEnd() / 10) * 10;
+            ageRange = endDecade + "대 이하";
+        } else {
+            ageRange = "연령 무관";
+        }
+
 
         String gender = switch (band.getGender()) {
             case MALE -> "남성만";
@@ -80,10 +98,9 @@ public class BandProfileConverter {
         };
 
         String region = band.getRegion();
-        if (band.getDistrict() != null && !band.getDistrict().isEmpty()) {
-            region += " " + band.getDistrict();
-        }
+        String district = band.getDistrict();
 
+        // SNS 변환
         List<BandDetailResponse.SnsDto> snsDtoList = snsList.stream()
                 .map(sns -> BandDetailResponse.SnsDto.builder()
                         .platform(sns.getPlatform())
@@ -99,8 +116,9 @@ public class BandProfileConverter {
                 .ageRange(ageRange)
                 .genderCondition(gender)
                 .region(region)
+                .district(district)
                 .endDate(band.getEndDate() != null
-                        ? band.getEndDate().toLocalDate().toString().replace("-", ".") // yy.MM.dd 포맷
+                        ? band.getEndDate().toLocalDate().toString().replace("-", ".")
                         : null)
                 .snsList(snsDtoList)
                 .build();
