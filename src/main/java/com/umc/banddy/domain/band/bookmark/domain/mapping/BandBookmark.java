@@ -25,5 +25,7 @@ public class BandBookmark extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    private boolean soundOn;
 }
 

@@ -1,10 +1,7 @@
 package com.umc.banddy.domain.music.artist.repository;
 
-import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.List;
@@ -15,4 +12,11 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     List<Artist> findByIdIn(List<Long> artistIds);
     //검색
+    List<Artist> findBySpotifyIdIn(List<String> spotifyIds);
+
+    public interface ArtistIdSpotifyId {
+        Long getId();
+        String getSpotifyId();
+    }
+    List<ArtistIdSpotifyId> findArtistMapBySpotifyIdIn(List<String> artistIds);
 }

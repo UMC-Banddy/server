@@ -18,18 +18,19 @@ public class ChatConveter {
                 .senderId(chatMessage.getMember().getId())
                 .senderName(chatMessage.getMember().getNickname())
                 .content(chatMessage.getContent())
+                .type(chatMessage.getType())
                 .roomId(chatMessage.getChatRoom().getId())
                 .timestamp(chatMessage.getCreatedAt())
                 .build();
     }
 
-    public static ChatMessage toChatMessage(Member member, ChatRoom chatRoom, String content) {
-        return ChatMessage.builder()
-                .member(member)
-                .chatRoom(chatRoom)
-                .content(content)
-                .build();
-    }
+//    public static ChatMessage toChatMessage(Member member, ChatRoom chatRoom, String content) {
+//        return ChatMessage.builder()
+//                .member(member)
+//                .chatRoom(chatRoom)
+//                .content(content)
+//                .build();
+//    }
 
     public static <M> WsMessage<M> toWsMessage(M message, MessageType type){
         return  WsMessage.<M>builder()

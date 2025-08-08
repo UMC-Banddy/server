@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.band.profile.domain;
 
 import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
+import com.umc.banddy.domain.band.profile.domain.mapping.MemberBand;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
 import com.umc.banddy.global.entity.BaseEntity;
@@ -22,6 +23,9 @@ public class Band extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "band")
+    private List<MemberBand> members;
 
     // 이미지, 기본 정보
     @Column(name = "profile_image_url")
@@ -83,6 +87,9 @@ public class Band extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "member_id", nullable = true)
     private Member manager;
+
+    @Column(name = "pinned_at", nullable = true)
+    private LocalDateTime pinnedAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "band", fetch = FetchType.LAZY,

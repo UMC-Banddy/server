@@ -9,9 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class MemberInfo{
-    private Long memberId;
-    private String nickname;
-    private String profileImageUrl;
-    private LocalDateTime lastReadAt;
+public class PinBandChatRoomResponse {
+
+    private Long bandId;
+    private LocalDateTime pinnedAt;
 }

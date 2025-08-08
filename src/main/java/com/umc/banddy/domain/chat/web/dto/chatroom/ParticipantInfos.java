@@ -12,10 +12,7 @@ import java.util.List;
 @Builder
 public class ParticipantInfos {
 
-    private Long roomId;
-
     private List<Info> infos;
-
 
     @Getter
     @AllArgsConstructor
@@ -23,7 +20,8 @@ public class ParticipantInfos {
     public static class Info{
 
         private Long memberId;
+        private String nickname;
+        private String imageUrl;
         private LocalDateTime timestamp;
     }
-
 }

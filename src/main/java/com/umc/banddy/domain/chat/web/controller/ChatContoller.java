@@ -30,7 +30,7 @@ public class ChatContoller {
     private final JwtTokenUtil jwtTokenUtil;
     private final ChatMessageService chatMessageService;
 
-    @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api")
+    @Operation(summary = " 단체 채팅방 생성", description = "단체 채팅방 생성 api, 본인을 제외한 참여자 Id 입력")
     @PostMapping(path = "/rooms", consumes = "multipart/form-data")
     public ResponseEntity<ChatRoomResponse> createChatRoom(
             @RequestPart(value = "data") @Valid  ChatRoomRequest chatRoomRequest,
@@ -53,9 +53,9 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.updateGroupChatRoom(currentMemberId, image, updateGroupChatRequest));
     }
 
-    @Operation(summary = "개인 채팅방 조회")
+    @Operation(summary = "개인 채팅방 생성, 입장", description = "친구페이지에서 개인 채팅방 입장, 채팅방이 없는 경우도 자동 생성 api")
     @PostMapping("/rooms/friends")
-    public ResponseEntity<PrivateChatRoomResponse> createPrivateChatRooms(
+    public ResponseEntity<BasicChatRoomInfo> createPrivateChatRooms(
             @RequestBody @Valid PrivateChatRoomRequest privateChatRoomRequest,
             HttpServletRequest request
     ) {
@@ -92,13 +92,16 @@ public class ChatContoller {
     @GetMapping("/rooms/{roomId}/messages")
     public ResponseEntity<CursorChatMessageResponse> getChatMessages(
             @PathVariable Long roomId,
-            @RequestParam(required = false, defaultValue = "0") Long cursor,
+            @RequestParam(required = false) Long cursor,
             @RequestParam(required = false, defaultValue = "20") Integer limit,
             HttpServletRequest request
     ) {
+        // 초기 요청인 경우(Long.MAX_VALUE = 9_223_372_036_854_775_807)
+        long effectiveCursor = (cursor == null) ? Long.MAX_VALUE : cursor;
+
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, cursor, limit));
+        return ResponseEntity.ok(chatMessageService.getChatMessages(roomId, effectiveCursor, limit));
     }
 
     @Operation(summary = "채팅방 목록 조회")
@@ -111,27 +114,69 @@ public class ChatContoller {
         return ResponseEntity.ok(chatRoomService.getMyChatRooms(currentMemberId));
     }
 
-    @Operation(summary = "친구 채팅방 목록 조회")
-    @GetMapping("/friends")
-    public ResponseEntity <FriendsChatRoomResponse> getFriendsChatRooms(
-            HttpServletRequest request
-    ){
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
-    }
+//    @Operation(summary = "친구 채팅방 목록 조회")
+//    @GetMapping("/friends")
+//    public ResponseEntity <FriendsChatRoomResponse> getFriendsChatRooms(
+//            HttpServletRequest request
+//    ){
+//        String token = JwtTokenUtil.extractToken(request);
+//        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+//        return ResponseEntity.ok(chatRoomService.getFriendsChatRoom(currentMemberId));
+//    }
 
-    @Operation(summary = "채팅방 참가자 정보 불러오기")
+    @Operation(summary = "채팅방 입장시 필요 정보 불러오기")
     @GetMapping("/rooms/{roomId}")
-    public ResponseEntity <ParticipantInfos> getChatRoomInfo(
+    public ResponseEntity <BasicChatRoomInfo> getChatRoomInfo(
             @PathVariable Long roomId,
             HttpServletRequest request
     ){
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        Pair<ChatRoom,Member> pair = chatService.verifedChatRoomAndMember(roomId, currentMemberId);
-        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(pair.getLeft(),pair.getRight()));
+        return ResponseEntity.ok(chatRoomService.getChatRoomInfo(roomId, currentMemberId));
     }
+
+    @Operation(summary = "채팅방 고정하기")
+    @PatchMapping("/rooms/pin")
+    public ResponseEntity <?> pinChatRoom(
+            @RequestParam(required = false) Long bandId,
+            @RequestParam(required = false) Long chatId,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        if( bandId == null && chatId != null) {
+           return ResponseEntity.ok(chatRoomService.pinChatRoom( chatId, currentMemberId));
+        }else if(bandId != null && chatId == null) {
+            return ResponseEntity.ok(chatRoomService.pinBandChatRoom(bandId,currentMemberId));
+        }else{
+            return ResponseEntity.badRequest().body("bandId or chatId must be provided");
+        }
+    }
+    @Operation(summary = "채팅방 고정 해제",description = " bandId와 chatId 둘 중 하나만 입력해주세요")
+    @PatchMapping("/rooms/unpin")
+    public ResponseEntity <?> unpinChatRoom(
+            @RequestParam(required = false) Long bandId,
+            @RequestParam(required = false) Long chatId,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        if( bandId == null && chatId != null) {
+            return ResponseEntity.ok(chatRoomService.unpinChatRoom( chatId, currentMemberId));
+        }else if(bandId != null && chatId == null) {
+            return ResponseEntity.ok(chatRoomService.unpinBandChatRoom(bandId,currentMemberId));
+        }else if(bandId != null && chatId != null) {
+            return ResponseEntity.badRequest().body("하나만 입력해주세요");
+        }
+        else{
+            return ResponseEntity.badRequest().body("bandId or chatId must be provided");
+        }
+    }
+
+
+
+
+
 
 //    @Operation(summary = "밴드 지원하기")
 //    @PostMapping("/bands/{bandId}/join")

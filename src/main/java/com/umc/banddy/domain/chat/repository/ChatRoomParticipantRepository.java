@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomParticipant, Long> {
 
@@ -58,4 +57,16 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
     Optional<ChatRoomParticipant> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
 
     List<ChatRoomParticipant> findAllByChatRoom(ChatRoom chatRoom);
+
+    @Query("""
+        SELECT p
+        FROM ChatRoomParticipant p
+         JOIN FETCH p.chatRoom cr
+         JOIN FETCH p.member m
+        WHERE cr.id = :roomId
+          AND p.status = com.umc.banddy.domain.member.enums.Status.ACTIVE
+        """)
+    List<ChatRoomParticipant> findAllActiveByChatRoomId(
+            @Param("roomId") Long roomId
+    );
 }

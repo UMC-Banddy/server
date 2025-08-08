@@ -42,7 +42,7 @@ public class BandProfileConverter {
                 .collect(Collectors.toList());
 
         List<String> jobList = jobs.stream()
-                .map(bj -> bj.getJob())
+                .map(BandJob::getJob)
                 .collect(Collectors.toList());
 
         CompositionDto compositionDto = CompositionDto.builder()
@@ -66,37 +66,62 @@ public class BandProfileConverter {
     // 밴드 상세 응답
     public static BandDetailResponse toDetailResponse(
             Band band,
-            boolean isBookmarked,
-            List<BandSession> sessions,
-            List<BandTag> tags,
-            List<BandTrack> tracks
+            List<BandSns> snsList
     ) {
+        // 연령 조건 계산
+        String ageRange;
+        if (band.getAgeStart() != null && band.getAgeEnd() != null) {
+            int startDecade = (band.getAgeStart() / 10) * 10;
+            int endDecade = (band.getAgeEnd() / 10) * 10;
+
+            if (startDecade == endDecade) {
+                ageRange = startDecade + "대 이상";
+            } else {
+                ageRange = startDecade + "대 이상 - " + endDecade + "대 이하";
+            }
+        } else if (band.getAgeStart() != null) {
+            int startDecade = (band.getAgeStart() / 10) * 10;
+            ageRange = startDecade + "대 이상";
+        } else if (band.getAgeEnd() != null) {
+            int endDecade = (band.getAgeEnd() / 10) * 10;
+            ageRange = endDecade + "대 이하";
+        } else {
+            ageRange = "연령 무관";
+        }
+
+
+        String gender = switch (band.getGender()) {
+            case MALE -> "남성만";
+            case FEMALE -> "여성만";
+            case OTHER -> "성별 무관";
+            default -> "미지정";
+        };
+
+        String region = band.getRegion();
+        String district = band.getDistrict();
+
+        // SNS 변환
+        List<BandDetailResponse.SnsDto> snsDtoList = snsList.stream()
+                .map(sns -> BandDetailResponse.SnsDto.builder()
+                        .platform(sns.getPlatform())
+                        .snsLink(sns.getSnsLink())
+                        .build())
+                .collect(Collectors.toList());
+
         return BandDetailResponse.builder()
                 .bandId(band.getId())
-                .name(band.getName())
-                .imageUrl(band.getProfileImageUrl())
+                .bandName(band.getName())
+                .profileImageUrl(band.getProfileImageUrl())
                 .description(band.getDescription())
-                .isBookmarked(isBookmarked)
-                .recruitingSessions(
-                        sessions.stream()
-                                .map(bs -> bs.getSession().getName())
-                                .collect(Collectors.toList())
-                ) // 모집 중인 세션 (변경 없음)
-                .tags(
-                        tags.stream()
-                                .map(bt -> bt.getTag().getName())
-                                .collect(Collectors.toList())
-                )
-                .tracks(
-                        tracks.stream()
-                                .map(bt -> BandDetailResponse.TrackDto.builder()
-                                        .trackId(bt.getTrack().getId())
-                                        .title(bt.getTrack().getTitle())
-                                        .artist(bt.getTrack().getArtist())
-                                        .imageUrl(bt.getTrack().getImageUrl())
-                                        .build())
-                                .collect(Collectors.toList())
-                )
+                .ageRange(ageRange)
+                .genderCondition(gender)
+                .region(region)
+                .district(district)
+                .endDate(band.getEndDate() != null
+                        ? band.getEndDate().toLocalDate().toString().replace("-", ".")
+                        : null)
+                .snsList(snsDtoList)
                 .build();
     }
+
 }

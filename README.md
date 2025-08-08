@@ -1,31 +1,77 @@
 # Banddy-server
 
-## Git Convention
+## 🎸 프로젝트 소개
+원하는 음악으로 밴드 멤버를 찾아주는 밴드 맞춤형 매칭 서비스
+#### 주요 기능
+- 회원가입, 사전테스트 및 프로필, 친구
+- 밴드 조회, 저장, 조인, 채팅
+- 음악 아카이브
 
-### Branch Strategy
+
+## 🛠️ 기술 스택
+- Language: Java 17
+- Framework: Spring Boot
+- Build Tool: Gradle
+- Database: MySQL
+- Deploy: GitHub Actions, AWS, Docker
+
+## 🏗️ 서버 아키텍처
+
+
+## 🗂️ 프로젝트 구조
+#### 도메인형
+- 각 도메인 패키지는 엔티티, DTO, 컨트롤러, 서비스, 리포지토리 등 하위 패키지를 포함
+
+```
+src/
+└── main/
+    └── java/
+        └── com/
+            └── umc/
+                └── banddy/
+                    ├── BanddyApplication.java
+                    ├── global/
+                    │   ├── apiPayload/
+                    │   ├── config/
+                    │   ├── entity/
+                    │   ├── infra/
+                    │   ├── security/
+                    │   └── util/
+                    └── domain/
+                        ├── auth/
+                        ├── band/
+                        ├── chat/
+                        ├── member/
+                        ├── music/
+                        └── ... 
+```
+
+## 📝 Git Convention
+
+#### Branch Strategy
 - main: 배포 가능한 최종 코드만 관리합니다.
 - develop: 개발 중인 기능을 통합하는 브랜치입니다.
 - feat: 새로운 기능 개발 시 사용합니다. (‎⁠예: `feat/login`⁠)
 - fix: 버그 수정 시 사용합니다. (‎⁠예: `fix/login-bug`)
 
-### Issue
+#### Issue
 - 새로운 기능 추가, 버그 제보, 오류 수정, 리팩토링, 배포 작업 등을 이슈로 등록합니다.
 - 이슈 템플릿을 참고하여 작성합니다.
 - 이슈 제목은 제목 앞에 [타입]을 붙이고, 이슈 내용을 한 눈에 알 수 있게 작성합니다. (예: `[✨ Feat] 로그인 기능 구현`)
 - 해당하는 라벨을 추가합니다.
 
-### Pull Request (PR)
+#### Pull Request (PR)
 - PR 템플릿을 참고하여 작성합니다.
 - PR 제목은 제목 앞에 타입:을 붙이고, PR 내용을 간결하게 작성합니다. (예: `Feat: 로그인 API 구현 (#3)`, `Fix: 로그인 실패 시 에러 수정 (#3)`)
 - 관련 이슈가 있다면 연결합니다.
 - 코드 리뷰를 거친 후 develop 브랜치로 머지합니다.
 
-### Commit Message
+#### Commit Message
 - `[타입] 작업 내용` 형태로 작성합니다. (예: ‎⁠`feat: 로그인 API 엔드포인트 추가 (#3)`, `fix: 로그인 실패 시 에러 메시지 수정 (#3)`⁠)
 - 주요 타입: `feat`(기능), `fix`(버그 수정), `docs`(문서), `refactor`(리팩토링), `test`(테스트), `chore`(기타)  
 
 
-## Developers
+## 👥 Team
 <table>
   <tr>
     <!-- 사진 행 -->

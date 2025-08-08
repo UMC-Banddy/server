@@ -1,34 +1,35 @@
 package com.umc.banddy.domain.band.profile.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class BandDetailResponse {
 
     private Long bandId;
-    private String name;
-    private String imageUrl;
-    private Boolean isBookmarked;
-    private List<String> recruitingSessions;
-    private String description;
-    private List<String> tags;
+    private String bandName;
+    private String profileImageUrl;
 
-    private List<TrackDto> tracks;
+    private String ageRange;
+    private String genderCondition;
+    private String region;
+    private String district;
+
+    private String description;
+    private String endDate;
+
+    private List<SnsDto> snsList;
 
     @Getter
     @Builder
     @AllArgsConstructor
-    public static class TrackDto {
-        private Long trackId;
-        private String title;
-        private String artist;
-        private String imageUrl;
+    @NoArgsConstructor
+    public static class SnsDto {
+        private String platform;
+        private String snsLink;
     }
 }
-
