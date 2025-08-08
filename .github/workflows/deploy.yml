@@ -48,5 +48,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu
-            docker-compose pull
+            sudo docker-compose pull
             sudo bash deploy.sh
