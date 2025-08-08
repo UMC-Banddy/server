@@ -446,7 +446,7 @@ public class BandManagementService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(null)
                 .imageUrl(null)
-                .roomType(RoomType.GROUP)
+                .roomType(RoomType.BAND)
                 .build();
 
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);

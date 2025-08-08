@@ -277,6 +277,7 @@ public class ChatRoomService {
                                             .memberId(p.getMember().getId())
                                             .nickname(p.getMember().getNickname())
                                             .profileImageUrl(p.getMember().getProfileImageUrl())
+                                            .lastReadAt(p.getLastReadAt())
                                             .build()
                                     )
                                     .toList();
@@ -310,6 +311,7 @@ public class ChatRoomService {
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
+                                    .lastReadAt(p.getLastReadAt())
                                     .build())
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
@@ -349,6 +351,7 @@ public class ChatRoomService {
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
+                                    .lastReadAt(p.getLastReadAt())
                                     .build()
                             )
                             .toList();
@@ -471,12 +474,12 @@ public class ChatRoomService {
                     List<BandManagerRoomInfoDto.BandChatRoomInfo> chatInfos = rooms.stream()
                             .map(room -> {
                                 MemberInfo memberInfo = room.getParticipants().stream()
-                                        .map(ChatRoomParticipant::getMember)
                                         .filter(m -> !m.getId().equals(memberId))
                                         .map(m -> MemberInfo.builder()
-                                                .memberId(m.getId())
-                                                .nickname(m.getNickname())
-                                                .profileImageUrl(m.getProfileImageUrl())
+                                                .memberId(m.getMember().getId())
+                                                .nickname(m.getMember().getNickname())
+                                                .profileImageUrl(m.getMember().getProfileImageUrl())
+                                                .lastReadAt(m.getLastReadAt())
                                                 .build())
                                         .findFirst()
                                         .orElse(null);
