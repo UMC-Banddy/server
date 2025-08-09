@@ -113,7 +113,7 @@ src/
 
   <tr>
     <!-- 역할 행 -->
-    <td><div align="center">음악</div></td>
+    <td><div align="center">음악, 배포</div></td>
     <td><div align="center">회원, 친구</div></td>
     <td><div align="center">모집, 채팅</div></td>
     <td><div align="center">밴드, 프로필</div></td>
