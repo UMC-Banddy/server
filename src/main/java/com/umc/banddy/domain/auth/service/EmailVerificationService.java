@@ -4,29 +4,29 @@ import com.umc.banddy.domain.auth.web.dto.EmailSendRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.time.Duration;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    // 기존 Map<String, String> → 인증번호 + 생성시간 저장용 객체로 변경
-    private final Map<String, VerificationData> verificationStore = new ConcurrentHashMap<>();
-
+    // 인증번호 전송
     public void sendCode(EmailSendRequest request) {
         String code = generateCode();
 
-        // key = code (이메일 없이 인증번호로만 저장) 기존 코드에서 변경..
-        verificationStore.put(code, new VerificationData(code));
+        // Redis에 저장: key = code, value = email, TTL = 5분
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set(code, request.getEmail(), Duration.ofMinutes(5));
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(request.getEmail());
@@ -42,37 +42,21 @@ public class EmailVerificationService {
         mailSender.send(message);
     }
 
+    // 인증번호 검증
     public EmailVerifyResponse verifyCode(EmailVerifyRequest request) {
-        // 이메일이 아닌 인증번호로 찾음
-        VerificationData data = verificationStore.get(request.getCode());
+        String email = redisTemplate.opsForValue().get(request.getCode());
 
-        if (data == null || data.isExpired()) {
+        if (email == null) {
             return new EmailVerifyResponse(false, "인증번호가 만료되었거나 존재하지 않습니다.");
         }
 
-        verificationStore.remove(request.getCode()); // 인증 성공 시 제거
+        // 인증번호 일회성 사용 → 즉시 삭제
+        redisTemplate.delete(request.getCode());
+
         return new EmailVerifyResponse(true, "인증이 완료되었습니다.");
     }
 
     private String generateCode() {
-        return String.valueOf(new Random().nextInt(90000) + 10000);
-    }
-
-    private static class VerificationData {
-        private final String code;
-        private final LocalDateTime createdAt;
-
-        public VerificationData(String code) {
-            this.code = code;
-            this.createdAt = LocalDateTime.now();
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public boolean isExpired() {
-            return createdAt.plusMinutes(5).isBefore(LocalDateTime.now());
-        }
+        return String.valueOf(new Random().nextInt(90000) + 10000);  // 10000~99999
     }
 }
