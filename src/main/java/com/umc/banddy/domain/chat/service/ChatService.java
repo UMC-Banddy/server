@@ -86,6 +86,25 @@ public class ChatService {
         return userEmails;
     }
 
+    public Set<String> getPrivateSubscribedUserEmails(Long roomId) {
+        String queueDestination = "/user/queue/room/" + roomId;
+        Set<String> userEmails = new HashSet<>();
+        for (SimpUser user : simpUserRegistry.getUsers()) {
+            for (SimpSession session : user.getSessions()) {
+                for (SimpSubscription subscription : session.getSubscriptions()) {
+                    String dest = subscription.getDestination();
+                    if (queueDestination.equals(dest)) {
+                        userEmails.add(user.getName());
+                    }
+                }
+            }
+        }
+        return userEmails;
+    }
+
+
+
+
     public boolean isUserSubscribedToRoom( Long roomId, String userEmail) {
         String targetDestination = "/topic/room/" + roomId;
 

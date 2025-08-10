@@ -10,6 +10,8 @@ import com.umc.banddy.domain.chat.web.dto.message.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.chat.web.dto.TimeMark;
+import com.umc.banddy.domain.chat.web.dto.message.GroupChatMessageRequest;
+import com.umc.banddy.domain.chat.web.dto.message.PrivateChatMessageRequest;
 import com.umc.banddy.domain.member.domain.Member;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -85,5 +87,38 @@ public class WebsocketController {
                 toWsMessage(timeMark, MessageType.MARK_AS_UNREAD)
         );
     }
+
+
+    // 개인 메세지 전송
+    @MessageMapping("/chat/private.sendMessage/{roomId}")
+    public void sendPrivateMessage(
+            Principal principal,
+            @Valid @Payload PrivateChatMessageRequest messageRequest,
+            @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendPrivateMessage(roomId, auth, messageRequest);
+    }
+
+    // 개인 메세지 전송
+    @MessageMapping("/chat/private.sendMessage/{roomId}")
+    public void sendGroupMessage(
+            Principal principal,
+            @Valid @Payload GroupChatMessageRequest messageRequest,
+            @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendGroupMessage(roomId, auth, messageRequest);
+    }
+
+
+
+
+
+
+
+
+
+
 
 }

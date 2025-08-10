@@ -10,6 +10,7 @@ import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.ChatRoomListResponse
 import com.umc.banddy.domain.chat.web.dto.message.ChatSystemResponse;
 import com.umc.banddy.domain.chat.web.dto.message.CursorChatMessageResponse;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
