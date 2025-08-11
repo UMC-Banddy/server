@@ -107,7 +107,7 @@ public class BandManagementController {
 
 
     @Operation(summary = "밴드 지원자 채팅방 불러오기")
-    @GetMapping("/recruitments/{bandId}")
+    @GetMapping("/recruitments/{bandId}/applications")
     public ResponseEntity<ApplicationListResponse> getApplicationList(
             @PathVariable Long bandId,
             HttpServletRequest request
@@ -130,10 +130,5 @@ public class BandManagementController {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId));
     }
-
-
-
-
-
 
 }
