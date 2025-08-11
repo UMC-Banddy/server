@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.chat.service;
 
 
+import com.umc.banddy.domain.chat.converter.ChatConveter;
 import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
@@ -10,6 +11,7 @@ import com.umc.banddy.domain.chat.domain.enums.Type;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
+import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
 import com.umc.banddy.domain.chat.web.dto.message.*;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.member.domain.Member;
@@ -22,10 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.umc.banddy.domain.chat.converter.ChatConveter.toChatMessageResponse;
 import static com.umc.banddy.domain.chat.converter.ChatConveter.toWsMessage;
@@ -42,6 +42,7 @@ public class ChatMessageService {
     private final ChatRoomParticipantCache participantCache;
     private final ChatService chatService;
     private final MemberRepository memberRepository;
+    private final ChatRoomParticipantCache chatRoomParticipantCache;
 
     // 채팅 메세지 저장
     @Transactional
@@ -116,6 +117,21 @@ public class ChatMessageService {
                         .lastReadAt(LocalDateTime.now())
                         .build());
 
+        if(chatRoom.getRoomType() == RoomType.BAND) {
+            if (chatRoom.getBandChat() == null) {
+                throw new IllegalArgumentException("밴드 채팅방이 아닙니다.");
+            }else if (chatRoomParticipantCache.getParticipants(chatRoom.getId()).size() >= 2){
+                throw new IllegalArgumentException("개인 채팅방에 참여할 수 없습니다.");
+            }
+            throw new IllegalArgumentException("참여할 수 없는 채팅방입니다");
+        }else if(chatRoom.getRoomType() == RoomType.PRIVATE) {
+            if (chatRoom.getBandChat() != null) {
+                throw new IllegalArgumentException("개인 채팅방이 아닙니다.");
+            } else if (chatRoomParticipantCache.getParticipants(chatRoom.getId()).size() >= 2){
+                throw new IllegalArgumentException("참여할 수 없는 채팅방입니다");
+            }
+        }
+
         participantRepository.save(participant);
 
         ChatMessage chatMessage =  saveMessage(chatRoom, member, member.getNickname() + "님이 채팅방에 참여하셨습니다.", Type.SYSTEM);
@@ -180,7 +196,7 @@ public class ChatMessageService {
             ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
             websocketService.topicMessage(roomId, toWsMessage(chatMessageResponse, MessageType.MESSAGE));
             // 비구독자 처리
-            UnreadResponse unreadResponse = UnreadResponse.builder()
+            UnreadPrivateResponseImpl unreadResponse = UnreadPrivateResponseImpl.builder()
                     .senderId(member.getId())
                     .roomId(chatRoom.getId())
                     .content(chatMessage.getContent())
@@ -198,7 +214,7 @@ public class ChatMessageService {
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
-                UnreadResponse unreadResponse = UnreadResponse.builder()
+                UnreadPrivateResponseImpl unreadResponse = UnreadPrivateResponseImpl.builder()
                         .senderId(member.getId())
                         .roomId(chatRoom.getId())
                         .content(chatMessage.getContent())
@@ -217,7 +233,7 @@ public class ChatMessageService {
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
-                UnreadBandResponse unreadbandResponse = UnreadBandResponse.builder()
+                UnreadResponseImpl unreadbandResponse = UnreadResponseImpl.builder()
                         .senderId(member.getId())
                         .roomId(chatRoom.getId())
                         .bandId(chatRoom.getBandChat().getBand().getId())
@@ -232,5 +248,108 @@ public class ChatMessageService {
 
         }
     }
+
+    public void sendPrivateMessage(
+            Long roomId,
+            MessageAuthenticationHeader auth,
+            PrivateChatMessageRequest messageRequest
+    ){
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
+
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
+
+        RoomType reqType = messageRequest.getRoomType();
+        if (reqType != RoomType.PRIVATE && reqType != RoomType.BAND) {
+            throw new IllegalArgumentException("허용되지 않는 채팅방 타입입니다.");
+        }
+        if (chatRoom.getRoomType() != reqType) {
+            throw new IllegalArgumentException("채팅방 타입이 요청 타입과 다릅니다.");
+        }
+
+        // 채팅 메세지 저장
+        ChatMessage chatMessage = saveMessage(chatRoom, member, messageRequest.getContent(), Type.TEXT);
+
+        // 채팅방 참여자 정보
+        Set<String> allParticipants = Optional.ofNullable(participantCache.getParticipants(roomId))
+                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다."));
+        if (allParticipants.size() != 2)
+            throw new IllegalStateException("1:1 채팅방 참여자 구성이 올바르지 않습니다.");
+
+        // 지금 수신 중인 사용자 정보 불러오기
+        Set<String> subscribedUsers = chatService.getPrivateSubscribedUserEmails(roomId);
+
+        // 내가 아닌 사용자의 인증정보(email)
+        String receiverEmail = allParticipants.stream()
+                .filter(m -> !Objects.equals(m, auth.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다"));
+
+        if(subscribedUsers.contains(receiverEmail)){
+            ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+            websocketService.queuePrivateMessage(
+                    receiverEmail,
+                    roomId,
+                    toWsMessage(chatMessageResponse, MessageType.MESSAGE)
+            );
+        }else{
+            UnreadResponse unreadResponse = ChatConveter.toUnreadResponse(member, chatRoom, chatMessage, chatRoom.getRoomType());
+            websocketService.queueUnreadMessage(
+                    receiverEmail, toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
+        }
+    }
+    public void sendGroupMessage(
+            Long roomId,
+            MessageAuthenticationHeader auth,
+            GroupChatMessageRequest  messageRequest
+    ){
+        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
+
+        ChatRoom chatRoom = pair.getLeft();
+        Member member = pair.getRight();
+
+        RoomType reqType = messageRequest.getRoomType();
+        if (reqType != RoomType.GROUP) {
+            throw new IllegalArgumentException("허용되지 않는 채팅방 타입입니다.");
+        }
+        if (chatRoom.getRoomType() != reqType) {
+            throw new IllegalArgumentException("채팅방 타입이 요청 타입과 다릅니다.");
+        }
+        // 채팅 메세지 저장
+        ChatMessage chatMessage = saveMessage(chatRoom, member, messageRequest.getContent(), Type.TEXT);
+
+        // 채팅방 참여자 정보
+        Set<String> allParticipants =  participantCache.getParticipants(roomId);
+
+        // 지금 수신 중인 사용자 정보 불러오기
+        Set<String> subscribedUsers = chatService.getGroupSubscribedUserEmails(roomId);
+
+        //온라인(구독 중) 사용자
+        Set<String> onlineUsers = allParticipants.stream()
+                .filter(subscribedUsers::contains)
+                .collect(Collectors.toSet());
+
+        // 오프라인 사용자
+        Set<String> offlineUsers = new HashSet<>(allParticipants);
+        offlineUsers.removeAll(onlineUsers);
+
+        ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
+        websocketService.topicMessage(
+                roomId,
+                toWsMessage(chatMessageResponse, MessageType.MESSAGE)
+        );
+        UnreadResponse unreadResponse = ChatConveter.toUnreadResponse(member, chatRoom, chatMessage, chatRoom.getRoomType());
+
+        offlineUsers.forEach(receiverEmail -> {
+                    websocketService.queueUnreadMessage(
+                            receiverEmail,
+                            toWsMessage(unreadResponse, MessageType.UNREAD_MESSAGE));
+                });
+    }
+
+
+
+
+
 
 }

@@ -37,11 +37,11 @@ public class ChatRoomParticipant {
     @Column(nullable = false)
     private LocalDateTime lastReadAt; //erd에 없음
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 }
