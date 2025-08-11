@@ -331,13 +331,13 @@ public class ChatRoomService {
         Map<Boolean, List<ChatRoom>> partitioned = bandRooms.stream()
                 .collect(Collectors.partitioningBy(
                         room -> room.getParticipants().stream()
-                                .anyMatch(p -> p.getRole().equals(Role.BANDMANAGER))
+                                .anyMatch(p -> p.getMember().getId().equals(memberId)
+                                        && p.getRole() == Role.BANDMANAGER)
                 ));
+        List<ChatRoom> myManagerRooms = partitioned.get(true);   // 내가 매니저인 방
+        List<ChatRoom> myApplicantRooms = partitioned.get(false); // 내가 지원자인 방
 
-        List<ChatRoom> adminBandRooms = partitioned.get(true);
-        List<ChatRoom> nonAdminBandRooms = partitioned.get(false);
-
-        List<ChatRoomInfoDto> nonAdminBandRoomInfos = nonAdminBandRooms.stream()
+        List<ChatRoomInfoDto> nonAdminBandRoomInfos = myApplicantRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
                             .map(p -> MemberInfo.builder()
@@ -369,7 +369,7 @@ public class ChatRoomService {
                 }).collect(Collectors.toList());
 
 
-        Map<Long, List<ChatRoom>> adminRoomsByBandId = adminBandRooms.stream()
+        Map<Long, List<ChatRoom>> adminRoomsByBandId = myManagerRooms.stream()
                 .collect(Collectors.groupingBy(r -> r.getBandChat().getBand().getId()));
 
         List<BandManagerRoomInfoDto> allAdminBandRoomInfos = managedBands.stream()
@@ -403,7 +403,7 @@ public class ChatRoomService {
                     List<BandManagerRoomInfoDto.BandChatRoomInfo> chatInfos = rooms.stream()
                             .map(room -> {
                                 MemberInfo memberInfo = room.getParticipants().stream()
-                                        .filter(m -> !m.getId().equals(memberId))
+                                        .filter(m -> !m.getMember().getId().equals(memberId))
                                         .map(m -> MemberInfo.builder()
                                                 .memberId(m.getMember().getId())
                                                 .nickname(m.getMember().getNickname())
