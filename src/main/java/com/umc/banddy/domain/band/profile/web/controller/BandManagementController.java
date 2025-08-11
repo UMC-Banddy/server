@@ -78,6 +78,19 @@ public class BandManagementController {
         return ResponseEntity.ok(bandManagementService.updateRecruitment(recruit,image, currentMemberId));
     }
 
+
+    @Operation(summary = "밴드 모집방 정보 불러오기")
+    @GetMapping(path = "/recruitments/{bandId}")
+    public ResponseEntity<BandInquiryResponse> getBand(
+            @PathVariable Long bandId,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        return ResponseEntity.ok(bandManagementService.getRecruitment(currentMemberId,bandId));
+    }
+
+
     @Operation(summary = "밴드 지원하기",description = """
     - ** 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
   """)
@@ -117,4 +130,10 @@ public class BandManagementController {
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId));
     }
+
+
+
+
+
+
 }

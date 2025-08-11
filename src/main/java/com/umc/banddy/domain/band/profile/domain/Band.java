@@ -4,6 +4,7 @@ import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.band.profile.domain.mapping.MemberBand;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -85,9 +86,15 @@ public class Band extends BaseEntity {
     private Integer femaleCount;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "track_id", nullable = true)
+    private Track representativeTrack;
+
+    // 매니저 채팅용
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "member_id", nullable = true)
     private Member manager;
 
+    // 매니저 채팅용
     @Column(name = "pinned_at", nullable = true)
     private LocalDateTime pinnedAt;
 
