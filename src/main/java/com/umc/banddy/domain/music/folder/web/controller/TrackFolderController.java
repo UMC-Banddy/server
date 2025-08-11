@@ -26,7 +26,7 @@ public class TrackFolderController {
     private final TrackFolderService trackFolderService;
 
     // 폴더 생성
-    @Operation(summary = "곡 폴더 생성", description = "아카이브에 곡 폴더를 생성합니다.")
+    @Operation(summary = "곡 폴더 생성", description = "아카이브에 곡 폴더를 생성합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,
@@ -99,4 +99,16 @@ public class TrackFolderController {
         return ResponseEntity.ok(ApiResponse.onSuccess(folders));
     }
 
+    // 곡 폴더 수정
+    @Operation(summary = "곡 폴더 수정", description = "곡 폴더의 이름, 색상을 수정합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
+    @PatchMapping("/{folderId}")
+    public ResponseEntity<ApiResponse<FolderResponseDto>> updateFolder(
+            @PathVariable Long folderId,
+            @RequestBody FolderRequestDto requestDto,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        FolderResponseDto response = trackFolderService.updateFolder(folderId, requestDto, token);
+        return ResponseEntity.ok(ApiResponse.onSuccess(response));
+    }
 }
