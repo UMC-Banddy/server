@@ -337,10 +337,7 @@ public class ChatRoomService {
         List<ChatRoom> myManagerRooms = partitioned.get(true);   // 내가 매니저인 방
         List<ChatRoom> myApplicantRooms = partitioned.get(false); // 내가 지원자인 방
 
-        List<ChatRoom> adminBandRooms = partitioned.get(true);
-        List<ChatRoom> nonAdminBandRooms = partitioned.get(false);
-
-        List<ChatRoomInfoDto> nonAdminBandRoomInfos = nonAdminBandRooms.stream()
+        List<ChatRoomInfoDto> nonAdminBandRoomInfos = myApplicantRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
                             .map(p -> MemberInfo.builder()
@@ -372,7 +369,7 @@ public class ChatRoomService {
                 }).collect(Collectors.toList());
 
 
-        Map<Long, List<ChatRoom>> adminRoomsByBandId = adminBandRooms.stream()
+        Map<Long, List<ChatRoom>> adminRoomsByBandId = myManagerRooms.stream()
                 .collect(Collectors.groupingBy(r -> r.getBandChat().getBand().getId()));
 
         List<BandManagerRoomInfoDto> allAdminBandRoomInfos = managedBands.stream()
