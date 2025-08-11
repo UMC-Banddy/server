@@ -69,4 +69,7 @@ public interface ChatRoomParticipantRepository extends JpaRepository<ChatRoomPar
     List<ChatRoomParticipant> findAllActiveByChatRoomId(
             @Param("roomId") Long roomId
     );
+
+    ChatRoomParticipant findByChatRoomIdAndMemberId(ChatRoom chatRoom, Member member);
+
 }

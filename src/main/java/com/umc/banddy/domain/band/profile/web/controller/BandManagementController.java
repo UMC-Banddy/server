@@ -8,6 +8,8 @@ import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -82,7 +84,7 @@ public class BandManagementController {
     @Operation(summary = "밴드 모집방 정보 불러오기")
     @GetMapping(path = "/recruitments/{bandId}")
     public ResponseEntity<BandInquiryResponse> getBand(
-            @PathVariable Long bandId,
+            @NotNull @Positive @PathVariable Long bandId,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
@@ -93,10 +95,10 @@ public class BandManagementController {
 
     @Operation(summary = "밴드 지원하기",description = """
     - ** 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
-  """)
+    """)
     @PostMapping("/bands/{bandId}/join")
     public ResponseEntity<BasicChatRoomInfo> createBandApplication(
-            @PathVariable Long bandId,
+            @NotNull @Positive @PathVariable Long bandId,
             @RequestBody @Valid BandApplicationRequest bandApplicationRequest,
             HttpServletRequest request
     ){
@@ -109,7 +111,7 @@ public class BandManagementController {
     @Operation(summary = "밴드 지원자 채팅방 불러오기")
     @GetMapping("/recruitments/{bandId}/applications")
     public ResponseEntity<ApplicationListResponse> getApplicationList(
-            @PathVariable Long bandId,
+            @NotNull @Positive @PathVariable Long bandId,
             HttpServletRequest request
     ){
         String token = JwtTokenUtil.extractToken(request);
@@ -122,7 +124,7 @@ public class BandManagementController {
     """)
     @PatchMapping("/recruitments/{bandId}")
     public ResponseEntity<ApplicationListResponse> updateApplicantStatus(
-            @PathVariable Long bandId,
+            @NotNull @Positive @PathVariable Long bandId,
             @RequestBody ApplicantUpdateRequest applicantUpdateRequest,
             HttpServletRequest request
     ){

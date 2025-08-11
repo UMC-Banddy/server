@@ -2,6 +2,7 @@ package com.umc.banddy.domain.chat.converter;
 
 import com.umc.banddy.domain.chat.domain.ChatMessage;
 import com.umc.banddy.domain.chat.domain.ChatRoom;
+import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.web.dto.message.ChatMessageResponse;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
@@ -43,12 +44,12 @@ public class ChatConveter {
                 .build();
     }
 
-    public static TimeMark toTimeMark(ChatRoom chatRoom, Member member) {
+    public static TimeMark toTimeMark(ChatRoomParticipant p) {
         return TimeMark.builder()
-                .memberId(member.getId())
-                .nickname(member.getNickname())
-                .roomId(chatRoom.getId())
-                .timestamp(LocalDateTime.now())
+                .memberId(p.getMember().getId())
+                .nickname(p.getMember().getNickname())
+                .roomId(p.getChatRoom().getId())
+                .timestamp(p.getLastReadAt())
                 .build();
     }
 

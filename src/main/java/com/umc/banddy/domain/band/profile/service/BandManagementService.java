@@ -24,6 +24,7 @@ import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.repository.SessionRepository;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
+import com.umc.banddy.domain.music.artist.service.ArtistService;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.repository.TrackRepository;
 import com.umc.banddy.global.infra.S3Uploader;
@@ -63,6 +64,8 @@ public class BandManagementService {
     private final BandChatRepository bandChatRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final S3Uploader s3Uploader;
+
+    private final ArtistService artistService;
 
 
     @Transactional
@@ -155,7 +158,7 @@ public class BandManagementService {
 
 
         // 밴드 아티스트 저장
-        List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
+        List<Artist> ArtistAll = artistService.findOrCreateAllBySpotifyIds(request.getArtistSpotifyIds());
         Map<String, Artist> artistMap = ArtistAll.stream()
                 .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
 

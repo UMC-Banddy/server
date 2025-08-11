@@ -118,25 +118,4 @@ public class ChatService {
         return userEmails;
     }
 
-
-
-
-    public boolean isUserSubscribedToRoom( Long roomId, String userEmail) {
-        String targetDestination = "/topic/room/" + roomId;
-
-        SimpUser user = simpUserRegistry.getUser(userEmail);
-        if (user == null) return false;
-
-        for (SimpSession session : user.getSessions()) {
-            for (SimpSubscription sub : session.getSubscriptions()) {
-                if (targetDestination.equals(sub.getDestination())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-
 }

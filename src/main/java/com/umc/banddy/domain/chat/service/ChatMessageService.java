@@ -12,6 +12,7 @@ import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatCustomRepository;
 import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
+import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.chat.web.dto.message.*;
 import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.member.domain.Member;
@@ -43,6 +44,7 @@ public class ChatMessageService {
     private final ChatService chatService;
     private final MemberRepository memberRepository;
     private final ChatRoomParticipantCache chatRoomParticipantCache;
+    private final ChatRoomParticipantRepository chatRoomParticipantRepository;
 
     // 채팅 메세지 저장
     @Transactional
@@ -348,8 +350,48 @@ public class ChatMessageService {
     }
 
 
+    public void sendPrivateTimeMark(Long roomId, MessageAuthenticationHeader auth) {
+
+        ChatRoomParticipant participant =
+                chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
+
+        saveTimeMark(participant);
+
+        TimeMark timeMark = ChatConveter.toTimeMark(participant);
+
+        websocketService.queuePrivateMessage(
+                auth.getName(),
+                roomId,
+                toWsMessage(timeMark, MessageType.MARk_AS_READ)
+        );
+    }
+    public void sendGroupTimeMark(Long roomId, MessageAuthenticationHeader auth) {
+
+        ChatRoomParticipant participant =
+                chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
+
+        saveTimeMark(participant);
+
+        TimeMark timeMark = ChatConveter.toTimeMark(participant);
 
 
+        websocketService.topicMessage(
+                roomId,
+                toWsMessage(timeMark, MessageType.MARk_AS_READ)
+        );
+    }
 
-
+    @Transactional
+    public void saveTimeMark(ChatRoomParticipant participant) {
+        LocalDateTime now = LocalDateTime.now();
+        // 1초 이내 중복 갱신 방어
+        if (participant.getLastReadAt() != null &&
+                !participant.getLastReadAt().isBefore(now.minusSeconds(1))) {
+            return; // 1초 안 지났으면 저장 안 함
+        }
+        participant.setLastReadAt(now);
+        participantRepository.save(participant);
+    }
 }
