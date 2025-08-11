@@ -1,21 +1,19 @@
 package com.umc.banddy.domain.music.album.web.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AlbumResponseDto {
+public class AlbumDetailResponse {
     private Long albumId;
     private String spotifyId;
     private String name;
     private String artist;
     private String imageUrl;
     private String externalUrl;
+    private int total; // 전체 트랙 개수
+    private List<TrackDto> tracks;
 }
