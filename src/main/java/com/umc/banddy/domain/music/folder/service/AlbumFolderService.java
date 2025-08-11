@@ -147,5 +147,36 @@ public class AlbumFolderService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    // 폴더 수정
+    @Transactional
+    public FolderResponseDto updateFolder(Long folderId, FolderRequestDto requestDto, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        AlbumFolder folder = albumFolderRepository.findById(folderId)
+                .orElseThrow(() -> new FolderHandler(ErrorStatus.FOLDER_NOT_FOUND));
+
+        // 권한 체크
+        if (!folder.getMember().getId().equals(memberId)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN);
+        }
+
+        // 이름 수정
+        if (requestDto.getName() != null) {
+            folder.setName(requestDto.getName());
+        }
+
+        // 색상 수정 및 유효성 검사
+        if (requestDto.getColor() != null) {
+            if (!ALLOWED_FOLDER_COLORS.contains(requestDto.getColor())) {
+                throw new FolderHandler(ErrorStatus.FOLDER_INVALID_COLOR);
+            }
+            folder.setColor(requestDto.getColor());
+        }
+
+        AlbumFolder updated = albumFolderRepository.save(folder);
+        return AlbumFolderConverter.toFolderResponseDto(updated);
+    }
 }
 
