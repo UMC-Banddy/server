@@ -100,7 +100,7 @@ public class ChatRoomService {
                 .build();
     }
 
-
+    // 그룹 채팅 방 업데이트
     public UpdateGroupChatResponse updateGroupChatRoom(
             Long memberId,
             MultipartFile image,
@@ -144,6 +144,7 @@ public class ChatRoomService {
 
 
     // 1:1 채팅 방 조회
+    @Transactional
     public BasicChatRoomInfo getPrivateChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -169,8 +170,6 @@ public class ChatRoomService {
             Member friend
     ) {
         ChatRoom chatRoom = ChatRoom.builder()
-                .name(null)
-                .imageUrl(null)
                 .roomType(RoomType.PRIVATE)
                 .build();
 
@@ -205,7 +204,7 @@ public class ChatRoomService {
                 .build();
         ChatRoomParticipant participantManager = ChatRoomParticipant.builder()
                 .chatRoom(chatRoom)
-                .member(member)
+                .member(Manager)
                 .role(Role.BANDMANAGER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
                 .lastReadAt(LocalDateTime.now())  // 초기값
@@ -238,13 +237,7 @@ public class ChatRoomService {
                 .distinct()
                 .collect(Collectors.groupingBy(ChatRoom::getRoomType));
 
-        // 그룹 채팅방
-        List<ChatRoom> groupAndPrivateRooms = Stream.of(
-                        roomsByType.getOrDefault(RoomType.GROUP, Collections.emptyList()),
-                        roomsByType.getOrDefault(RoomType.PRIVATE, Collections.emptyList())
-                )
-                .flatMap(List::stream)
-                .toList();
+
         // 그룹 채팅방
         List<ChatRoom> groupRooms =
                 roomsByType.getOrDefault(RoomType.GROUP, Collections.emptyList());
@@ -379,70 +372,6 @@ public class ChatRoomService {
         Map<Long, List<ChatRoom>> adminRoomsByBandId = adminBandRooms.stream()
                 .collect(Collectors.groupingBy(r -> r.getBandChat().getBand().getId()));
 
-//        List<BandManagerRoomInfoDto> adminBandRoomInfos = adminBandRooms.stream()
-//                .collect(Collectors.groupingBy(room -> room.getBandChat().getBand().getId()))
-//                .values().stream()
-//                .map(rooms -> {
-//
-//                    ChatRoom anyRoom = rooms.get(0);
-//                    Band band = anyRoom.getBandChat().getBand();
-//
-//                    // 각 방에 대한 ChatRoomInfo 생성
-//                    List<BandManagerRoomInfoDto.BandChatRoomInfo> chatRoomInfos1 = rooms.stream()
-//                            .map(room -> {
-//                                MemberInfo memberInfo = room.getParticipants().stream()
-//                                        .map(ChatRoomParticipant::getMember)
-//                                        .filter(member1 -> !member1.getId().equals(memberId))
-//                                        .map(member1 -> MemberInfo.builder()
-//                                                .memberId(member1.getId())
-//                                                .nickname(member1.getNickname())
-//                                                .profileImageUrl(member1.getProfileImageUrl())
-//                                                .build())
-//                                        .findFirst()
-//                                        .orElse(null);
-//
-//                                return BandManagerRoomInfoDto.BandChatRoomInfo.builder()
-//                                        .roomId(room.getId())
-//                                        .memberInfo(memberInfo)
-//                                        .session(room.getBandChat().getBandSession().getSession().getName())
-//                                        .passFail(room.getBandChat().getPassFail())
-//                                        .lastMessageAt(lastAtMap.get(room.getId()))
-//                                        .UnreadCount(unreadCountMap.get(room.getId()))
-//                                        .build();
-//                            })
-//                            .toList();
-//
-//                    // 1. 전체 UnreadCount 합산
-//                    long totalUnread = chatRoomInfos1.stream()
-//                            .mapToLong(info -> Optional.ofNullable(info.getUnreadCount()).orElse(0L))
-//                            .sum();
-//
-//                    LocalDateTime latest = chatRoomInfos1.stream()
-//                            .map(BandManagerRoomInfoDto.BandChatRoomInfo::getLastMessageAt)
-//                            .filter(Objects::nonNull)
-//                            .max(LocalDateTime::compareTo)
-//                            .orElse(null);
-//
-//                    // 밴드 단위 DTO 조립
-//                    return BandManagerRoomInfoDto.builder()
-//                            .roomType("BAND-MANAGER")
-//                            .bandId(band.getId())
-//                            .bandName(band.getName())
-//                            .bandImageUrl(band.getProfileImageUrl())
-//                            .status(band.getStatus())
-//                            .bandSessionList(
-//                                    band.getBandSessions().stream()
-//                                            .filter(session -> "RECRUITING".equals(session.getSessionStatus()))
-//                                            .map(session -> session.getSession().getName())
-//                                            .distinct()
-//                                            .toList()
-//                            )
-//                            .chatRoomInfo(chatRoomInfos1)
-//                            .lastMessageAt(latest)
-//                            .unreadCount(totalUnread)
-//                            .build();
-//                })
-//                .collect(Collectors.toList());
         List<BandManagerRoomInfoDto> allAdminBandRoomInfos = managedBands.stream()
                 .map(band -> {
                     List<ChatRoom> rooms = adminRoomsByBandId.getOrDefault(band.getId(), Collections.emptyList());

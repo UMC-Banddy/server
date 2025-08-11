@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -35,9 +36,9 @@ public class ChatRoom extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RoomType roomType;
 
-    @OneToMany
-    @JoinColumn(name = "chat_room_id")
-    private List<ChatRoomParticipant> participants;
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatRoomParticipant> participants = new ArrayList<>();
 
     @OneToOne(mappedBy = "chatRoom", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     private BandChat bandChat;

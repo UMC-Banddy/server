@@ -101,7 +101,7 @@ public class WebsocketController {
     }
 
     // 개인 메세지 전송
-    @MessageMapping("/chat/private.sendMessage/{roomId}")
+    @MessageMapping("/chat/group.sendMessage/{roomId}")
     public void sendGroupMessage(
             Principal principal,
             @Valid @Payload GroupChatMessageRequest messageRequest,
