@@ -7,4 +7,5 @@ import lombok.Getter;
 @Builder
 public class FolderRequestDto {
     private String name;
+    private String color;
 }

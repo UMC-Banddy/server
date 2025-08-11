@@ -26,7 +26,7 @@ public class AlbumFolderController {
     private final AlbumFolderService albumFolderService;
 
     // 폴더 생성
-    @Operation(summary = "앨범 폴더 생성", description = "아카이브에 앨범 폴더를 생성합니다.")
+    @Operation(summary = "앨범 폴더 생성", description = "아카이브에 앨범 폴더를 생성합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,

@@ -26,7 +26,7 @@ public class TrackFolderController {
     private final TrackFolderService trackFolderService;
 
     // 폴더 생성
-    @Operation(summary = "곡 폴더 생성", description = "아카이브에 곡 폴더를 생성합니다.")
+    @Operation(summary = "곡 폴더 생성", description = "아카이브에 곡 폴더를 생성합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,
@@ -98,5 +98,4 @@ public class TrackFolderController {
         List<FolderResponseDto> folders = trackFolderService.getFoldersByMember(token);
         return ResponseEntity.ok(ApiResponse.onSuccess(folders));
     }
-
 }

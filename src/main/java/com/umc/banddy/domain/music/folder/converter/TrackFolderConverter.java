@@ -11,6 +11,7 @@ public class TrackFolderConverter {
     public static TrackFolder toTrackFolder(FolderRequestDto dto, Member member) {
         return TrackFolder.builder()
                 .name(dto.getName())
+                .color(dto.getColor())
                 .member(member)
                 .build();
     }
@@ -20,6 +21,7 @@ public class TrackFolderConverter {
         return FolderResponseDto.builder()
                 .folderId(folder.getId())
                 .name(folder.getName())
+                .color(folder.getColor())
                 .build();
     }
 }

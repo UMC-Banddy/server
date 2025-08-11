@@ -23,11 +23,13 @@ import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.apiPayload.exception.handler.FolderHandler;
 import com.umc.banddy.global.apiPayload.exception.handler.TrackHandler;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
+import jakarta.mail.Folder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +43,9 @@ public class TrackFolderService {
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
 
+    private static final Set<String> ALLOWED_FOLDER_COLORS = Set.of(
+            "GRAY", "YELLOW", "GREEN", "RED", "ORANGE", "BLUE"
+    );
 
     // 폴더 생성
     @Transactional
@@ -48,6 +53,12 @@ public class TrackFolderService {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        String color = requestDto.getColor();
+        if (color == null || !ALLOWED_FOLDER_COLORS.contains(color)) {
+            throw new FolderHandler(ErrorStatus.FOLDER_INVALID_COLOR);
+        }
+
         TrackFolder folder = TrackFolderConverter.toTrackFolder(requestDto, member);
         TrackFolder saved = trackFolderRepository.save(folder);
         return TrackFolderConverter.toFolderResponseDto(saved);
@@ -163,6 +174,4 @@ public class TrackFolderService {
                 .map(TrackFolderConverter::toFolderResponseDto)
                 .collect(Collectors.toList());
     }
-
-
 }

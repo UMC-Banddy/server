@@ -19,6 +19,8 @@ public class ArtistFolder extends BaseEntity {
 
     private String name;
 
+    private String color;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;

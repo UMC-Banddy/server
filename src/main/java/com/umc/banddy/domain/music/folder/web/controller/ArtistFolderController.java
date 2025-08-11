@@ -26,7 +26,7 @@ public class ArtistFolderController {
     private final ArtistFolderService artistFolderService;
 
     // 폴더 생성
-    @Operation(summary = "아티스트 폴더 생성", description = "아카이브에 아티스트 폴더를 생성합니다.")
+    @Operation(summary = "아티스트 폴더 생성", description = "아카이브에 아티스트 폴더를 생성합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,
