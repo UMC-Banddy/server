@@ -71,16 +71,17 @@ public class BandManagementService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
 
-//        String profileImageUrl = (request.getImage() != null && !request.getImage().isEmpty())
-//                ? s3Uploader.upload(request.getImage(), "band-profile-images") : null;
-
         String profileImageUrl = (image != null && !image.isEmpty())
                 ? s3Uploader.upload(image, "band-profile-images") : null;
+
+        Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
+                .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다: " + request.getRepresentativeSong()));
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
                 .profileImageUrl(profileImageUrl)
-                .representativeSong(request.getRepresentativeSong())
+                .representativeSong(null) // 일단 null로 설정
+                .representativeTrack(track)
                 .name(request.getName())
                 .description(request.getDescription())
                 .endDate(request.getEndDate())
@@ -90,7 +91,6 @@ public class BandManagementService {
                 .gender(Gender.valueOf(request.getGender().toUpperCase()))
                 .region(request.getRegion())
                 .district(request.getDistrict())
-                .status(BandStatus.RECRUITING)
                 .maleCount(request.getMaleCount())
                 .femaleCount(request.getFemaleCount())
                 .averageAge(request.getAverageAge())
@@ -244,7 +244,7 @@ public class BandManagementService {
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
                     .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다."));
-            band.setRepresentativeSong(track.getTitle());
+            band.setRepresentativeTrack(track);
         }
         if(request.getName() != null) {
             band.setName(request.getName());
@@ -552,5 +552,100 @@ public class BandManagementService {
 
         return getApplicationList(bandId, memberId);
     }
+
+    public BandInquiryResponse getRecruitment(Long memberId, Long bandId){
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다"));
+
+        if(!band.getManager().getId().equals(memberId)){
+            throw new IllegalArgumentException("권한 없는 사용자 입니다.");
+        }
+
+        List<BandGenre> genres = bandGenreRepository.findByBandId(bandId);
+        List<String> genreNames = genres.stream()
+                .map(bg -> bg.getGenre().getName())
+                .toList();
+        List<BandSession> sessions = bandSessionRepository.findByBandId(bandId);
+        List<String> session = new ArrayList<>();
+        List<String> currentSessions = new ArrayList<>();
+
+        for (BandSession bandSession : sessions) {
+            if (bandSession.getSessionStatus().equals("RECRUITING")) {
+                session.add(bandSession.getSession().getName());
+            } else if (bandSession.getSessionStatus().equals("PARTICIPATING")) {
+                currentSessions.add(bandSession.getSession().getName());
+            }
+        }
+
+        List<BandArtist> artists = bandArtistRepository.findByBandId(bandId);
+        List<BandInquiryResponse.Artist> artistList = artists.stream()
+                .map(ba -> BandInquiryResponse.Artist.builder()
+                        .name(ba.getArtist().getName())
+                        .spotifyId(ba.getArtist().getSpotifyId())
+                        .ImageUrl(ba.getArtist().getImageUrl())
+                        .build())
+                .toList();
+
+        List<BandTrack> tracks = bandTrackRepository.findByBandId(bandId);
+        List<BandInquiryResponse.Track> trackList = tracks.stream()
+                .map(bt -> BandInquiryResponse.Track.builder()
+                        .title(bt.getTrack().getTitle())
+                        .spotifyId(bt.getTrack().getSpotifyId())
+                        .build())
+                .toList();
+
+        List<BandJob> jobs = bandJobRepository.findJobsByBandId(bandId);
+        List<String> jobList = jobs.stream()
+                .map(BandJob::getJob)
+                .toList();
+
+        List<BandSns> snsLinks = bandSnsRepository.findByBandId(bandId);
+        Map<String, String> snsLinkMap = snsLinks.stream()
+                .collect(Collectors.toMap(BandSns::getPlatform, BandSns::getSnsLink));
+
+        BandInquiryResponse.representativeSong repSong = Optional.ofNullable(band.getRepresentativeTrack())
+                .map(track -> BandInquiryResponse.representativeSong.builder()
+                        .spotifyId(track.getSpotifyId())
+                        .artist(track.getArtist())
+                        .trackTitle(track.getTitle())
+                        .build()
+                )
+                .orElse(null);
+
+        return BandInquiryResponse.builder()
+                .representativeSong(repSong)
+                .profileImageUrl(band.getProfileImageUrl())
+                .status(band.getStatus())
+                .name(band.getName())
+                .description(band.getDescription())
+                .endDate(band.getEndDate())
+                .autoClose(band.getAutoClose())
+                .ageStart(band.getAgeStart())
+                .ageEnd(band.getAgeEnd())
+                .gender(String.valueOf(band.getGender()))
+                .region(band.getRegion())
+                .averageAge(band.getAverageAge())
+                .maleCount(band.getMaleCount())
+                .femaleCount(band.getFemaleCount())
+                .sessions(session)
+                .currentSessions(currentSessions)
+                .genres(genreNames)
+                .artists(artistList)
+                .tracks(trackList)
+                .jobs(jobList)
+                .snsLink(snsLinkMap)
+                .build();
+    }
+
+
+
+
+
+
+
+
+
+
 
 }
