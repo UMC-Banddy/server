@@ -2,7 +2,6 @@ package com.umc.banddy.domain.band.bookmark.web.controller;
 
 import com.umc.banddy.domain.band.bookmark.service.BandBookmarkService;
 import com.umc.banddy.domain.band.bookmark.web.dto.BandBookmarkResponse;
-import com.umc.banddy.global.apiPayload.ApiResponse; // 사용 안 하지만 프로젝트 컨벤션에 맞춰 유지 가능
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;

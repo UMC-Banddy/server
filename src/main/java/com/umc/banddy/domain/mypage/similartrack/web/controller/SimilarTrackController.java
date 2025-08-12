@@ -2,7 +2,8 @@ package com.umc.banddy.domain.mypage.similartrack.web.controller;
 
 import com.umc.banddy.domain.mypage.similartrack.service.SimilarTrackService;
 import com.umc.banddy.domain.mypage.similartrack.web.dto.SimilarTrackResponse;
-import com.umc.banddy.global.apiPayload.ApiResponse;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,18 +24,18 @@ public class SimilarTrackController {
 
     @GetMapping("/similar")
     public ResponseEntity<List<SimilarTrackResponse>> getSimilarTracks(HttpServletRequest request) {
-        String token = JwtTokenUtil.extractToken(request);
-        if (token == null || token.isBlank()) return ResponseEntity.badRequest().build();
-
-        Long memberId;
-        try {
-            memberId = jwtTokenUtil.getMemberIdFromToken(token);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).build();
-        }
-
+        Long memberId = extractMemberIdOrThrow(request);
         List<SimilarTrackResponse> response = similarTrackService.getTracksSavedBySimilarUsers(memberId);
         return ResponseEntity.ok(response);
     }
 
+    private Long extractMemberIdOrThrow(HttpServletRequest request) {
+        String token = JwtTokenUtil.extractToken(request);
+        if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        try {
+            return jwtTokenUtil.getMemberIdFromToken(token);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        }
+    }
 }
