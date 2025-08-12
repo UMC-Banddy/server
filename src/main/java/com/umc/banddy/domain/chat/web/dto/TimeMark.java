@@ -13,5 +13,5 @@ public class TimeMark {
     private Long memberId;
     private String nickname;
     private Long roomId;
-    private LocalDateTime timestamp;
+    private Long messageId;
 }

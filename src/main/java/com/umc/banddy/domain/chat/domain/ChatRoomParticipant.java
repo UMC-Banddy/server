@@ -34,8 +34,12 @@ public class ChatRoomParticipant {
     @Column(nullable = true)
     private LocalDateTime pinnedAt; //erd에 없음
 
+    @Column(nullable = true)
+    private LocalDateTime lastReadAt; //erd에 없음, 삭제 예쩡
+
     @Column(nullable = false)
-    private LocalDateTime lastReadAt; //erd에 없음
+    @Builder.Default
+    private Long lastReadMessageId = 0L; //erd에 없음
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)

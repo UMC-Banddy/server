@@ -4,6 +4,7 @@ import com.umc.banddy.domain.chat.domain.ChatRoom;
 import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.service.ChatService;
+import com.umc.banddy.domain.chat.web.dto.chatRequestRequset;
 import com.umc.banddy.domain.chat.web.dto.chatroom.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.ChatRoomListResponse;
@@ -15,6 +16,8 @@ import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
@@ -68,7 +71,7 @@ public class ChatContoller {
     @Operation(summary="채팅 참여")
     @PostMapping("/rooms/{roomId}/members/join")
     public ResponseEntity<ChatSystemResponse> joinChatRoom(
-            @PathVariable Long roomId,
+            @NotNull @Positive @PathVariable Long roomId,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
@@ -80,7 +83,7 @@ public class ChatContoller {
     @Operation(summary = "채팅방 나가기")
     @PostMapping("/rooms/{roomId}/members/exit")
     public ResponseEntity<ChatSystemResponse> exitChatRoom(
-            @PathVariable Long roomId,
+            @NotNull @Positive @PathVariable Long roomId,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
@@ -92,7 +95,7 @@ public class ChatContoller {
     @Operation(summary = "메세지 무한 스크롤")
     @GetMapping("/rooms/{roomId}/messages")
     public ResponseEntity<CursorChatMessageResponse> getChatMessages(
-            @PathVariable Long roomId,
+            @NotNull @Positive @PathVariable Long roomId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(required = false, defaultValue = "20") Integer limit,
             HttpServletRequest request
@@ -128,7 +131,7 @@ public class ChatContoller {
     @Operation(summary = "채팅방 입장시 필요 정보 불러오기")
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity <BasicChatRoomInfo> getChatRoomInfo(
-            @PathVariable Long roomId,
+            @NotNull @Positive @PathVariable Long roomId,
             HttpServletRequest request
     ){
         String token = JwtTokenUtil.extractToken(request);
@@ -166,14 +169,24 @@ public class ChatContoller {
             return ResponseEntity.ok(chatRoomService.unpinChatRoom( chatId, currentMemberId));
         }else if(bandId != null && chatId == null) {
             return ResponseEntity.ok(chatRoomService.unpinBandChatRoom(bandId,currentMemberId));
-        }else if(bandId != null && chatId != null) {
+        }else if(bandId != null) {
             return ResponseEntity.badRequest().body("하나만 입력해주세요");
         }
         else{
             return ResponseEntity.badRequest().body("bandId or chatId must be provided");
         }
     }
-
+    @Operation(summary = "채팅 요청 보내기")
+    @PostMapping("/requests")
+    public ResponseEntity <Void> requestChat(
+            @RequestBody chatRequestRequset requestRequset,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+        chatRoomService.ChatRequest(requestRequset.getTargetMemeberId(),currentMemberId);
+        return ResponseEntity.ok().build();
+    }
 
 
 
@@ -182,7 +195,7 @@ public class ChatContoller {
 //    @Operation(summary = "밴드 지원하기")
 //    @PostMapping("/bands/{bandId}/join")
 //    public ResponseEntity<BandJoinResponse> joinBand(
-//            @PathVariable Long bandId,
+//            @NotNull @Positive @PathVariable Long bandId,
 //            @RequestBody @Valid BandJoinRequest bandJoinRequest,
 //            HttpServletRequest request
 //    ) {

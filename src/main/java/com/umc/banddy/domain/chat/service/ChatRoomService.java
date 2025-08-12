@@ -22,6 +22,12 @@ import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.mypage.notification.domain.Notification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
+import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
+import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
+import com.umc.banddy.domain.mypage.notification.repository.ChatNotificationRepository;
+import com.umc.banddy.domain.mypage.notification.repository.NotificationRepository;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 
@@ -49,6 +55,8 @@ public class ChatRoomService {
     private final S3Uploader s3Uploader;
     private final ChatRoomParticipantCache chatRoomParticipantCache;
     private final ChatMessageService chatMessageService;
+    private final ChatNotificationRepository chatNotificationRepository;
+    private final NotificationRepository notificationRepository;
 
 
     // 그룹 채팅방 생성
@@ -77,7 +85,7 @@ public class ChatRoomService {
                         .member(member)
                         .role(Role.MEMBER) // 테스트 용
                         .status(Status.ACTIVE)
-                        .lastReadAt(LocalDateTime.now()) // 초기값 설정
+                        .lastReadMessageId(0L) // 초기값 설정
                         .build())
                 .toList();
         List<ChatRoomResponse.RoomMemberInfo> memberinfos = members.stream()
@@ -188,7 +196,7 @@ public class ChatRoomService {
                 .member(member)
                 .role(Role.MEMBER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
 
         participantRepository.save(participant);
@@ -200,14 +208,14 @@ public class ChatRoomService {
                 .member(member)
                 .role(Role.MEMBER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         ChatRoomParticipant participantManager = ChatRoomParticipant.builder()
                 .chatRoom(chatRoom)
                 .member(Manager)
                 .role(Role.BANDMANAGER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         List<ChatRoomParticipant> participants = List.of(participantMember, participantManager);
 
@@ -605,7 +613,7 @@ public class ChatRoomService {
                 .member(band.getManager())
                 .role(Role.BANDMANAGER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         participantRepository.save(bandManager);
         return BandJoinResponse.builder()
@@ -682,6 +690,38 @@ public class ChatRoomService {
                 .bandId(bandId)
                 .pinnedAt(band.getPinnedAt())
                 .build();
+    }
+
+    public void ChatRequest(Long targetId, Long memberId){
+
+        boolean cn = chatNotificationRepository.existsBySenderIdAndReceiverIdAndIsRead(memberId, targetId, ReadStatus.UNREAD);
+
+        if(cn){
+            throw new IllegalArgumentException("이미 요청을 보냈습니다.");
+        }
+
+        Member sender = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
+        Member receiver = memberRepository.findById(targetId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + targetId));
+
+
+        Notification baseNotification = Notification.builder()
+                .type(NotificationType.CHAT) //
+                .isRead(ReadStatus.UNREAD)
+                .sender(sender)
+                .receiver(receiver)
+                .build();
+        notificationRepository.save(baseNotification);
+
+        // FriendNotification 생성
+        ChatNotification chatNotification = ChatNotification.builder()
+                .notification(baseNotification)
+                .sender(sender)
+                .receiver(receiver)
+                .isRead(ReadStatus.UNREAD)
+                .build();
+        chatNotificationRepository.save(chatNotification);
     }
 
 }

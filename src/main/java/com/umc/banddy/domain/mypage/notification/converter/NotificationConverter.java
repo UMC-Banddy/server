@@ -15,7 +15,7 @@ public class NotificationConverter {
         var sender = n.getNotification().getSender();
         return NotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
-                .title("새 메시지가 도착했습니다.")
+                .title(sender.getNickname() + "님이 채팅을 요청했습니다")
                 .type(NotificationType.CHAT)
                 .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
