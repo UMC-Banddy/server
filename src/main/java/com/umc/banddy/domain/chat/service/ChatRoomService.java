@@ -274,6 +274,7 @@ public class ChatRoomService {
         List<ChatRoomInfoDto> groupChatRoomInfos = groupRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .map(p -> MemberInfo.builder()
                                             .memberId(p.getMember().getId())
                                             .nickname(p.getMember().getNickname())
@@ -307,7 +308,7 @@ public class ChatRoomService {
                 .map(room ->{
 
                     MemberInfo memberInfo = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .map(p -> MemberInfo.builder()
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
@@ -318,7 +319,7 @@ public class ChatRoomService {
                             .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
 
                     LocalDateTime myPinnedAt = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(p -> !p.getMember().getId().equals(memberId))
                             .findFirst()
                             .map(ChatRoomParticipant::getPinnedAt)
                             .orElse(null);
@@ -359,7 +360,7 @@ public class ChatRoomService {
 
 
                     LocalDateTime myPinnedAt = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .findFirst()
                             .map(ChatRoomParticipant::getPinnedAt)
                             .orElse(null);
