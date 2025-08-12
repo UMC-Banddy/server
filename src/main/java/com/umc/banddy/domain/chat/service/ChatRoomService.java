@@ -303,6 +303,7 @@ public class ChatRoomService {
                             .build();
                 }).collect(Collectors.toList());
 
+
         // 개인 채팅방 정보 생성
         List<PrivateChatRoomInfoDto> privateChatRoomInfos = privateRooms.stream()
                 .map(room ->{
