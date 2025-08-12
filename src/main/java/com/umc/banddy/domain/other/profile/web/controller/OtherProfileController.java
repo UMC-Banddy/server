@@ -5,6 +5,8 @@ import com.umc.banddy.domain.other.profile.service.OtherProfileService;
 import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
 import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,18 +31,8 @@ public class OtherProfileController {
             @PathVariable("memberId") Long targetMemberId,
             HttpServletRequest request
     ) {
-        String token = JwtTokenUtil.extractToken(request);
-        if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        Long loginMemberId;
-        try {
-            loginMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        validateIdOrThrow(targetMemberId);
+        Long loginMemberId = extractMemberIdOrThrow(request);
         OtherProfileResponse response = otherProfileService.getOtherProfile(loginMemberId, targetMemberId);
         return ResponseEntity.ok(response);
     }
@@ -50,6 +42,7 @@ public class OtherProfileController {
     public ResponseEntity<List<SavedTrackResponse>> getSavedTracks(
             @PathVariable("memberId") Long targetMemberId
     ) {
+        validateIdOrThrow(targetMemberId);
         List<SavedTrackResponse> savedTracks = otherProfileService.getSavedTracks(targetMemberId);
         return ResponseEntity.ok(savedTracks);
     }
@@ -59,6 +52,7 @@ public class OtherProfileController {
     public ResponseEntity<MemberTagResponse> getTagsByMemberId(
             @PathVariable("memberId") Long memberId
     ) {
+        validateIdOrThrow(memberId);
         MemberTagResponse response = otherProfileService.getTagsByMemberId(memberId);
         return ResponseEntity.ok(response);
     }
@@ -68,7 +62,22 @@ public class OtherProfileController {
     public ResponseEntity<List<AlbumResponseDto>> getSavedAlbums(
             @PathVariable("memberId") Long targetMemberId
     ) {
+        validateIdOrThrow(targetMemberId);
         List<AlbumResponseDto> savedAlbums = otherProfileService.getSavedAlbums(targetMemberId);
         return ResponseEntity.ok(savedAlbums);
+    }
+
+    private Long extractMemberIdOrThrow(HttpServletRequest request) {
+        String token = JwtTokenUtil.extractToken(request);
+        if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        try {
+            return jwtTokenUtil.getMemberIdFromToken(token);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        }
+    }
+
+    private void validateIdOrThrow(Long id) {
+        if (id == null || id <= 0) throw new GeneralException(ErrorStatus._BAD_REQUEST);
     }
 }
