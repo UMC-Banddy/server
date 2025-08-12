@@ -2,6 +2,7 @@ package com.umc.banddy.domain.mypage.similartrack.web.controller;
 
 import com.umc.banddy.domain.mypage.similartrack.service.SimilarTrackService;
 import com.umc.banddy.domain.mypage.similartrack.web.dto.SimilarTrackResponse;
+import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,4 +36,5 @@ public class SimilarTrackController {
         List<SimilarTrackResponse> response = similarTrackService.getTracksSavedBySimilarUsers(memberId);
         return ResponseEntity.ok(response);
     }
+
 }

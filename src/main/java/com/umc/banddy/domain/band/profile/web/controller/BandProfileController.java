@@ -2,8 +2,10 @@ package com.umc.banddy.domain.band.profile.web.controller;
 
 import com.umc.banddy.domain.band.profile.service.BandDetailService;
 import com.umc.banddy.domain.band.profile.service.BandProfileService;
+import com.umc.banddy.domain.band.profile.service.BandSuggestionService;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse;
 import com.umc.banddy.domain.band.profile.web.dto.BandDetailResponse;
+import com.umc.banddy.domain.band.profile.web.dto.BandSuggestionResponse;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class BandProfileController {
     private final BandProfileService bandProfileService;
     private final BandDetailService bandDetailService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final BandSuggestionService bandSuggestionService;
 
     // 밴드 프로필 조회
     @GetMapping("/{bandId}/profile")
@@ -39,6 +42,11 @@ public class BandProfileController {
         Long loginMemberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
         BandDetailResponse response = bandDetailService.getBandDetail(loginMemberId, bandId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{bandId}/question")
+    public BandSuggestionResponse getBandSuggestion(@PathVariable Long bandId) {
+        return bandSuggestionService.getSuggestion(bandId);
     }
 
 }
