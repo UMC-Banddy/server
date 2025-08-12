@@ -22,6 +22,6 @@ public class ParticipantInfos {
         private Long memberId;
         private String nickname;
         private String imageUrl;
-        private LocalDateTime timestamp;
+        private Long lastReadMessageId;
     }
 }

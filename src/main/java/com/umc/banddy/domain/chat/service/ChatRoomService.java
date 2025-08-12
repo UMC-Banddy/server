@@ -274,11 +274,12 @@ public class ChatRoomService {
         List<ChatRoomInfoDto> groupChatRoomInfos = groupRooms.stream()
                 .map(room ->{
                     List<MemberInfo> memberInfos = room.getParticipants().stream()
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .map(p -> MemberInfo.builder()
                                             .memberId(p.getMember().getId())
                                             .nickname(p.getMember().getNickname())
                                             .profileImageUrl(p.getMember().getProfileImageUrl())
-                                            .lastReadAt(p.getLastReadAt())
+                                            .lastReadMessageId(p.getLastReadMessageId())
                                             .build()
                                     )
                                     .toList();
@@ -302,23 +303,24 @@ public class ChatRoomService {
                             .build();
                 }).collect(Collectors.toList());
 
+
         // 개인 채팅방 정보 생성
         List<PrivateChatRoomInfoDto> privateChatRoomInfos = privateRooms.stream()
                 .map(room ->{
 
                     MemberInfo memberInfo = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .map(p -> MemberInfo.builder()
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
-                                    .lastReadAt(p.getLastReadAt())
+                                    .lastReadMessageId(p.getLastReadMessageId())
                                     .build())
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
 
                     LocalDateTime myPinnedAt = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(p -> !p.getMember().getId().equals(memberId))
                             .findFirst()
                             .map(ChatRoomParticipant::getPinnedAt)
                             .orElse(null);
@@ -352,14 +354,14 @@ public class ChatRoomService {
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
-                                    .lastReadAt(p.getLastReadAt())
+                                    .lastReadMessageId(p.getLastReadMessageId())
                                     .build()
                             )
                             .toList();
 
 
                     LocalDateTime myPinnedAt = room.getParticipants().stream()
-                            .filter(p -> p.getMember().getId().equals(memberId))
+                            .filter(m -> !m.getMember().getId().equals(memberId))
                             .findFirst()
                             .map(ChatRoomParticipant::getPinnedAt)
                             .orElse(null);
@@ -416,7 +418,7 @@ public class ChatRoomService {
                                                 .memberId(m.getMember().getId())
                                                 .nickname(m.getMember().getNickname())
                                                 .profileImageUrl(m.getMember().getProfileImageUrl())
-                                                .lastReadAt(m.getLastReadAt())
+                                                .lastReadMessageId(m.getLastReadMessageId())
                                                 .build())
                                         .findFirst()
                                         .orElse(null);
@@ -555,7 +557,7 @@ public class ChatRoomService {
                     .memberId(participant.getMember().getId())
                     .nickname(participant.getMember().getNickname())
                     .imageUrl(participant.getMember().getProfileImageUrl())
-                    .timestamp(participant.getLastReadAt())
+                    .lastReadMessageId(participant.getLastReadMessageId())
                     .build();
             infoList.add(info);
         }
