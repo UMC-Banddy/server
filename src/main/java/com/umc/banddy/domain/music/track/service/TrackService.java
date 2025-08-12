@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import se.michaelthelin.spotify.SpotifyApi;
 
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -226,6 +226,19 @@ public class TrackService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * 여러 곡의 Spotify ID를 받아 모두 저장하고 반환
+     */
+    @Transactional
+    public List<Track> saveTracksBySpotifyIds(List<String> spotifyIds) {
+        List<Track> result = new ArrayList<>();
+        for (String id : spotifyIds) {
+            if (id == null || id.trim().isEmpty()) continue;
+            Track track = trackRepository.findBySpotifyId(id.trim())
+                    .orElseGet(() -> fetchAndSaveTrackFromSpotify(id.trim()));
+            result.add(track);
+        }
+        return result;
+    }
 
 }
