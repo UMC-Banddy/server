@@ -49,7 +49,7 @@ public class ChatConveter {
                 .memberId(p.getMember().getId())
                 .nickname(p.getMember().getNickname())
                 .roomId(p.getChatRoom().getId())
-                .timestamp(p.getLastReadAt())
+                .messageId(p.getLastReadMessageId())
                 .build();
     }
 

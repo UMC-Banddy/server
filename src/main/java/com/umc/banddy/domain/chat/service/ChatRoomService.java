@@ -85,7 +85,7 @@ public class ChatRoomService {
                         .member(member)
                         .role(Role.MEMBER) // 테스트 용
                         .status(Status.ACTIVE)
-                        .lastReadAt(LocalDateTime.now()) // 초기값 설정
+                        .lastReadMessageId(0L) // 초기값 설정
                         .build())
                 .toList();
         List<ChatRoomResponse.RoomMemberInfo> memberinfos = members.stream()
@@ -196,7 +196,7 @@ public class ChatRoomService {
                 .member(member)
                 .role(Role.MEMBER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
 
         participantRepository.save(participant);
@@ -208,14 +208,14 @@ public class ChatRoomService {
                 .member(member)
                 .role(Role.MEMBER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         ChatRoomParticipant participantManager = ChatRoomParticipant.builder()
                 .chatRoom(chatRoom)
                 .member(Manager)
                 .role(Role.BANDMANAGER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         List<ChatRoomParticipant> participants = List.of(participantMember, participantManager);
 
@@ -613,7 +613,7 @@ public class ChatRoomService {
                 .member(band.getManager())
                 .role(Role.BANDMANAGER)  // 기본 역할 설정
                 .status(Status.ACTIVE)  // 기본 상태 설정
-                .lastReadAt(LocalDateTime.now())  // 초기값
+                .lastReadMessageId(0L)  // 초기값
                 .build();
         participantRepository.save(bandManager);
         return BandJoinResponse.builder()

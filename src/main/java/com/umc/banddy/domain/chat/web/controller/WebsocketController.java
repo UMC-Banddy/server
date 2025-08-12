@@ -1,33 +1,23 @@
 package com.umc.banddy.domain.chat.web.controller;
 
 
-import com.umc.banddy.domain.chat.domain.ChatRoom;
-import com.umc.banddy.domain.chat.domain.ChatRoomParticipant;
 import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.service.WebsocketService;
 import com.umc.banddy.domain.chat.web.dto.message.ChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
-import com.umc.banddy.domain.chat.web.dto.MessageType;
-import com.umc.banddy.domain.chat.web.dto.TimeMark;
 import com.umc.banddy.domain.chat.web.dto.message.GroupChatMessageRequest;
 import com.umc.banddy.domain.chat.web.dto.message.PrivateChatMessageRequest;
-import com.umc.banddy.domain.member.domain.Member;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-
-import static com.umc.banddy.domain.chat.converter.ChatConveter.toTimeMark;
-import static com.umc.banddy.domain.chat.converter.ChatConveter.toWsMessage;
 
 @Controller
 @RequiredArgsConstructor
@@ -113,26 +103,27 @@ public class WebsocketController {
         chatMessageService.sendGroupMessage(roomId, auth, messageRequest);
     }
 
-//    // 개인 타임마크 전송
-//    @MessageMapping("/chat/private.timeMark/{roomId}")
-//    public void sendPrivateTimeMark(
-//            Principal principal,
-//            @NotNull @Positive Long messageId,
-//            @NotNull @Positive @DestinationVariable Long roomId
-//    ) {
-//        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
-//        System.out.println("Participant ID: " + auth.getName());
-//        chatMessageService.sendPrivateTimeMark(roomId, auth);
-//    }
-//
-//    // 그룹 타임마크 전송
-//    @MessageMapping("/chat/group.timeMark/{roomId}")
-//    public void sendGroupTimeMark(
-//            Principal principal,
-//            @NotNull @Positive @DestinationVariable Long roomId
-//    ) {
-//        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
-//        chatMessageService.sendGroupTimeMark(roomId, auth);
-//    }
+    // 개인 타임마크 전송
+    @MessageMapping("/chat/private.lastRead/{roomId}")
+    public void sendPrivateLastRead(
+            Principal principal,
+            @NotNull @Positive Long messageId,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        System.out.println("Participant ID: " + auth.getName());
+        chatMessageService.sendPrivateLastRead(roomId, auth, messageId);
+    }
+
+    // 그룹 타임마크 전송
+    @MessageMapping("/chat/group.lastRead/{roomId}")
+    public void sendGroupLastRead(
+            Principal principal,
+            @NotNull @Positive Long messageId,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendGroupLastRead(roomId, auth, messageId);
+    }
 
 }

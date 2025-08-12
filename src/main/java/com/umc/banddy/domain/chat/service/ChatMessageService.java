@@ -24,7 +24,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -108,7 +107,6 @@ public class ChatMessageService {
                 .map(p ->{
                     if (p.getStatus() == Status.INACTIVE) {
                         p.setStatus(Status.ACTIVE);
-                        p.setLastReadAt(LocalDateTime.now());
                     } else if (p.getStatus() == Status.ACTIVE) {throw new IllegalArgumentException("이미 채팅에 참여중입니다");}
                     return p;
                 }).orElseGet(() -> ChatRoomParticipant.builder()
@@ -116,7 +114,7 @@ public class ChatMessageService {
                         .member(member)
                         .role(Role.MEMBER)
                         .status(Status.ACTIVE)
-                        .lastReadAt(LocalDateTime.now())
+                        .lastReadMessageId(0L)
                         .build());
 
         if(chatRoom.getRoomType() == RoomType.BAND) {
@@ -350,48 +348,42 @@ public class ChatMessageService {
     }
 
 
-    public void sendPrivateTimeMark(Long roomId, MessageAuthenticationHeader auth) {
+    public void sendPrivateLastRead(Long roomId, MessageAuthenticationHeader auth, Long messageId) {
 
         ChatRoomParticipant participant =
                 chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
 
-        saveTimeMark(participant);
+        saveTimeMark(participant, messageId);
 
         TimeMark timeMark = ChatConveter.toTimeMark(participant);
 
         websocketService.queuePrivateMessage(
                 auth.getName(),
                 roomId,
-                toWsMessage(timeMark, MessageType.MARk_AS_READ)
+                toWsMessage(timeMark, MessageType.READ)
         );
     }
-    public void sendGroupTimeMark(Long roomId, MessageAuthenticationHeader auth) {
+    public void sendGroupLastRead(Long roomId, MessageAuthenticationHeader auth, Long messageId) {
 
         ChatRoomParticipant participant =
                 chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
 
-        saveTimeMark(participant);
+        saveTimeMark(participant, messageId);
 
         TimeMark timeMark = ChatConveter.toTimeMark(participant);
-
-
+        
         websocketService.topicMessage(
                 roomId,
-                toWsMessage(timeMark, MessageType.MARk_AS_READ)
+                toWsMessage(timeMark, MessageType.READ)
         );
     }
 
     @Transactional
-    public void saveTimeMark(ChatRoomParticipant participant) {
-        LocalDateTime now = LocalDateTime.now();
-        // 1초 이내 중복 갱신 방어
-        if (participant.getLastReadAt() != null &&
-                !participant.getLastReadAt().isBefore(now.minusSeconds(1))) {
-            return; // 1초 안 지났으면 저장 안 함
-        }
-        participant.setLastReadAt(now);
+    public void saveTimeMark(ChatRoomParticipant participant, Long messageId) {
+
+        participant.setLastReadMessageId(messageId);
         participantRepository.save(participant);
     }
 }
