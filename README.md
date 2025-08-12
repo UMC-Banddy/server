@@ -19,7 +19,9 @@
 - Deploy: GitHub Actions, AWS, Docker
 
 ## 🏗️ 서버 아키텍처
-<img width="541" height="512" alt="image" src="https://github.com/user-attachments/assets/dbe22367-2061-4418-830f-02c135d0dadc" />
+
+<img width="590" height="481" alt="image" src="https://github.com/user-attachments/assets/aa0f64ce-10c9-4863-b2d7-2b886544f6db" />
+
 
 
 ## 🗂️ 프로젝트 구조
