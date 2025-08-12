@@ -13,5 +13,5 @@ public class MemberInfo{
     private Long memberId;
     private String nickname;
     private String profileImageUrl;
-    private LocalDateTime lastReadAt;
+    private Long lastReadMessageId;
 }

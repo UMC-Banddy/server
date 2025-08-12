@@ -278,7 +278,7 @@ public class ChatRoomService {
                                             .memberId(p.getMember().getId())
                                             .nickname(p.getMember().getNickname())
                                             .profileImageUrl(p.getMember().getProfileImageUrl())
-                                            .lastReadAt(p.getLastReadAt())
+                                            .lastReadMessageId(p.getLastReadMessageId())
                                             .build()
                                     )
                                     .toList();
@@ -312,7 +312,7 @@ public class ChatRoomService {
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
-                                    .lastReadAt(p.getLastReadAt())
+                                    .lastReadMessageId(p.getLastReadMessageId())
                                     .build())
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
@@ -352,7 +352,7 @@ public class ChatRoomService {
                                     .memberId(p.getMember().getId())
                                     .nickname(p.getMember().getNickname())
                                     .profileImageUrl(p.getMember().getProfileImageUrl())
-                                    .lastReadAt(p.getLastReadAt())
+                                    .lastReadMessageId(p.getLastReadMessageId())
                                     .build()
                             )
                             .toList();
@@ -416,7 +416,7 @@ public class ChatRoomService {
                                                 .memberId(m.getMember().getId())
                                                 .nickname(m.getMember().getNickname())
                                                 .profileImageUrl(m.getMember().getProfileImageUrl())
-                                                .lastReadAt(m.getLastReadAt())
+                                                .lastReadMessageId(m.getLastReadMessageId())
                                                 .build())
                                         .findFirst()
                                         .orElse(null);
@@ -555,7 +555,7 @@ public class ChatRoomService {
                     .memberId(participant.getMember().getId())
                     .nickname(participant.getMember().getNickname())
                     .imageUrl(participant.getMember().getProfileImageUrl())
-                    .timestamp(participant.getLastReadAt())
+                    .lastReadMessageId(participant.getLastReadMessageId())
                     .build();
             infoList.add(info);
         }
