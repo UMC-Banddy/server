@@ -2,6 +2,9 @@
 
 ## 🎸 프로젝트 소개
 원하는 음악으로 밴드 멤버를 찾아주는 밴드 맞춤형 매칭 서비스
+
+<img width="2000" height="1125" alt="image" src="https://github.com/user-attachments/assets/89f40518-3227-4cde-924a-85e8785a4a03" />
+
 #### 주요 기능
 - 회원가입, 사전테스트 및 프로필, 친구
 - 밴드 조회, 저장, 조인, 채팅
