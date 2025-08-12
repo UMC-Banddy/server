@@ -11,6 +11,7 @@ public class ArtistFolderConverter {
     public static ArtistFolder toArtistFolder(FolderRequestDto dto, Member member) {
         return ArtistFolder.builder()
                 .name(dto.getName())
+                .color(dto.getColor())
                 .member(member)
                 .build();
     }
@@ -20,6 +21,7 @@ public class ArtistFolderConverter {
         return FolderResponseDto.builder()
                 .folderId(folder.getId())
                 .name(folder.getName())
+                .color(folder.getColor())
                 .build();
     }
 }

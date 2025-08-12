@@ -10,6 +10,7 @@ public class AlbumFolderConverter {
     public static AlbumFolder toAlbumFolder(FolderRequestDto dto, Member member) {
         return AlbumFolder.builder()
                 .name(dto.getName())
+                .color(dto.getColor())
                 .member(member)
                 .build();
     }
@@ -18,6 +19,7 @@ public class AlbumFolderConverter {
         return FolderResponseDto.builder()
                 .folderId(folder.getId())
                 .name(folder.getName())
+                .color(folder.getColor())
                 .build();
     }
 }

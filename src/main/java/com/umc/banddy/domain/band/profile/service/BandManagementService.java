@@ -158,7 +158,7 @@ public class BandManagementService {
 
 
         // 밴드 아티스트 저장
-        List<Artist> ArtistAll = artistService.findOrCreateAllBySpotifyIds(request.getArtistSpotifyIds());
+        List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
         Map<String, Artist> artistMap = ArtistAll.stream()
                 .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
 

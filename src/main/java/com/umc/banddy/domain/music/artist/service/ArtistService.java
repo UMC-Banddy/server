@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.michaelthelin.spotify.SpotifyApi;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -171,65 +171,19 @@ public class ArtistService {
         return ArtistConverter.toArtistResponseDto(artist, memberArtistId);
     }
 
+    /**
+     * 여러 아티스트의 Spotify ID를 받아 모두 저장하고 반환
+     */
     @Transactional
-    public List<Artist> findOrCreateAllBySpotifyIds(List<String> inputIds) {
-        if (inputIds == null || inputIds.isEmpty()) return List.of();
-
-        // 입력 정리(순서 유지 + 중복 제거)
-        List<String> ids = inputIds.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(Collectors.toCollection(LinkedHashSet::new)) // 순서 보존
-                .stream().toList();
-
-        // db 조회
-        List<Artist> existing = artistRepository.findBySpotifyIdIn(ids);
-        Map<String, Artist> byId = existing.stream()
-                .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
-
-        // 2) 없는 ID만
-        List<String> missing = ids.stream().filter(id -> !byId.containsKey(id)).toList();
-        if (!missing.isEmpty()) {
-            try {
-                SpotifyApi api = spotifyTokenManager.getSpotifyApi();
-                var res = api.getSeveralArtists(missing.toArray(String[]::new)).build().execute();
-
-                // 스포티파이에도 없는 경우 예외 처리
-                Set<String> fetchedIds = Arrays.stream(res)
-                        .filter(Objects::nonNull)
-                        .map(se.michaelthelin.spotify.model_objects.specification.Artist::getId)
-                        .collect(Collectors.toSet());
-                if (fetchedIds.size() != missing.size()) {
-                    throw new GeneralException(ErrorStatus.SPOTIFY_RESOURCE_NOT_FOUND);
-                }
-
-                // 저장
-                List<Artist> toSave = Arrays.stream(res)
-                        .filter(Objects::nonNull)
-                        .map(sp -> {
-                            String genre = (sp.getGenres() != null && sp.getGenres().length > 0)
-                                    ? String.join(", ", sp.getGenres()) : "";
-                            String imageUrl = (sp.getImages() != null && sp.getImages().length > 0)
-                                    ? sp.getImages()[0].getUrl() : "";
-                            String externalUrl = (sp.getExternalUrls() != null) ? sp.getExternalUrls().get("spotify") : null;
-                            return Artist.builder()
-                                    .spotifyId(sp.getId())
-                                    .name(sp.getName())
-                                    .genre(genre)
-                                    .imageUrl(imageUrl)
-                                    .externalUrl(externalUrl)
-                                    .build();
-                        }).toList();
-
-                artistRepository.saveAll(toSave).forEach(a -> byId.put(a.getSpotifyId(), a));
-            } catch (Exception e) {
-                throw new GeneralException(ErrorStatus.SPOTIFY_RESOURCE_NOT_FOUND);
-            }
+    public List<Artist> saveArtistsBySpotifyIds(List<String> spotifyIds) {
+        List<Artist> result = new ArrayList<>();
+        for (String id : spotifyIds) {
+            if (id == null || id.trim().isEmpty()) continue;
+            Artist artist = artistRepository.findBySpotifyId(id.trim())
+                    .orElseGet(() -> fetchAndSaveArtistFromSpotify(id.trim()));
+            result.add(artist);
         }
-
-        // 입력 순서대로 반환
-        return ids.stream().map(byId::get).filter(Objects::nonNull).toList();
+        return result;
     }
 
 }

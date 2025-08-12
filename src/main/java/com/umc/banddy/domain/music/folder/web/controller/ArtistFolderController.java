@@ -26,7 +26,7 @@ public class ArtistFolderController {
     private final ArtistFolderService artistFolderService;
 
     // 폴더 생성
-    @Operation(summary = "아티스트 폴더 생성", description = "아카이브에 아티스트 폴더를 생성합니다.")
+    @Operation(summary = "아티스트 폴더 생성", description = "아카이브에 아티스트 폴더를 생성합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
     @PostMapping
     public ResponseEntity<ApiResponse<FolderResponseDto>> createFolder(
             @RequestBody FolderRequestDto requestDto,
@@ -94,5 +94,18 @@ public class ArtistFolderController {
         String token = JwtTokenUtil.extractToken(request);
         List<ArtistResponseDto> artists = artistFolderService.getArtistsInFolder(folderId, token);
         return ResponseEntity.ok(ApiResponse.onSuccess(artists));
+    }
+
+    // 아티스트 폴더 수정
+    @Operation(summary = "아티스트 폴더 수정", description = "아티스트 폴더의 이름, 색상을 수정합니다. (폴더 색상은 GRAY, YELLOW, GREEN, RED, ORANGE, BLUE만 가능)")
+    @PatchMapping("/{folderId}")
+    public ResponseEntity<ApiResponse<FolderResponseDto>> updateFolder(
+            @PathVariable Long folderId,
+            @RequestBody FolderRequestDto requestDto,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        FolderResponseDto response = artistFolderService.updateFolder(folderId, requestDto, token);
+        return ResponseEntity.ok(ApiResponse.onSuccess(response));
     }
 }

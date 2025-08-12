@@ -38,6 +38,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // Folder
     FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
     FOLDER_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더에 해당 곡이 없습니다."),
+    FOLDER_INVALID_COLOR(HttpStatus.BAD_REQUEST, "FOLDER4000", "유효한 폴더 색상이 아닙니다."),
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다."),

@@ -19,6 +19,7 @@ public class NotificationConverter {
                 .type(NotificationType.CHAT)
                 .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
+                .isRead(n.getNotification().getIsRead())
                 .senderId(sender.getId())
                 .build();
     }
@@ -32,6 +33,7 @@ public class NotificationConverter {
                 .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
                 .senderId(sender.getId())
+                .isRead(n.getNotification().getIsRead())
                 .friendRequestId(n.getFriendRequest().getId())
                 .build();
     }
@@ -44,6 +46,7 @@ public class NotificationConverter {
                 .type(NotificationType.BAND)
                 .imageUrl(n.getBand().getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
+                .isRead(n.getNotification().getIsRead())
                 .senderId(sender.getId())
                 .build();
     }
