@@ -3,17 +3,21 @@ package com.umc.banddy.domain.mypage.notification.converter;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
 import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
+import com.umc.banddy.domain.mypage.notification.web.dto.BandNotificationResponse;
+import com.umc.banddy.domain.mypage.notification.web.dto.ChatNotificationResponse;
+import com.umc.banddy.domain.mypage.notification.web.dto.FriendNotificationResponse;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
 import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class NotificationConverter {
 
     public static NotificationResponse fromChat(ChatNotification n) {
         var sender = n.getNotification().getSender();
-        return NotificationResponse.builder()
+        return ChatNotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title(sender.getNickname() + "님이 채팅을 요청했습니다")
                 .type(NotificationType.CHAT)
@@ -26,7 +30,7 @@ public class NotificationConverter {
 
     public static NotificationResponse fromFriend(FriendNotification n) {
         var sender = n.getSender();
-        return NotificationResponse.builder()
+        return FriendNotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .type(NotificationType.FRIEND)
@@ -40,7 +44,7 @@ public class NotificationConverter {
 
     public static NotificationResponse fromBand(BandNotification n) {
         var sender = n.getNotification().getSender();
-        return NotificationResponse.builder()
+        return BandNotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title(n.getTitle())
                 .type(NotificationType.BAND)
@@ -62,7 +66,12 @@ public class NotificationConverter {
         friend.forEach(f -> result.add(fromFriend(f)));
         band.forEach(b -> result.add(fromBand(b)));
 
-        result.sort((a, b) -> b.createdAt().compareTo(a.createdAt()));
+        result.sort(
+                Comparator.comparing(
+                        NotificationResponse::getCreatedAt,             // ← getCreatedAt() 사용
+                        Comparator.nullsLast(Comparator.naturalOrder()) // null 안전
+                ).reversed()
+        );
         return result;
     }
 }

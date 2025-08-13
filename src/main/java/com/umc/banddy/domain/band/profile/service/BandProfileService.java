@@ -28,7 +28,7 @@ public class BandProfileService {
         List<BandTrack> goalTracks = bandTrackRepository.findByBandId(bandId);
         List<BandArtist> preferredArtists = bandArtistRepository.findByBandId(bandId);
         List<BandSns> snsLinks = bandSnsRepository.findByBandId(bandId);
-        List<BandSession> sessions = bandSessionRepository.findByBandIdAndSessionStatus(bandId, "PARTICIPATING");// 나중에 전체적으로 enum을 바꾸는게 좋을거 같긴한데...
+        List<BandSession> sessions = bandSessionRepository.findByBandIdAndSessionStatusAndIsDeletedFalse(bandId, "PARTICIPATING");// 나중에 전체적으로 enum을 바꾸는게 좋을거 같긴한데...
         List<BandJob> jobs = bandJobRepository.findJobsByBandId(bandId); // sns랑 job은 모집에 List랑 Map으로 수정하는 것도 괜찮아보임
 
         return BandProfileConverter.toProfileResponse(band, goalTracks, preferredArtists, snsLinks, sessions, jobs);
