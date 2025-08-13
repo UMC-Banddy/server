@@ -5,6 +5,7 @@ import com.umc.banddy.domain.band.profile.domain.mapping.*;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse;
 import com.umc.banddy.domain.band.profile.web.dto.BandProfileResponse.*;
 import com.umc.banddy.domain.band.profile.web.dto.BandDetailResponse;
+import com.umc.banddy.domain.band.profile.web.dto.BandSuggestionResponse;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -124,4 +125,25 @@ public class BandProfileConverter {
                 .build();
     }
 
+    public static BandSuggestionResponse toSuggestionResponse(List<BandArtist> preferredArtists) {
+        if (preferredArtists == null || preferredArtists.isEmpty()) {
+            return new BandSuggestionResponse("밴드 취향에 맞는 곡은 어때요?", null, null);
+        }
+
+        var artist = preferredArtists.get(0).getArtist();
+        String artistName = artist.getName();
+
+        String genre = null;
+        try {
+            Object g = artist.getClass().getMethod("getGenre").invoke(artist);
+            genre = (g != null) ? g.toString() : null;
+        } catch (Exception ignore) {
+        }
+
+        String suggestion = (genre != null && !genre.isBlank())
+                ? String.format("%s 장르의 %s의 곡은 어때요?", genre, artistName)
+                : String.format("%s의 곡은 어때요?", artistName);
+
+        return new BandSuggestionResponse(suggestion, genre, artistName);
+    }
 }
