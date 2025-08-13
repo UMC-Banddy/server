@@ -347,8 +347,6 @@ public class BandManagementService {
         }
 
 
-
-
         if (request.getGenres() != null) {
             Map<String,Long> genreMap = genreRepository.findGenreMapByNameIn(request.getGenres()).stream()
                     .collect(Collectors.toMap(
