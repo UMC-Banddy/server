@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -230,6 +229,8 @@ public class BandManagementService {
         Band band = bandRepository.findById(request.getBandId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
 
+
+
 //        if(Objects.equals(member.getId(), band.getManager().getId())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
 
         if(request.getStatus() != null) {
@@ -286,10 +287,68 @@ public class BandManagementService {
             band.setFemaleCount(request.getFemaleCount());
         }
 
-        if(request.getSession() != null) {
-            bandSessionRepository.deleteAllByBand(band);
+        if(request.getSession() != null || request.getCurrentSessions() != null){
+            List<BandSession> existingSessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(request.getBandId());
+            Map<String, BandSession> existingMap = existingSessions.stream()
+                    .collect(Collectors.toMap(bs -> bs.getSession().getName() + "_" + bs.getSessionStatus(), Function.identity()));
 
+            Set<String> recruitingNames = request.getSession() != null ? new HashSet<>(request.getSession()) : new HashSet<>();
+            Set<String> participatingNames = request.getCurrentSessions() != null ? new HashSet<>(request.getCurrentSessions()) : new HashSet<>();
+
+            for (BandSession bs : existingSessions) {
+                String name = bs.getSession().getName();
+                String status = bs.getSessionStatus();
+                if ((status.equals("RECRUITING") && !recruitingNames.contains(name)) ||
+                        (status.equals("PARTICIPATING") && !participatingNames.contains(name))) {
+                    bs.setDeleted(true);
+                    bandSessionRepository.save(bs);
+                }
+            }
+            Set<String> existingRecruiting = existingSessions.stream()
+                    .filter(bs -> bs.getSessionStatus().equals("RECRUITING"))
+                    .map(bs -> bs.getSession().getName())
+                    .collect(Collectors.toSet());
+            Set<String> existingParticipating = existingSessions.stream()
+                    .filter(bs -> bs.getSessionStatus().equals("PARTICIPATING"))
+                    .map(bs -> bs.getSession().getName())
+                    .collect(Collectors.toSet());
+
+            Set<String> toAddRecruiting = new HashSet<>(recruitingNames);
+            toAddRecruiting.removeAll(existingRecruiting);
+            Set<String> toAddParticipating = new HashSet<>(participatingNames);
+            toAddParticipating.removeAll(existingParticipating);
+
+            List<Session> sessionEntities = sessionRepository.findByNameIn(Stream.concat(toAddRecruiting.stream(), toAddParticipating.stream()).toList());
+            Map<String, Session> sessionEntityMap = sessionEntities.stream()
+                    .collect(Collectors.toMap(Session::getName, Function.identity()));
+
+            for (String name : toAddRecruiting) {
+                Session s = sessionEntityMap.get(name);
+                if (s != null) {
+                    BandSession newBs = BandSession.builder()
+                            .band(band)
+                            .session(s)
+                            .sessionStatus("RECRUITING")
+                            .build();
+                    bandSessionRepository.save(newBs);
+                }
+            }
+            for (String name : toAddParticipating) {
+                Session s = sessionEntityMap.get(name);
+                if (s != null) {
+                    BandSession newBs = BandSession.builder()
+                            .band(band)
+                            .session(s)
+                            .sessionStatus("PARTICIPATING")
+                            .build();
+                    bandSessionRepository.save(newBs);
+                }
+            }
         }
+
+
+
+
         if (request.getGenres() != null) {
             Map<String,Long> genreMap = genreRepository.findGenreMapByNameIn(request.getGenres()).stream()
                     .collect(Collectors.toMap(
@@ -443,7 +502,7 @@ public class BandManagementService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
 
-        BandSession bandSession = bandSessionRepository.findByBandIdAndSessionStatusAndSession(bandId, "RECRUITING",sessionEntity )
+        BandSession bandSession = bandSessionRepository.findByBandIdAndSessionStatusAndSessionAndIsDeletedFalse(bandId, "RECRUITING",sessionEntity )
                 .orElseThrow(() -> new IllegalArgumentException("모집 중이지 않습니다"));
 
         ChatRoom chatRoom = ChatRoom.builder()
@@ -483,7 +542,7 @@ public class BandManagementService {
         List<Long> roomIdList = bandChatList.stream()
                 .map(bandChat -> bandChat.getChatRoom().getId())
                 .toList();
-        List<String> sessions = bandSessionRepository.findSessionNamesByBandIdAndStatus(bandId,"RECRUITING");
+        List<String> sessions = bandSessionRepository.findSessionNamesByBandIdAndStatusAndIsDeletedFalse(bandId,"RECRUITING");
 
         List<ChatMessage> lastMessages = chatMessageRepository.findLastMessagePerChatRoom(roomIdList);
 
@@ -569,7 +628,7 @@ public class BandManagementService {
         List<String> genreNames = genres.stream()
                 .map(bg -> bg.getGenre().getName())
                 .toList();
-        List<BandSession> sessions = bandSessionRepository.findByBandId(bandId);
+        List<BandSession> sessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(bandId);
         List<String> session = new ArrayList<>();
         List<String> currentSessions = new ArrayList<>();
 

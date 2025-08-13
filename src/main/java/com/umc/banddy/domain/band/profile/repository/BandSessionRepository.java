@@ -1,6 +1,5 @@
 package com.umc.banddy.domain.band.profile.repository;
 
-import com.umc.banddy.domain.band.profile.domain.Band;
 import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
 import com.umc.banddy.domain.member.domain.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,23 +10,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BandSessionRepository extends JpaRepository<BandSession, Long> {
-    List<BandSession> findByBandId(Long bandId);
+    List<BandSession> findByBandIdAndIsDeletedFalse(Long bandId);
 
-    void deleteAllByBand(Band band);
+    List<BandSession> findByBandIdAndSessionStatusAndIsDeletedFalse(Long bandId, String status);
 
-    List<BandSession> findByBandIdAndSessionStatus(Long bandId, String status);
-
-    Optional<BandSession> findByBandIdAndSessionStatusAndSession(Long bandId, String recruiting, Session Session);
+    Optional<BandSession> findByBandIdAndSessionStatusAndSessionAndIsDeletedFalse(Long bandId, String recruiting, Session Session);
 
     @Query("""
     SELECT bs.session.name
     FROM BandSession bs
     WHERE bs.band.id = :bandId AND bs.sessionStatus = :status
+    AND bs.isDeleted = false
     """)
-    List<String> findSessionNamesByBandIdAndStatus(
+    List<String> findSessionNamesByBandIdAndStatusAndIsDeletedFalse(
             @Param("bandId") Long bandId,
             @Param("status") String status
     );
 
-    Optional<BandSession> findByBandAndSessionAndSessionStatus(Band band, Session foundSession, String sessionStatus);
 }
