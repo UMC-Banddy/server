@@ -27,6 +27,7 @@ import com.umc.banddy.domain.music.artist.repository.ArtistRepository;
 import com.umc.banddy.domain.music.artist.service.ArtistService;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.repository.TrackRepository;
+import com.umc.banddy.domain.music.track.service.TrackService;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class BandManagementService {
     private final S3Uploader s3Uploader;
 
     private final ArtistService artistService;
+    private final TrackService trackService;
 
 
     @Transactional
@@ -156,8 +158,16 @@ public class BandManagementService {
                 }).toList();
 
 
-        // 밴드 아티스트 저장
+        // 아티스트 저장 (없으면 조회 후 저장)
         List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
+        Set<String> existingArtistIds = ArtistAll.stream().map(Artist::getSpotifyId).collect(Collectors.toSet());
+        List<String> missingArtistIds = request.getArtistSpotifyIds().stream()
+                .filter(id -> !existingArtistIds.contains(id))
+                .toList();
+        if (!missingArtistIds.isEmpty()) {
+            List<Artist> newArtists = artistService.saveArtistsBySpotifyIds(missingArtistIds);
+            ArtistAll = Stream.concat(ArtistAll.stream(), newArtists.stream()).toList();
+        }
         Map<String, Artist> artistMap = ArtistAll.stream()
                 .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
 
@@ -171,11 +181,18 @@ public class BandManagementService {
                             .build();
                 }).toList();
 
-        // 밴드 트랙 저장
+        // 트랙 저장 (없으면 조회 후 저장)
         List<Track> TrackAll = trackRepository.findBySpotifyIdIn(request.getTrackSpotifyIds());
+        Set<String> existingTrackIds = TrackAll.stream().map(Track::getSpotifyId).collect(Collectors.toSet());
+        List<String> missingTrackIds = request.getTrackSpotifyIds().stream()
+                .filter(id -> !existingTrackIds.contains(id))
+                .toList();
+        if (!missingTrackIds.isEmpty()) {
+            List<Track> newTracks = trackService.saveTracksBySpotifyIds(missingTrackIds);
+            TrackAll = Stream.concat(TrackAll.stream(), newTracks.stream()).toList();
+        }
         Map<String, Track> trackMap = TrackAll.stream()
                 .collect(Collectors.toMap(Track::getSpotifyId, Function.identity()));
-
         List<BandTrack> tracks = request.getTrackSpotifyIds().stream()
                 .map(trackId -> {
                     Track t = trackMap.get(trackId);
@@ -185,6 +202,7 @@ public class BandManagementService {
                             .track(t)
                             .build();
                 }).toList();
+
 
         // 직업 저장
         List<BandJob> jobs = request.getJob().stream()
@@ -237,10 +255,6 @@ public class BandManagementService {
             band.setStatus(request.getStatus());
         }
 
-//        if(request.getImage() != null && !request.getImage().isEmpty()) {
-//            String profileImageUrl = s3Uploader.upload(request.getImage(), "band-profile-images");
-//            band.setProfileImageUrl(profileImageUrl);
-//        }
         if(image != null && !image.isEmpty()) {
             String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
             band.setProfileImageUrl(profileImageUrl);
@@ -347,8 +361,6 @@ public class BandManagementService {
         }
 
 
-
-
         if (request.getGenres() != null) {
             Map<String,Long> genreMap = genreRepository.findGenreMapByNameIn(request.getGenres()).stream()
                     .collect(Collectors.toMap(
@@ -385,11 +397,19 @@ public class BandManagementService {
             }
         }
         if (request.getArtistSpotifyIds() != null) {
-            Map<String,Long> artistMap = artistRepository.findArtistMapBySpotifyIdIn(request.getArtistSpotifyIds()).stream()
-                    .collect(Collectors.toMap(
-                            ArtistRepository.ArtistIdSpotifyId::getSpotifyId,
-                            ArtistRepository.ArtistIdSpotifyId::getId
-                    ));
+            // DB에 없는 아티스트는 저장
+            List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
+            Set<String> existingArtistIds = ArtistAll.stream().map(Artist::getSpotifyId).collect(Collectors.toSet());
+            List<String> missingArtistIds = request.getArtistSpotifyIds().stream()
+                    .filter(id -> !existingArtistIds.contains(id))
+                    .toList();
+            if (!missingArtistIds.isEmpty()) {
+                List<Artist> newArtists = artistService.saveArtistsBySpotifyIds(missingArtistIds);
+                ArtistAll = Stream.concat(ArtistAll.stream(), newArtists.stream()).toList();
+            }
+            Map<String, Artist> artistMap = ArtistAll.stream()
+                    .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
+
             List<BandArtist> existing = bandArtistRepository.findByBandId(band.getId());
             Set<Long> existingIds = existing.stream()
                     .map(ba -> ba.getArtist().getId())
@@ -398,7 +418,9 @@ public class BandManagementService {
             Set<Long> newIds = request.getArtistSpotifyIds().stream()
                     .map(artistMap::get)
                     .filter(Objects::nonNull)
+                    .map(Artist::getId)
                     .collect(Collectors.toSet());
+
             Set<Long> toDelete = new HashSet<>(existingIds);
             toDelete.removeAll(newIds);
             if (!toDelete.isEmpty()) {
@@ -415,20 +437,30 @@ public class BandManagementService {
             }
         }
         if (request.getTrackSpotifyIds() != null) {
-            Map<String,Long> trackMap = trackRepository.findTrackMapBySpotifyIdIn(request.getTrackSpotifyIds()).stream()
-                    .collect(Collectors.toMap(
-                            TrackRepository.TrackIdSpotifyId::getSpotifyId,
-                            TrackRepository.TrackIdSpotifyId::getId
-                    ));
+            // DB에 없는 트랙은 저장
+            List<Track> TrackAll = trackRepository.findBySpotifyIdIn(request.getTrackSpotifyIds());
+            Set<String> existingTrackIds = TrackAll.stream().map(Track::getSpotifyId).collect(Collectors.toSet());
+            List<String> missingTrackIds = request.getTrackSpotifyIds().stream()
+                    .filter(id -> !existingTrackIds.contains(id))
+                    .toList();
+            if (!missingTrackIds.isEmpty()) {
+                List<Track> newTracks = trackService.saveTracksBySpotifyIds(missingTrackIds);
+                TrackAll = Stream.concat(TrackAll.stream(), newTracks.stream()).toList();
+            }
+            Map<String, Track> trackMap = TrackAll.stream()
+                    .collect(Collectors.toMap(Track::getSpotifyId, Function.identity()));
+
             List<BandTrack> existing = bandTrackRepository.findByBandId(band.getId());
             Set<Long> existingIds = existing.stream()
                     .map(bt -> bt.getTrack().getId())
                     .collect(Collectors.toSet());
 
             Set<Long> newIds = request.getTrackSpotifyIds().stream()
-                    .map(trackMap::get)            // 각 Spotify ID에 매핑된 Track ID
-                    .filter(Objects::nonNull)      // 매핑 안 된(없는) ID는 필터링
+                    .map(trackMap::get)
+                    .filter(Objects::nonNull)
+                    .map(Track::getId)
                     .collect(Collectors.toSet());
+
             Set<Long> toDelete = new HashSet<>(existingIds);
             toDelete.removeAll(newIds);
             if (!toDelete.isEmpty()) {
@@ -654,6 +686,7 @@ public class BandManagementService {
                 .map(bt -> BandInquiryResponse.Track.builder()
                         .title(bt.getTrack().getTitle())
                         .spotifyId(bt.getTrack().getSpotifyId())
+                        .imageUrl(bt.getTrack().getImageUrl())
                         .build())
                 .toList();
 

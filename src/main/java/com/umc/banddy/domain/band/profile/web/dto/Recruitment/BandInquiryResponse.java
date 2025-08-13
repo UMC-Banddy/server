@@ -85,7 +85,7 @@ public class BandInquiryResponse {
     public static class Track{
         private String spotifyId;
         private String title;
-        private String ImageUrl;
+        private String imageUrl;
     }
 
 

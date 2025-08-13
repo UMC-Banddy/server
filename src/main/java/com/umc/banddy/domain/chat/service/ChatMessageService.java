@@ -354,12 +354,19 @@ public class ChatMessageService {
                 chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
 
+        Set<String> subscribedUsers = chatService.getPrivateSubscribedUserEmails(roomId);
+
+        String other = subscribedUsers.stream()
+                .filter(email -> !email.equals(auth.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다."));
+
         saveTimeMark(participant, messageId);
 
         TimeMark timeMark = ChatConveter.toTimeMark(participant);
 
         websocketService.queuePrivateMessage(
-                auth.getName(),
+                other,
                 roomId,
                 toWsMessage(timeMark, MessageType.READ)
         );
