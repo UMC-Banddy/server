@@ -37,11 +37,19 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-  cache:
-    cache-names:
-      - roomParticipants
-    caffeine:
-      spec: maximumSize=10000, expireAfterAccess=10m
+    # 레디스
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+    cache:
+      type: redis
+      cache-names:
+        - emailAuthCode
+        - roomParticipants
+      redis:
+        time-to-live: 300000
 
   servlet:
     multipart:
