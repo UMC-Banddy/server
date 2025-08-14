@@ -25,18 +25,8 @@ jobs:
       - name: Grant permission to Gradle
         run: chmod +x ./gradlew
 
-      - name: Stop Gradle daemon and clear caches
-        run: |
-          ./gradlew --stop || true
-          rm -rf $HOME/.gradle/caches
-          rm -rf $HOME/.gradle/daemon
-          rm -rf $HOME/.gradle/native
-          rm -rf .gradle
-          rm -rf **/build
-          echo "Gradle daemon stopped and caches cleared"
-
-      - name: Build with Gradle (no cache)
-        run: ./gradlew clean bootJar --no-build-cache --refresh-dependencies --stacktrace
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
