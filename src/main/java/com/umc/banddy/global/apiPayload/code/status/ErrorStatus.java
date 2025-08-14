@@ -42,6 +42,15 @@ public enum ErrorStatus implements BaseErrorCode {
     FOLDER_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더에 해당 곡이 없습니다."),
     FOLDER_INVALID_COLOR(HttpStatus.BAD_REQUEST, "FOLDER4000", "유효한 폴더 색상이 아닙니다."),
 
+    // friend & friend request
+    FRIEND_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4004", "친구 요청이 존재하지 않습니다."),
+    FRIEND_REQUEST_ALREADY_SENT(HttpStatus.CONFLICT, "FRIEND4009", "이미 친구 요청을 보냈습니다."),
+    FRIEND_REQUEST_ALREADY_HANDLED(HttpStatus.CONFLICT, "FRIEND4010", "이미 처리된 친구 요청입니다."),
+    FRIEND_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4005", "친구 관계가 존재하지 않습니다."),
+    FRIEND_ALREADY_EXISTS(HttpStatus.CONFLICT, "FRIEND4011", "이미 친구 관계입니다."),
+    FRIEND_SENDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4006", "보낸 회원이 존재하지 않습니다."),
+    FRIEND_RECEIVER_NOT_FOUND(HttpStatus.NOT_FOUND, "FRIEND4007", "받는 회원이 존재하지 않습니다."),
+
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다."),
     MEMBER_INACTIVE(HttpStatus.NOT_FOUND, "MEMBER4004", "탈퇴한 회원입니다."),
