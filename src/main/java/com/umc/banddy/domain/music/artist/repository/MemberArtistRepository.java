@@ -20,11 +20,19 @@ public interface MemberArtistRepository extends JpaRepository<MemberArtist, Long
 
     @Query("SELECT ma.artist FROM MemberArtist ma " +
             "WHERE ma.member IN :members " +
+            "AND ma.member.id <> :excludeMemberId " +
             "GROUP BY ma.artist " +
             "ORDER BY COUNT(ma.artist) DESC")
-    List<Artist> findTopSavedArtistsByMembers(@Param("members") List<Member> members, Pageable pageable);
+    List<Artist> findTopSavedArtistsByMembers(
+            @Param("members") List<Member> members,
+            @Param("excludeMemberId") Long excludeMemberId,
+            Pageable pageable);
 
-    default List<Artist> findTopSavedArtistsByMembers(List<Member> members, int limit) {
-        return findTopSavedArtistsByMembers(members, Pageable.ofSize(limit));
+    default List<Artist> findTopSavedArtistsByMembers(
+            List<Member> members,
+            Long excludeMemberId,
+            int limit) {
+        return findTopSavedArtistsByMembers(members, excludeMemberId, Pageable.ofSize(limit));
     }
+
 }
