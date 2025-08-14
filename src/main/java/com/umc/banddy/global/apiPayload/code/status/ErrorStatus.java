@@ -34,6 +34,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // Album
     ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM4004", "앨범을 찾을 수 없습니다."),
     ALBUM_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "ALBUM4000", "해당 앨범은 회원이 저장한 앨범이 아닙니다."),
+    // Genre
+    GENRE_NOT_FOUND(HttpStatus.NOT_FOUND, "GENRE4004", "장르를 찾을 수 없습니다."),
 
     // Folder
     FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
@@ -41,7 +43,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4004", "회원 정보를 찾을 수 없습니다."),
+    MEMBER_INACTIVE(HttpStatus.NOT_FOUND, "MEMBER4004", "탈퇴한 회원입니다."),
     EMAIL_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "MEMBER4002", "이미 존재하는 이메일입니다."),
+    INVALID_AGE(HttpStatus.BAD_REQUEST, "MEMBER4003", "나이는 0 이상의 값만 입력할 수 있습니다."),
 
     // Band
     BAND_NOT_FOUND(HttpStatus.NOT_FOUND, "BAND4004", "해당 밴드를 찾을 수 없습니다."),
@@ -62,6 +66,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // Refresh Token
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_008", "Refresh Token이 만료되었습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_009", "유효하지 않은 Refresh Token입니다.");
+
 
 
     private final HttpStatus httpStatus;

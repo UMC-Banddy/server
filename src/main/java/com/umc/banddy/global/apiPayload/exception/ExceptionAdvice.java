@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 
 
 import java.util.LinkedHashMap;
@@ -64,6 +65,12 @@ public class ExceptionAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity onThrowException(GeneralException generalException, HttpServletRequest request) {
         ErrorReasonDTO errorReasonHttpStatus = generalException.getErrorReasonHttpStatus();
         return handleExceptionInternal(generalException,errorReasonHttpStatus,null,request);
+    }
+
+    @ExceptionHandler(value = AuthHandler.class)
+    public ResponseEntity<Object> handleAuthHandler(AuthHandler ex, HttpServletRequest request) {
+        ErrorReasonDTO errorReasonHttpStatus = ex.getErrorStatus().getReasonHttpStatus();
+        return handleExceptionInternal(ex, errorReasonHttpStatus, HttpHeaders.EMPTY, request);
     }
 
     private ResponseEntity<Object> handleExceptionInternal(Exception e, ErrorReasonDTO reason,
