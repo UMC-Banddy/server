@@ -3,6 +3,8 @@ package com.umc.banddy.domain.member.service;
 import com.umc.banddy.domain.member.domain.*;
 import com.umc.banddy.domain.member.domain.mapping.*;
 import com.umc.banddy.domain.member.enums.Level;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import com.umc.banddy.domain.member.repository.*;
 import com.umc.banddy.domain.member.web.dto.SimpleKeywordDto;
 import com.umc.banddy.domain.member.web.dto.SimpleSessionDto;
@@ -49,7 +51,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
         String email = jwtTokenUtil.getEmailFromToken(accessToken);
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // S3 업로드
         String profileImageUrl = (profileImage != null && !profileImage.isEmpty())
@@ -69,7 +71,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                                     .member(member)
                                     .genre(genre)
                                     .build()),
-                            () -> { throw new IllegalArgumentException("존재하지 않는 장르: " + name); }
+                            () -> { throw new AuthHandler(ErrorStatus.GENRE_NOT_FOUND); }
+
                     )
             );
         }

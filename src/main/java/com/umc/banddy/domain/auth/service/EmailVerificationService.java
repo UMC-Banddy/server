@@ -3,6 +3,10 @@ package com.umc.banddy.domain.auth.service;
 import com.umc.banddy.domain.auth.web.dto.EmailSendRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyResponse;
+import com.umc.banddy.domain.member.enums.Status;
+import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -11,6 +15,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -19,17 +24,25 @@ public class EmailVerificationService {
 
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
+    private final MemberRepository memberRepository;
 
     // 인증번호 전송
     public void sendCode(EmailSendRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        // 이미 가입된 이메일인지 확인 (ACTIVE + INACTIVE 모두 차단)
+        if (memberRepository.existsByEmailAndStatusIn(email, List.of(Status.ACTIVE, Status.INACTIVE))) {
+            throw new AuthHandler(ErrorStatus.EMAIL_ALREADY_EXISTS);
+        }
+
         String code = generateCode();
 
         // Redis에 저장: key = code, value = email, TTL = 5분
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set(code, request.getEmail(), Duration.ofMinutes(5));
+        ops.set(code, email, Duration.ofMinutes(5));
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(request.getEmail());
+        message.setTo(email);
         message.setSubject("[Banddy] 회원가입 인증번호입니다.");
         message.setText(
                 "안녕하세요, 밴디입니다.\n" +
@@ -47,7 +60,7 @@ public class EmailVerificationService {
         String email = redisTemplate.opsForValue().get(request.getCode());
 
         if (email == null) {
-            return new EmailVerifyResponse(false, "인증번호가 만료되었거나 존재하지 않습니다.");
+            throw new AuthHandler(ErrorStatus.VERIFICATION_CODE_EXPIRED);
         }
 
         // 인증번호 일회성 사용 → 즉시 삭제

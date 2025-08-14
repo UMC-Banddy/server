@@ -5,11 +5,13 @@ import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.enums.Role;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +22,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         if (member.getStatus() == Status.INACTIVE) {
-            throw new IllegalStateException("탈퇴한 회원입니다.");
+            throw new AuthHandler(ErrorStatus.MEMBER_INACTIVE);
         }
 
         return User.builder()
