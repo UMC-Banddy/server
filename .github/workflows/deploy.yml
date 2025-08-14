@@ -25,11 +25,8 @@ jobs:
       - name: Grant permission to Gradle
         run: chmod +x ./gradlew
 
-      - name: Remove Gradle cache
-        run: rm -rf ~/.gradle/caches
-
       - name: Build with Gradle
-        run: ./gradlew clean bootJar --refresh-dependencies
+        run: ./gradlew clean bootJar
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
