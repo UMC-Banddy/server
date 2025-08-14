@@ -138,6 +138,7 @@ public class ChatMessageService {
 
         ChatMessage chatMessage =  saveMessage(chatRoom, member, member.getNickname() + "님이 채팅방에 참여하셨습니다.", Type.SYSTEM);
 
+    if (chatRoom.getRoomType() == RoomType.GROUP) {
         websocketService.topicMessage(
                 chatRoom.getId(),
                 toWsMessage(
@@ -150,9 +151,30 @@ public class ChatMessageService {
                                 .senderName("System")
                                 .timestamp(chatMessage.getCreatedAt())
                                 .build()
-                , MessageType.SYSTEM
+                        , MessageType.SYSTEM
                 )
         );
+    } else if (chatRoom.getRoomType() == RoomType.PRIVATE || chatRoom.getRoomType() == RoomType.BAND) {
+        Set<String> allParticipants = participantCache.getParticipants(chatRoom.getId());
+        for (String email : allParticipants) {
+            websocketService.queuePrivateMessage(
+                    email,
+                    chatRoom.getId(),
+                    toWsMessage(
+                            ChatMessageResponse.builder()
+                                    .messageId(chatMessage.getId())
+                                    .roomId(chatRoom.getId())
+                                    .content(chatMessage.getContent())
+                                    .senderId(member.getId())
+                                    .type(Type.SYSTEM)
+                                    .senderName("System")
+                                    .timestamp(chatMessage.getCreatedAt())
+                                    .build()
+                            , MessageType.SYSTEM
+                    )
+            );
+        }
+    }
 
         return ChatSystemResponse.builder()
                 .roomId(chatRoom.getId())
