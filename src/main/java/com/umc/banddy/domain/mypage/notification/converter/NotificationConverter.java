@@ -44,18 +44,18 @@ public class NotificationConverter {
                 .build();
     }
 
-    public static NotificationResponse fromBand(BandNotification n) {
-        var sender = n.getNotification().getSender();
-        return BandNotificationResponse.builder()
-//                .notificationId(n.getNotification().getId())
-//                .title(n.getTitle())
-//                .type(NotificationType.BAND)
-//                .imageUrl(n.getBand().getProfileImageUrl())
-//                .createdAt(n.getNotification().getCreatedAt())
-//                .isRead(n.getNotification().getIsRead())
-//                .senderId(sender.getId())
-                .build();
-    }
+//    public static NotificationResponse fromBand(BandNotification n) {
+//        var sender = n.getNotification().getSender();
+//        return BandNotificationResponse.builder()
+////                .notificationId(n.getNotification().getId())
+////                .title(n.getTitle())
+////                .type(NotificationType.BAND)
+////                .imageUrl(n.getBand().getProfileImageUrl())
+////                .createdAt(n.getNotification().getCreatedAt())
+////                .isRead(n.getNotification().getIsRead())
+////                .senderId(sender.getId())
+//                .build();
+//    }
 
     //통합
     public static List<NotificationResponse> mergeAndSort(

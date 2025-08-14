@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface FriendNotificationRepository extends JpaRepository<FriendNotification, Long> {
 
-    @EntityGraph (attributePaths = {"notification", "friendRequest"})
+    @EntityGraph (attributePaths = {"notification", "friendRequest", "notification.sender"})
     List<FriendNotification> findByNotification_Receiver_Id(Long memberId);
 
     void deleteByFriendRequestIdAndType(Long friendRequestId, String type); // 수락 or 거절 시 삭제를 위해 추가

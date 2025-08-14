@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ChatNotificationRepository extends JpaRepository<ChatNotification, Long> {
 
-    @EntityGraph (attributePaths = {"notification"})
+    @EntityGraph (attributePaths = {"notification", "notification.sender"})
     List<ChatNotification> findByNotification_Receiver_Id(Long memberId);
 
     boolean existsByNotificationSenderIdAndNotificationReceiverIdAndNotificationIsRead(Long senderId, Long receiverId, ReadStatus isRead);
