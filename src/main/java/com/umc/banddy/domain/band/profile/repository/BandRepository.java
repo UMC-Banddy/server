@@ -30,5 +30,7 @@ public interface BandRepository extends JpaRepository<Band, Long> {
            and b.status <> com.umc.banddy.domain.band.profile.enums.BandStatus.ENDED
         """)
     List<Band> findAllActiveByManagerId(@Param("managerId") Long managerId);
+
+
 }
 

@@ -48,6 +48,36 @@ public enum ErrorStatus implements BaseErrorCode {
     BAND_NOT_FOUND(HttpStatus.NOT_FOUND, "BAND4004", "해당 밴드를 찾을 수 없습니다."),
     BAND_ALREADY_BOOKMARKED(HttpStatus.CONFLICT, "BAND4009", "이미 저장한 밴드입니다."),
     BAND_NOT_BOOKMARKED(HttpStatus.BAD_REQUEST, "BAND4000", "해당 밴드는 저장한 밴드가 아닙니다."),
+    BAND_MANAGER_ONLY_ACTION(HttpStatus.FORBIDDEN, "BAND4001", "이 동작은 해당 밴드의 관리자만 수행할 수 있습니다."),
+
+    // Session
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "SESSION4004", "해당 세션을 찾을 수 없습니다 ."),
+    BAND_SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "BAND_SESSION4004", "해당 밴드 세션을 찾을 수 없습니다."),
+    BAND_SESSION_NOT_RECRUITED(HttpStatus.BAD_REQUEST, "BAND_SESSION4000", "해당 세션은 모집 중이 아닙니다."),
+
+    // Genre
+    GENRE_NOT_FOUND(HttpStatus.NOT_FOUND, "GENRE4004", "해당 장르를 찾을 수 없습니다."),
+
+    // Chat Room
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT4004", "해당 채팅방을 찾을 수 없습니다."),
+    CHAT_NOT_PARTICIPATED(HttpStatus.BAD_REQUEST, "CHAT4000", "해당 채팅방에 참여하지 않았습니다."),
+    CHAT_ALREADY_PARTICIPATED(HttpStatus.BAD_REQUEST, "CHAT4001", "이미 참여한 채팅방입니다."),
+    CHAT_TYPE_NOT_MATCHED(HttpStatus.BAD_REQUEST, "CHAT4002", "채팅방 타입이 일치하지 않습니다."),
+    CHAT_CAN_NOT_BE_JOINED(HttpStatus.BAD_REQUEST, "CHAT4003", "해당 채팅방은 참여할 수 없습니다."),
+    PRIVATE_CHAT_NEED_RECEIVER(HttpStatus.BAD_REQUEST, "CHAT4006", "개인 채팅은 수신자가 필요합니다."),
+    CHATROOM_INVALID_PARTICIPANTS(HttpStatus.BAD_REQUEST, "CHAT4007", "1:1 채팅방 참여자 수가 올바르지 않습니다."),
+    CHAT_ALREADY_PINNED(HttpStatus.BAD_REQUEST, "CHAT4008", "이미 고정된 밴드 채팅방입니다."),
+    CHAT_ALREADY_UNPINNED(HttpStatus.BAD_REQUEST, "CHAT4009", "이미 고정 해제된 밴드 채팅방입니다."),
+
+    // Notification
+    NOTIFICATION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "NOTIFICATION4000", "이미 존재하는 알림입니다."),
+
+    // Participant
+    PARTICIPANT_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT4005", "해당 채팅방의 참여자를 찾을 수 없습니다."),
+    PARTICIPANT_NOT_FOUND_IN_CHATROOM(HttpStatus.NOT_FOUND, "PARTICIPANT4004", "해당 채팅방의 참여자를 찾을 수 없습니다."),
+    PARTICIPANT_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "PARTICIPANT4000", "이미 존재하는 참여자입니다."),
+    PARTICIPANT_NOT_BELONG_TO_CHATROOM(HttpStatus.BAD_REQUEST, "PARTICIPANT4002", "해당 참여자는 채팅방에 속하지 않습니다."),
+
 
     // 인증 관련 에러
     AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH4001", "아이디 또는 비밀번호가 일치하지 않습니다."),
