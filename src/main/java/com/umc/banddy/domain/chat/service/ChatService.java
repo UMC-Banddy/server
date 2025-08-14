@@ -7,6 +7,8 @@ import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.messaging.simp.user.SimpSession;
@@ -32,20 +34,20 @@ public class ChatService {
 
     public Pair<ChatRoom, Member> verifedChatRoomAndMember(Long roomId, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다. ID: " + roomId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_ROOM_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         return Pair.of(chatRoom, member);
     }
 
     public ChatRoom verifedChatRoom(Long roomId) {
         return chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다. ID: " + roomId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_ROOM_NOT_FOUND));
     }
 
     public ChatRoomParticipant verifiedParticipant(ChatRoom chatRoom, Member member, Status status) {
         return participantRepository.findByChatRoomAndMemberAndStatus(chatRoom, member,Status.ACTIVE)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다. 채팅방 ID: " + chatRoom.getId() + ", 멤버 ID: " + member.getId()));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
     }
     public Long extractRoomId(String dest) {
         if (dest == null) {
@@ -63,7 +65,7 @@ public class ChatService {
     @Transactional
     public ChatRoomParticipant markLastRead(ChatRoom chatRoom , Member member) {
         ChatRoomParticipant participant = participantRepository.findByChatRoomAndMemberAndStatus(chatRoom, member, Status.ACTIVE)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
 
         participant.setLastReadAt(LocalDateTime.now());
         return participant;

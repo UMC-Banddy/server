@@ -32,16 +32,4 @@ public class WebsocketService {
         );
     }
 
-//    public void timeMarkBroadcast(Long roomId, Long memberId) {
-//        TimeMarkResponse timeMarkResponse = TimeMarkResponse.builder()
-//                .memberId(memberId)
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//
-//        messagingTemplate.convertAndSend(
-//                "/topic/room/" + roomId,
-//                timeMarkResponse
-//        );
-//    }
-
 }

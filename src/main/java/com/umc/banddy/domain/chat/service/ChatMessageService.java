@@ -18,6 +18,8 @@ import com.umc.banddy.domain.chat.web.dto.MessageType;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.cache.annotation.CacheEvict;
@@ -66,8 +68,8 @@ public class ChatMessageService {
         ChatRoomParticipant chatRoomParticipant
                 = participantRepository
                 .findByChatRoomAndMemberAndStatus(chatRoom, member, Status.ACTIVE)
-                .orElseThrow(() -> new IllegalStateException("참여하지 않은 채팅방입니다."));
-
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_NOT_PARTICIPATED));
+        
         chatRoomParticipant.setStatus(Status.INACTIVE);
         participantRepository.save(chatRoomParticipant);
 
@@ -107,7 +109,7 @@ public class ChatMessageService {
                 .map(p ->{
                     if (p.getStatus() == Status.INACTIVE) {
                         p.setStatus(Status.ACTIVE);
-                    } else if (p.getStatus() == Status.ACTIVE) {throw new IllegalArgumentException("이미 채팅에 참여중입니다");}
+                    } else if (p.getStatus() == Status.ACTIVE) {throw new GeneralException(ErrorStatus.CHAT_ALREADY_PARTICIPATED);}
                     return p;
                 }).orElseGet(() -> ChatRoomParticipant.builder()
                         .chatRoom(chatRoom)
@@ -119,16 +121,16 @@ public class ChatMessageService {
 
         if(chatRoom.getRoomType() == RoomType.BAND) {
             if (chatRoom.getBandChat() == null) {
-                throw new IllegalArgumentException("밴드 채팅방이 아닙니다.");
+                throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
             }else if (chatRoomParticipantCache.getParticipants(chatRoom.getId()).size() >= 2){
-                throw new IllegalArgumentException("개인 채팅방에 참여할 수 없습니다.");
+                throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
             }
-            throw new IllegalArgumentException("참여할 수 없는 채팅방입니다");
+            throw new GeneralException(ErrorStatus.CHAT_CAN_NOT_BE_JOINED);
         }else if(chatRoom.getRoomType() == RoomType.PRIVATE) {
             if (chatRoom.getBandChat() != null) {
-                throw new IllegalArgumentException("개인 채팅방이 아닙니다.");
+                throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
             } else if (chatRoomParticipantCache.getParticipants(chatRoom.getId()).size() >= 2){
-                throw new IllegalArgumentException("참여할 수 없는 채팅방입니다");
+                throw new GeneralException(ErrorStatus.CHAT_CAN_NOT_BE_JOINED);
             }
         }
 
@@ -210,7 +212,7 @@ public class ChatMessageService {
         } else if (roomType.equals(RoomType.PRIVATE) ) {
             // PRIVATE: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
-                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PRIVATE_CHAT_NEED_RECEIVER));
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
@@ -229,7 +231,7 @@ public class ChatMessageService {
         } else if (roomType.equals(RoomType.BAND)) {
             // BAND: 세션 단위로 유저에게 개별 전송
             Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
-                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PRIVATE_CHAT_NEED_RECEIVER));
             // 캐싱 고려
             String receiverEmail = memberRepository.findEmailById(receiverId);
             if (unsubscribedUsers.contains(receiverEmail)) {
@@ -261,10 +263,10 @@ public class ChatMessageService {
 
         RoomType reqType = messageRequest.getRoomType();
         if (reqType != RoomType.PRIVATE && reqType != RoomType.BAND) {
-            throw new IllegalArgumentException("허용되지 않는 채팅방 타입입니다.");
+            throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
         }
         if (chatRoom.getRoomType() != reqType) {
-            throw new IllegalArgumentException("채팅방 타입이 요청 타입과 다릅니다.");
+            throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
         }
 
         // 채팅 메세지 저장
@@ -272,9 +274,9 @@ public class ChatMessageService {
 
         // 채팅방 참여자 정보
         Set<String> allParticipants = Optional.ofNullable(participantCache.getParticipants(roomId))
-                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_NOT_PARTICIPATED));
         if (allParticipants.size() != 2)
-            throw new IllegalStateException("1:1 채팅방 참여자 구성이 올바르지 않습니다.");
+            throw new GeneralException(ErrorStatus.CHATROOM_INVALID_PARTICIPANTS);
 
         // 지금 수신 중인 사용자 정보 불러오기
         Set<String> subscribedUsers = chatService.getPrivateSubscribedUserEmails(roomId);
@@ -283,7 +285,7 @@ public class ChatMessageService {
         String receiverEmail = allParticipants.stream()
                 .filter(m -> !Objects.equals(m, auth.getName()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다"));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_NOT_PARTICIPATED));
 
         if(subscribedUsers.contains(receiverEmail)){
             ChatMessageResponse chatMessageResponse = chatToResponse(chatMessage);
@@ -310,10 +312,10 @@ public class ChatMessageService {
 
         RoomType reqType = messageRequest.getRoomType();
         if (reqType != RoomType.GROUP) {
-            throw new IllegalArgumentException("허용되지 않는 채팅방 타입입니다.");
+            throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
         }
         if (chatRoom.getRoomType() != reqType) {
-            throw new IllegalArgumentException("채팅방 타입이 요청 타입과 다릅니다.");
+            throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
         }
         // 채팅 메세지 저장
         ChatMessage chatMessage = saveMessage(chatRoom, member, messageRequest.getContent(), Type.TEXT);
@@ -352,14 +354,14 @@ public class ChatMessageService {
 
         ChatRoomParticipant participant =
                 chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
+                        .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
 
         Set<String> subscribedUsers = chatService.getPrivateSubscribedUserEmails(roomId);
 
         String other = subscribedUsers.stream()
                 .filter(email -> !email.equals(auth.getName()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("채팅 참여자가 없습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.PRIVATE_CHAT_NEED_RECEIVER));
 
         saveTimeMark(participant, messageId);
 
@@ -375,7 +377,7 @@ public class ChatMessageService {
 
         ChatRoomParticipant participant =
                 chatRoomParticipantRepository.findByChatRoom_IdAndMember_IdAndStatus(roomId, auth.getMemberId(), Status.ACTIVE )
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 참여자입니다."));
+                        .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
 
         saveTimeMark(participant, messageId);
 

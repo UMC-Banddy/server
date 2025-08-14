@@ -34,8 +34,9 @@ public class ChatRoomParticipant {
     @Column(nullable = true)
     private LocalDateTime pinnedAt; //erd에 없음
 
-    @Column(nullable = true)
-    private LocalDateTime lastReadAt; //erd에 없음, 삭제 예쩡
+    @Builder.Default
+    @Column(name = "last_read_at", nullable = false)
+    private LocalDateTime lastReadAt = LocalDateTime.now(); //erd에 없음, 삭제 예쩡
 
     @Column(nullable = false)
     @Builder.Default

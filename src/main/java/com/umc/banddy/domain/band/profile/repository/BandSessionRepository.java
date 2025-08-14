@@ -27,4 +27,21 @@ public interface BandSessionRepository extends JpaRepository<BandSession, Long> 
             @Param("status") String status
     );
 
+
+    @Query("""
+    select bs
+    from BandSession bs
+    join fetch bs.band
+    join fetch bs.session
+    join fetch bs.band.manager
+    where bs.band.id = :bandId
+      and bs.sessionStatus = :recruiting
+      and bs.session.name = :session
+      and bs.isDeleted = false
+""")
+    Optional<BandSession> findWithBandAndSession(
+            @Param("bandId") Long bandId,
+            @Param("recruiting") String recruiting,
+            @Param("session") String session
+    );
 }

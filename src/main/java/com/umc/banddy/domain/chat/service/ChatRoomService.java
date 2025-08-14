@@ -14,6 +14,7 @@ import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.domain.chat.repository.ChatMessageRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomParticipantRepository;
 import com.umc.banddy.domain.chat.repository.ChatRoomRepository;
+import com.umc.banddy.domain.chat.web.dto.PinResponse;
 import com.umc.banddy.domain.chat.web.dto.chatroom.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.*;
@@ -28,6 +29,8 @@ import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import com.umc.banddy.domain.mypage.notification.repository.ChatNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.repository.NotificationRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 
@@ -116,14 +119,13 @@ public class ChatRoomService {
     ) {
 
         ChatRoom chatRoom = chatRoomRepository.findById(request.getRoomId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채팅방입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_ROOM_NOT_FOUND));
 
 
         if(chatRoom.getRoomType()!=RoomType.GROUP){
-            throw new IllegalArgumentException("그룹 채팅방이 아닙니다.");
+            throw new GeneralException(ErrorStatus.CHAT_TYPE_NOT_MATCHED);
         }
-//        MultipartFile image = request.getImage();
-//
+
         // 채팅방 정보 업데이트
         if(request.getRoomName() != null && !request.getRoomName().isEmpty()){
             chatRoom.setName(request.getRoomName());
@@ -155,9 +157,9 @@ public class ChatRoomService {
     @Transactional
     public BasicChatRoomInfo getPrivateChatRoom(Long memberId, Long friendId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         Member friend = memberRepository.findById(friendId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 친구입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 조회 후 없으면 생성
         ChatRoom chatRoom = chatRoomRepository.findPrivateChatRoomByParticipants(member.getId(), friend.getId()).stream()
@@ -226,7 +228,7 @@ public class ChatRoomService {
     public ChatRoomListResponse getMyChatRooms(Long memberId){
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         // 3) 내가 매니저로 있는 모든 밴드
         List<Band> managedBands = bandRepository.findAllActiveByManagerId(memberId);
@@ -317,7 +319,7 @@ public class ChatRoomService {
                                     .lastReadMessageId(p.getLastReadMessageId())
                                     .build())
                             .findFirst()
-                            .orElseThrow(() -> new IllegalStateException("내 정보가 없습니다."));
+                            .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
 
                     LocalDateTime myPinnedAt = room.getParticipants().stream()
                             .filter(p -> p.getMember().getId().equals(memberId))
@@ -546,7 +548,7 @@ public class ChatRoomService {
                 .map(ChatRoomParticipant::getMember)
                 .filter(m -> m.getId().equals(memberId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         List<ParticipantInfos.Info> infoList = new ArrayList<>();
         for(ChatRoomParticipant participant : participants){
@@ -579,9 +581,9 @@ public class ChatRoomService {
     public BandJoinResponse joinBand(Long bandId, Long memberId, String session){
 
         Band band = bandRepository.findWithSessionsAndManager(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         RoomType roomType = RoomType.BAND;
 
@@ -598,7 +600,7 @@ public class ChatRoomService {
                 .filter(bs -> bs.getSessionStatus().equals("RECRUITING"))
                 .filter(bs -> bs.getSession().getName().equals(session))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 상태의 밴드 세션입니다: " + session));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_SESSION_NOT_RECRUITED));
 
        bandChatRepository.save(
                 BandChat.builder()
@@ -630,16 +632,16 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public PinChatResponse pinChatRoom(Long roomId, Long memberId){
+    public PinResponse pinChatRoom(Long roomId, Long memberId){
 
         ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
                 roomId, memberId, Status.ACTIVE
-        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+        ).orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_NOT_PARTICIPATED));
 
-        if (participant.getPinnedAt() == null) {
-            participant.setPinnedAt(LocalDateTime.now());
+        if (participant.getPinnedAt() != null) {
+            throw new GeneralException(ErrorStatus.CHAT_ALREADY_PINNED);
         }
-
+        participant.setPinnedAt(LocalDateTime.now());
         return PinChatResponse.builder()
                 .roomId(roomId)
                 .pinnedAt(participant.getPinnedAt())
@@ -647,13 +649,17 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public PinBandChatRoomResponse pinBandChatRoom(Long bandId, Long memberId){
+    public PinResponse pinBandChatRoom(Long bandId, Long memberId){
 
         Band band = bandRepository.findById(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
         if(!memberId.equals(band.getManager().getId())){
-            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+            throw new GeneralException(ErrorStatus.BAND_MANAGER_ONLY_ACTION);
         }
+        if (band.getPinnedAt() == null) {
+            throw new GeneralException(ErrorStatus.CHAT_ALREADY_UNPINNED);
+        }
+
         band.setPinnedAt(LocalDateTime.now());
 
         return PinBandChatRoomResponse.builder()
@@ -667,12 +673,12 @@ public class ChatRoomService {
 
         ChatRoomParticipant participant = participantRepository.findByChatRoom_IdAndMember_IdAndStatus(
                 roomId, memberId, Status.ACTIVE
-        ).orElseThrow(() -> new IllegalArgumentException("해당 채팅방에 참여하지 않은 사용자입니다."));
+        ).orElseThrow(() -> new GeneralException(ErrorStatus.CHAT_NOT_PARTICIPATED));
 
-        if (participant.getPinnedAt() != null) {
-            participant.setPinnedAt(null);
+        if (participant.getPinnedAt() == null) {
+            throw new GeneralException(ErrorStatus.CHAT_ALREADY_UNPINNED);
         }
-
+        participant.setPinnedAt(null);
         return PinChatResponse.builder()
                 .roomId(roomId)
                 .pinnedAt(participant.getPinnedAt())
@@ -680,12 +686,15 @@ public class ChatRoomService {
     }
 
     @Transactional
-    public PinBandChatRoomResponse unpinBandChatRoom(Long bandId, Long memberId){
+    public PinResponse unpinBandChatRoom(Long bandId, Long memberId){
 
         Band band = bandRepository.findById(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
         if(!band.getManager().getId().equals(memberId)){
-            throw new IllegalArgumentException("밴드 매니저만 핀할 수 있습니다.");
+            throw new GeneralException(ErrorStatus.BAND_MANAGER_ONLY_ACTION);
+        }
+        if (band.getPinnedAt() == null) {
+            throw new GeneralException(ErrorStatus.CHAT_ALREADY_UNPINNED);
         }
         band.setPinnedAt(null);
 
@@ -700,14 +709,13 @@ public class ChatRoomService {
         boolean cn = chatNotificationRepository.existsByNotificationSenderIdAndNotificationReceiverIdAndNotificationIsRead(memberId, targetId, ReadStatus.UNREAD);
 
         if(cn){
-            throw new IllegalArgumentException("이미 요청을 보냈습니다.");
+            throw new GeneralException(ErrorStatus.NOTIFICATION_ALREADY_EXISTS);
         }
 
         Member sender = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
         Member receiver = memberRepository.findById(targetId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + targetId));
-
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Notification baseNotification = Notification.builder()
                 .type(NotificationType.CHAT) //

@@ -28,6 +28,8 @@ import com.umc.banddy.domain.music.artist.service.ArtistService;
 import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.domain.music.track.repository.TrackRepository;
 import com.umc.banddy.domain.music.track.service.TrackService;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.infra.S3Uploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -73,13 +75,13 @@ public class BandManagementService {
     public RecruitmentResponse createRecruitment(RecruitmentRequest request, MultipartFile image, Long memberId){
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         String profileImageUrl = (image != null && !image.isEmpty())
                 ? s3Uploader.upload(image, "band-profile-images") : null;
 
         Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다: " + request.getRepresentativeSong()));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
@@ -116,7 +118,9 @@ public class BandManagementService {
         List<BandSession> sessions = request.getSession().stream()
                 .map(name -> {
                     Session s = sessionMap.get(name);
-                    if (s == null) throw new IllegalArgumentException("세션이 존재하지 않습니다: " + name);
+                    if (s == null) {
+                        throw new GeneralException(ErrorStatus.SESSION_NOT_FOUND);
+                    }
                     return BandSession.builder()
                             .band(savedBand)
                             .session(s)
@@ -128,7 +132,9 @@ public class BandManagementService {
         List<BandSession> currentSessions = request.getCurrentSessions().stream()
                 .map(name -> {
                     Session s = sessionMap.get(name);
-                    if (s == null) throw new IllegalArgumentException("세션이 존재하지 않습니다: " + name);
+                    if (s == null) {
+                        throw new GeneralException(ErrorStatus.SESSION_NOT_FOUND);
+                    }
                     return BandSession.builder()
                             .band(savedBand)
                             .session(s)
@@ -150,7 +156,7 @@ public class BandManagementService {
         List<BandGenre> genres = request.getGenres().stream()
                 .map(genreName -> {
                     Genre g = genreMap.get(genreName);
-                    if (g == null) throw new IllegalArgumentException("장르이 존재하지 않습니다: " + genreName);
+                    if (g == null) throw new GeneralException(ErrorStatus.GENRE_NOT_FOUND);
                 return BandGenre.builder()
                             .band(savedBand)
                             .genre(g)
@@ -159,22 +165,24 @@ public class BandManagementService {
 
 
         // 아티스트 저장 (없으면 조회 후 저장)
-        List<Artist> ArtistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
-        Set<String> existingArtistIds = ArtistAll.stream().map(Artist::getSpotifyId).collect(Collectors.toSet());
+        List<Artist> artistAll = artistRepository.findBySpotifyIdIn(request.getArtistSpotifyIds());
+        Set<String> existingArtistIds = artistAll.stream().map(Artist::getSpotifyId).collect(Collectors.toSet());
         List<String> missingArtistIds = request.getArtistSpotifyIds().stream()
                 .filter(id -> !existingArtistIds.contains(id))
                 .toList();
         if (!missingArtistIds.isEmpty()) {
             List<Artist> newArtists = artistService.saveArtistsBySpotifyIds(missingArtistIds);
-            ArtistAll = Stream.concat(ArtistAll.stream(), newArtists.stream()).toList();
+            artistAll = Stream.concat(artistAll.stream(), newArtists.stream()).toList();
+
         }
-        Map<String, Artist> artistMap = ArtistAll.stream()
+
+        Map<String, Artist> artistMap = artistAll.stream()
                 .collect(Collectors.toMap(Artist::getSpotifyId, Function.identity()));
 
         List<BandArtist> artists = request.getArtistSpotifyIds().stream()
                 .map(artistId -> {
                     Artist a = artistMap.get(artistId);
-                    if (a == null) throw new IllegalArgumentException("아티스트가 존재하지 않습니다: " + artistId );
+                    if (a == null) throw new GeneralException(ErrorStatus.ARTIST_NOT_FOUND);
                     return BandArtist.builder()
                             .band(savedBand)
                             .artist(a)
@@ -196,7 +204,7 @@ public class BandManagementService {
         List<BandTrack> tracks = request.getTrackSpotifyIds().stream()
                 .map(trackId -> {
                     Track t = trackMap.get(trackId);
-                    if (t == null) throw new IllegalArgumentException("노래가 존재하지 않습니다: " + trackId );
+                    if (t == null) throw new GeneralException(ErrorStatus.TRACK_NOT_FOUND );
                     return BandTrack.builder()
                             .band(savedBand)
                             .track(t)
@@ -242,15 +250,11 @@ public class BandManagementService {
     public RecruitmentResponse updateRecruitment(RecruitmentUpdateRequest request, MultipartFile image, Long memberId) {
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Band band = bandRepository.findById(request.getBandId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 밴드가 존재하지 않습니다."));
-
-
-
-//        if(Objects.equals(member.getId(), band.getManager().getId())) throw new IllegalArgumentException("수정할 수 없는 사용자 입니다");
-
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
+        
         if(request.getStatus() != null) {
             band.setStatus(request.getStatus());
         }
@@ -261,7 +265,7 @@ public class BandManagementService {
         }
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                    .orElseThrow(() -> new IllegalArgumentException("곡이 존재하지 않습니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
             band.setRepresentativeTrack(track);
         }
         if(request.getName() != null) {
@@ -525,17 +529,14 @@ public class BandManagementService {
 
     public BasicChatRoomInfo createChatRoomForApplication(Long bandId, Long memberId, String session){
 
-        Session sessionEntity = sessionRepository.findByName(session)
-                .orElseThrow(() -> new IllegalArgumentException("세션 정보가 존재하지 않습니다: " + session));
-
-        Band band = bandRepository.findById(bandId)
-                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 밴드입니다. ID: " + bandId));
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다. ID: " + memberId));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
-        BandSession bandSession = bandSessionRepository.findByBandIdAndSessionStatusAndSessionAndIsDeletedFalse(bandId, "RECRUITING",sessionEntity )
-                .orElseThrow(() -> new IllegalArgumentException("모집 중이지 않습니다"));
+        BandSession bandSession = bandSessionRepository.findWithBandAndSession(bandId, "RECRUITING",session )
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_SESSION_NOT_RECRUITED));
+
+        Band band = bandSession.getBand();
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(null)
@@ -562,7 +563,7 @@ public class BandManagementService {
     public ApplicationListResponse buildApplicantList(Band band, Member member) {
 
         if (!member.equals(band.getManager())) {
-            throw new IllegalArgumentException("조회권한이 없습니다: " + member.getId() + ", " + member.getNickname());
+            throw new GeneralException(ErrorStatus._FORBIDDEN);
         }
 
         List<BandChat> bandChatList = bandChatRepository.findByBandAndManagerParticipant(band, member);
@@ -586,9 +587,8 @@ public class BandManagementService {
             ChatMessage msg = lastMessageMap.get(roomId);
 
             ChatRoomParticipant participant = bandChat.getChatRoom().getParticipants().stream()
-                    .filter(p -> p.getRole() != Role.BANDMANAGER)
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("참여자가 존재하지 않습니다."));
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.PARTICIPANT_NOT_FOUND));
 
             bandChatSummaryDtos.add(
                     BandChatSummaryDto.builder()
@@ -614,10 +614,10 @@ public class BandManagementService {
     public ApplicationListResponse getApplicationList(Long bandId, Long memberId){
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Band band = bandRepository.findById(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
 
         return buildApplicantList(band, member);
     }
@@ -658,10 +658,10 @@ public class BandManagementService {
     public BandInquiryResponse getRecruitment(Long memberId, Long bandId){
 
         Band band = bandRepository.findById(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다"));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
 
         if(!band.getManager().getId().equals(memberId)){
-            throw new IllegalArgumentException("권한 없는 사용자 입니다.");
+            throw new GeneralException(ErrorStatus._FORBIDDEN);
         }
 
         List<BandGenre> genres = bandGenreRepository.findByBandId(bandId);
