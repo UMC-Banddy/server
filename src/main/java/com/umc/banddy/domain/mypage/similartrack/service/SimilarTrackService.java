@@ -33,7 +33,10 @@ public class SimilarTrackService {
         }
 
         List<Track> tracks = memberTrackRepository.findTopSavedTracksByMembers(
-                similarUsers, PageRequest.of(0, 5));
+                similarUsers,            // 유사 회원 목록
+                loginMemberId,              // 현재 로그인한 회원 ID
+                PageRequest.of(0, 5)     // 상위 5개
+        );
 
         return tracks.stream()
                 .map(SimilarTrackConverter::toResponse)
