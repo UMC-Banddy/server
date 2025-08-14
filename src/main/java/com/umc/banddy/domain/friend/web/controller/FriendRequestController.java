@@ -30,7 +30,7 @@ public class FriendRequestController {
         String token = JwtTokenUtil.extractToken(request);
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
 
-        friendRequestService.requestFriend(memberId, dto.getTargetMemberId());
+        friendRequestService.requestFriend(memberId, dto.getTargetMemberId(), dto.getMessage());
         return ResponseEntity.ok().build();
     }
 

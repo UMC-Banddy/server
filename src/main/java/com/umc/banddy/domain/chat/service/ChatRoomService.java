@@ -695,9 +695,9 @@ public class ChatRoomService {
                 .build();
     }
 
-    public void ChatRequest(Long targetId, Long memberId){
+    public void ChatRequest(Long targetId, Long memberId, String message) {
 
-        boolean cn = chatNotificationRepository.existsBySenderIdAndReceiverIdAndIsRead(memberId, targetId, ReadStatus.UNREAD);
+        boolean cn = chatNotificationRepository.existsByNotificationSenderIdAndNotificationReceiverIdAndNotificationIsRead(memberId, targetId, ReadStatus.UNREAD);
 
         if(cn){
             throw new IllegalArgumentException("이미 요청을 보냈습니다.");
@@ -717,12 +717,10 @@ public class ChatRoomService {
                 .build();
         notificationRepository.save(baseNotification);
 
-        // FriendNotification 생성
+        // ChatNotification 생성
         ChatNotification chatNotification = ChatNotification.builder()
                 .notification(baseNotification)
-                .sender(sender)
-                .receiver(receiver)
-                .isRead(ReadStatus.UNREAD)
+                .message(message)
                 .build();
         chatNotificationRepository.save(chatNotification);
     }

@@ -184,7 +184,7 @@ public class ChatContoller {
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        chatRoomService.ChatRequest(requestRequset.getTargetMemeberId(),currentMemberId);
+        chatRoomService.ChatRequest(requestRequset.getTargetMemeberId(),currentMemberId, requestRequset.getMessage());
         return ResponseEntity.ok().build();
     }
 

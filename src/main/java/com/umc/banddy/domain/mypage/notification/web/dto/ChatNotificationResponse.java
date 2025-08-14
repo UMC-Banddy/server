@@ -14,7 +14,8 @@ public record ChatNotificationResponse(
         String imageUrl,
         ReadStatus isRead,
         LocalDateTime createdAt,
-        Long senderId
+        Long senderId,
+        String message
 ) implements NotificationResponse {
     @Override
     public LocalDateTime getCreatedAt() {

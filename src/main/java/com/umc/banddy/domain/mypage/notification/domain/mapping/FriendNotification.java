@@ -6,6 +6,7 @@ import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import com.umc.banddy.domain.friend.domain.FriendRequest;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -23,25 +24,14 @@ public class FriendNotification {
     @JoinColumn(name = "notification_id")
     private Notification notification;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "is_read", nullable = false)
-    private ReadStatus isRead;
-
-    private String type;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private Member sender;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_id")
-    private Member receiver;
+    private String type; // 일단 보류
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "friend_request_id")
     private FriendRequest friendRequest;
 
-    public void markAsRead() {
-        this.isRead = ReadStatus.READ;
-    }
+    @Column(length = 50, nullable = true)
+    @Size(max = 50, message = "메시지는 최대 50자까지 입력 가능합니다.")
+    private String message;
+
 }

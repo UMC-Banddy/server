@@ -7,4 +7,5 @@ import lombok.Setter;
 @Setter
 public class chatRequestRequset {
     private Long targetMemeberId;
+    private String message;
 }
