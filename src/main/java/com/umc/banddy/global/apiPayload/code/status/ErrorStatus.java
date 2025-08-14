@@ -33,8 +33,6 @@ public enum ErrorStatus implements BaseErrorCode {
     // Album
     ALBUM_NOT_FOUND(HttpStatus.NOT_FOUND, "ALBUM4004", "앨범을 찾을 수 없습니다."),
     ALBUM_NOT_SAVED_BY_MEMBER(HttpStatus.BAD_REQUEST, "ALBUM4000", "해당 앨범은 회원이 저장한 앨범이 아닙니다."),
-    // Genre
-    GENRE_NOT_FOUND(HttpStatus.NOT_FOUND, "GENRE4004", "장르를 찾을 수 없습니다."),
 
     // Folder
     FOLDER_NOT_FOUND(HttpStatus.NOT_FOUND, "FOLDER4004", "폴더를 찾을 수 없습니다."),
