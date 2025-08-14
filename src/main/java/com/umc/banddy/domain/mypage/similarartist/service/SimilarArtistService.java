@@ -30,7 +30,7 @@ public class SimilarArtistService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         List<Member> similarMembers = similarityUtil.findSimilarMembers(loginMember);
-        List<Artist> artists = memberArtistRepository.findTopSavedArtistsByMembers(similarMembers, 5);
+        List<Artist> artists = memberArtistRepository.findTopSavedArtistsByMembers(similarMembers, loginMemberId, 5);
 
         return artists.stream()
                 .map(SimilarArtistConverter::toResponse)
