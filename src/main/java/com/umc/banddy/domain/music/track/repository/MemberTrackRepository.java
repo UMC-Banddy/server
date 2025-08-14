@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,14 +22,20 @@ public interface MemberTrackRepository extends JpaRepository<MemberTrack, Long> 
 
     List<MemberTrack> findByMemberIdOrderByCreatedAtDesc(Long memberId);
 
-    // 비슷한 유저들의 인기 트랙 조회
-    @Query("SELECT mt.track FROM MemberTrack mt " +
-            "WHERE mt.member IN :members " +
-            "GROUP BY mt.track " +
-            "ORDER BY COUNT(mt.track) DESC")
-    List<Track> findTopSavedTracksByMembers(@Param("members") List<Member> members, Pageable pageable);
+    List<MemberTrack> findByMemberIdIn(Collection<Long> memberIds);
 
-    default List<Track> findTopSavedTracksByMembers(List<Member> members, int limit) {
-        return findTopSavedTracksByMembers(members, Pageable.ofSize(limit));
-    }
+    // 비슷한 유저들의 인기 트랙 조회
+    @Query("""
+            SELECT mt.track
+              FROM MemberTrack mt
+             WHERE mt.member IN :members
+               AND mt.member.id <> :excludeMemberId
+             GROUP BY mt.track
+             ORDER BY COUNT(mt.track) DESC
+            """)
+    List<Track> findTopSavedTracksByMembers(
+            @Param("members") List<Member> members,
+            @Param("excludeMemberId") Long excludeMemberId,
+            Pageable pageable
+    );
 }
