@@ -5,7 +5,7 @@ import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.service.ChatService;
 import com.umc.banddy.domain.chat.web.dto.PinResponse;
-import com.umc.banddy.domain.chat.web.dto.chatRequestRequset;
+import com.umc.banddy.domain.chat.web.dto.chatRequestRequest;
 import com.umc.banddy.domain.chat.web.dto.chatroom.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.creation.*;
 import com.umc.banddy.domain.chat.web.dto.chatroom.roomlist.ChatRoomListResponse;
@@ -169,12 +169,12 @@ public class ChatContoller {
     @Operation(summary = "채팅 요청 보내기")
     @PostMapping("/requests")
     public ResponseEntity<ApiResponse<Void>> requestChat(
-            @RequestBody chatRequestRequset requestRequset,
+            @RequestBody chatRequestRequest requestRequset,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
-        chatRoomService.ChatRequest(requestRequset.getTargetMemeberId(),currentMemberId, requestRequset.getMessage());
+        chatRoomService.ChatRequest(requestRequset.getTargetMemberId(),currentMemberId, requestRequset.getMessage());
         return ResponseEntity.ok().build();
     }
 

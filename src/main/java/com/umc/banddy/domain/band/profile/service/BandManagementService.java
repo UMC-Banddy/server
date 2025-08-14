@@ -603,10 +603,19 @@ public class BandManagementService {
             );
         }
 
+        List<String> sessions = band.getBandSessions().stream()
+                .filter(bs -> !bs.isDeleted() && bs.getSessionStatus().equals("RECRUITING"))
+                .map(bs -> bs.getSession().getName())
+                .distinct()
+                .sorted()
+                .toList();
+
+
         return ApplicationListResponse.builder()
                 .bandName(band.getName())
                 .bandImage(band.getProfileImageUrl())
                 .status(band.getStatus())
+                .sessions(sessions)
                 .bandChatList(bandChatSummaryDtos)
                 .build();
     }
@@ -740,15 +749,5 @@ public class BandManagementService {
                 .snsLink(snsLinkMap)
                 .build();
     }
-
-
-
-
-
-
-
-
-
-
 
 }
