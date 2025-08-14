@@ -1,9 +1,9 @@
 package com.umc.banddy.domain.mypage.notification.service;
 
-import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.BandNotification;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
-import com.umc.banddy.domain.band.notification.repository.BandNotificationRepository;
+import com.umc.banddy.domain.mypage.notification.repository.BandNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.repository.ChatNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.repository.FriendNotificationRepository;
 import com.umc.banddy.domain.mypage.notification.converter.NotificationConverter;
@@ -24,9 +24,9 @@ public class NotificationService {
     private final BandNotificationRepository bandNotificationRepository;
 
     public List<NotificationResponse> getAllNotifications(Long memberId) {
-        List<ChatNotification> chats = chatNotificationRepository.findByNotificationReceiverId(memberId);
-        List<FriendNotification> friends = friendNotificationRepository.findByNotificationReceiverId(memberId);
-        List<BandNotification> bands = bandNotificationRepository.findByNotificationReceiverId(memberId);
+        List<ChatNotification> chats = chatNotificationRepository.findByNotification_Receiver_Id(memberId);
+        List<FriendNotification> friends = friendNotificationRepository.findByNotification_Receiver_Id(memberId);
+        List<BandNotification> bands = bandNotificationRepository.findByNotification_Receiver_Id(memberId);
 
         return NotificationConverter.mergeAndSort(chats, friends, bands);
     }

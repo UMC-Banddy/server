@@ -15,7 +15,8 @@ public record FriendNotificationResponse(
         ReadStatus isRead,
         LocalDateTime createdAt,
         Long senderId,
-        Long friendRequestId
+        Long friendRequestId,
+        String message
 ) implements NotificationResponse {
     @Override
     public LocalDateTime getCreatedAt() {

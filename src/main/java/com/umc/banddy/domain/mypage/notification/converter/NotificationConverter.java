@@ -2,7 +2,7 @@ package com.umc.banddy.domain.mypage.notification.converter;
 
 import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
-import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.BandNotification;
 import com.umc.banddy.domain.mypage.notification.web.dto.BandNotificationResponse;
 import com.umc.banddy.domain.mypage.notification.web.dto.ChatNotificationResponse;
 import com.umc.banddy.domain.mypage.notification.web.dto.FriendNotificationResponse;
@@ -21,6 +21,7 @@ public class NotificationConverter {
                 .notificationId(n.getNotification().getId())
                 .title(sender.getNickname() + "님이 채팅을 요청했습니다")
                 .type(NotificationType.CHAT)
+                .message(n.getMessage())
                 .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
                 .isRead(n.getNotification().getIsRead())
@@ -29,11 +30,12 @@ public class NotificationConverter {
     }
 
     public static NotificationResponse fromFriend(FriendNotification n) {
-        var sender = n.getSender();
+        var sender = n.getNotification().getSender();
         return FriendNotificationResponse.builder()
                 .notificationId(n.getNotification().getId())
                 .title(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .type(NotificationType.FRIEND)
+                .message(n.getMessage())
                 .imageUrl(sender.getProfileImageUrl())
                 .createdAt(n.getNotification().getCreatedAt())
                 .senderId(sender.getId())
@@ -45,13 +47,13 @@ public class NotificationConverter {
     public static NotificationResponse fromBand(BandNotification n) {
         var sender = n.getNotification().getSender();
         return BandNotificationResponse.builder()
-                .notificationId(n.getNotification().getId())
-                .title(n.getTitle())
-                .type(NotificationType.BAND)
-                .imageUrl(n.getBand().getProfileImageUrl())
-                .createdAt(n.getNotification().getCreatedAt())
-                .isRead(n.getNotification().getIsRead())
-                .senderId(sender.getId())
+//                .notificationId(n.getNotification().getId())
+//                .title(n.getTitle())
+//                .type(NotificationType.BAND)
+//                .imageUrl(n.getBand().getProfileImageUrl())
+//                .createdAt(n.getNotification().getCreatedAt())
+//                .isRead(n.getNotification().getIsRead())
+//                .senderId(sender.getId())
                 .build();
     }
 
@@ -64,7 +66,7 @@ public class NotificationConverter {
         List<NotificationResponse> result = new ArrayList<>();
         chat.forEach(c -> result.add(fromChat(c)));
         friend.forEach(f -> result.add(fromFriend(f)));
-        band.forEach(b -> result.add(fromBand(b)));
+       // band.forEach(b -> result.add(fromBand(b)));
 
         result.sort(
                 Comparator.comparing(

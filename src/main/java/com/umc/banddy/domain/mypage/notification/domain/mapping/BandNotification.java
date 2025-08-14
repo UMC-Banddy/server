@@ -1,9 +1,11 @@
-package com.umc.banddy.domain.band.notification.domain.mapping;
+package com.umc.banddy.domain.mypage.notification.domain.mapping;
 
 import com.umc.banddy.domain.band.profile.domain.Band;
+import com.umc.banddy.domain.chat.domain.enums.PassFail;
 import com.umc.banddy.domain.mypage.notification.domain.Notification;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -25,14 +27,8 @@ public class BandNotification {
     @JoinColumn(name = "band_id", nullable = false)
     private Band band;
 
-    @Column(nullable = false)
-    private String title;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_read", nullable = false)
-    private ReadStatus isRead;
+    @Column(nullable = false)
+    private PassFail passFail;
 
-    public void markAsRead() {
-        this.isRead = ReadStatus.READ;
-    }
 }

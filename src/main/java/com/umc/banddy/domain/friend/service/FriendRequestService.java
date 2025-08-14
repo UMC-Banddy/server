@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface FriendRequestService {
 
-    void requestFriend(Long requesterId, Long receiverId);
+    void requestFriend(Long requesterId, Long receiverId, String message);
 
     void acceptFriend(Long requestId);
 

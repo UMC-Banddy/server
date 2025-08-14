@@ -34,7 +34,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
 
     @Override
     @Transactional
-    public void requestFriend(Long requesterId, Long receiverId) {
+    public void requestFriend(Long requesterId, Long receiverId, String message) {
         Optional<FriendRequest> existing = friendRequestRepository
                 .findTopByRequesterIdAndReceiverIdOrderByCreatedAtDesc(requesterId, receiverId);
 
@@ -72,11 +72,9 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         // FriendNotification 생성
         FriendNotification friendNotification = FriendNotification.builder()
                 .notification(baseNotification)
-                .sender(sender)
-                .receiver(receiver)
                 .friendRequest(request)
-                .isRead(ReadStatus.UNREAD)
                 .type("REQUEST")
+                .message(message)
                 .build();
         friendNotificationRepository.save(friendNotification);
     }

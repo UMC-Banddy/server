@@ -559,22 +559,17 @@ public class BandManagementService {
         return chatRoomService.getChatRoomInfo(chatRoom.getId(), memberId);
     }
 
-    public ApplicationListResponse getApplicationList(Long bandId, Long memberId){
+    public ApplicationListResponse buildApplicantList(Band band, Member member) {
 
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
-        Band band = bandRepository.findById(bandId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다."));
-
-        if (!member.equals(band.getManager())) {throw new IllegalArgumentException("조회권한이 없습니다"+ member.getId() + member.getNickname());}
+        if (!member.equals(band.getManager())) {
+            throw new IllegalArgumentException("조회권한이 없습니다: " + member.getId() + ", " + member.getNickname());
+        }
 
         List<BandChat> bandChatList = bandChatRepository.findByBandAndManagerParticipant(band, member);
 
         List<Long> roomIdList = bandChatList.stream()
                 .map(bandChat -> bandChat.getChatRoom().getId())
                 .toList();
-        List<String> sessions = bandSessionRepository.findSessionNamesByBandIdAndStatusAndIsDeletedFalse(bandId,"RECRUITING");
 
         List<ChatMessage> lastMessages = chatMessageRepository.findLastMessagePerChatRoom(roomIdList);
 
@@ -588,13 +583,12 @@ public class BandManagementService {
 
         for (BandChat bandChat : bandChatList) {
             Long roomId = bandChat.getChatRoom().getId();
-            ChatMessage msg = lastMessageMap.get(bandChat.getChatRoom().getId());
+            ChatMessage msg = lastMessageMap.get(roomId);
 
             ChatRoomParticipant participant = bandChat.getChatRoom().getParticipants().stream()
                     .filter(p -> p.getRole() != Role.BANDMANAGER)
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("참여자가 존재하지 않습니다."));
-
 
             bandChatSummaryDtos.add(
                     BandChatSummaryDto.builder()
@@ -612,10 +606,20 @@ public class BandManagementService {
         return ApplicationListResponse.builder()
                 .bandName(band.getName())
                 .bandImage(band.getProfileImageUrl())
-                .sessions(sessions)
                 .status(band.getStatus())
                 .bandChatList(bandChatSummaryDtos)
                 .build();
+    }
+
+    public ApplicationListResponse getApplicationList(Long bandId, Long memberId){
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Band band = bandRepository.findById(bandId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 밴드입니다."));
+
+        return buildApplicantList(band, member);
     }
 
     @Transactional
@@ -636,13 +640,17 @@ public class BandManagementService {
                         ApplicantUpdateRequest.ApplicantUpdateDto::getStatus
                 ));
 
+        // 합불 상태 업데이트
         chatRooms.forEach(chatRoom -> {
             String statusStr = statusMap.get(chatRoom.getId());
             if (statusStr != null) {
-                chatRoom.getBandChat()
-                        .setPassFail(PassFail.valueOf(statusStr));
+                chatRoom.getBandChat().setPassFail(PassFail.valueOf(statusStr));
             }
         });
+
+        //
+
+
 
         return getApplicationList(bandId, memberId);
     }
