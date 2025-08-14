@@ -6,7 +6,9 @@ import com.umc.banddy.domain.friend.repository.FriendRepository;
 import com.umc.banddy.domain.friend.web.dto.FriendResponseDto;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +42,7 @@ public class FriendServiceImpl implements FriendService {
                             : friend.getMemberId();
 
                     Member other = memberRepository.findById(otherId)
-                            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+                            .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
                     return FriendConverter.toDto(friend, other);
                 })

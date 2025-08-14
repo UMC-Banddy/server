@@ -12,11 +12,13 @@ import com.umc.banddy.domain.mypage.notification.domain.Notification;
 import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.enums.ReadStatus;
 import com.umc.banddy.domain.mypage.notification.repository.NotificationRepository;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
 import com.umc.banddy.domain.mypage.notification.repository.FriendNotificationRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +43,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         if (existing.isPresent()) {
             FriendStatus status = existing.get().getStatus();
             if (status == FriendStatus.REQUESTED) {
-                throw new IllegalStateException("이미 친구 요청을 보냈습니다.");
+                throw new GeneralException(ErrorStatus.FRIEND_REQUEST_ALREADY_SENT);
             }
             if (status == FriendStatus.REJECTED) {
                 // 재요청 가능
@@ -57,9 +59,9 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         friendRequestRepository.save(request);
 
         Member sender = memberRepository.findById(requesterId)
-                .orElseThrow(() -> new IllegalArgumentException("보낸 회원 없음"));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_SENDER_NOT_FOUND));
         Member receiver = memberRepository.findById(receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("받는 회원 없음"));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_RECEIVER_NOT_FOUND));
 
         Notification baseNotification = Notification.builder()
                 .type(NotificationType.FRIEND) //
@@ -85,10 +87,10 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     @Transactional
     public void acceptFriend(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         if (request.getStatus() != FriendStatus.REQUESTED) {
-            throw new IllegalStateException("이미 처리된 요청입니다.");
+            throw new GeneralException(ErrorStatus.FRIEND_REQUEST_ALREADY_HANDLED);
         }
 
         request.setStatus(FriendStatus.ACCEPTED);
@@ -107,7 +109,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     @Transactional
     public void rejectFriend(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
         request.setStatus(FriendStatus.REJECTED);
         friendNotificationRepository.deleteByFriendRequestIdAndType(requestId, "REQUEST"); //
     }
@@ -120,7 +122,7 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         return requests.stream()
                 .map(request -> {
                     Member requester = memberRepository.findById(request.getRequesterId())
-                            .orElseThrow(() -> new IllegalArgumentException("요청한 회원이 존재하지 않습니다."));
+                            .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_SENDER_NOT_FOUND));
 
                     return FriendRequestResponseDto.builder()
                             .requestId(request.getId())
@@ -138,10 +140,10 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     @Transactional(readOnly = true)
     public FriendRequestResponseDto getFriendRequestDetail(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("친구 요청이 존재하지 않습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_REQUEST_NOT_FOUND));
 
         Member requester = memberRepository.findById(request.getRequesterId())
-                .orElseThrow(() -> new IllegalArgumentException("요청한 회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new GeneralException(ErrorStatus.FRIEND_SENDER_NOT_FOUND));
 
         return FriendRequestResponseDto.builder()
                 .requestId(request.getId())
