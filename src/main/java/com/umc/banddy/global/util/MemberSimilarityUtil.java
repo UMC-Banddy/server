@@ -19,17 +19,19 @@ public class MemberSimilarityUtil {
     private final MemberTrackRepository memberTrackRepository;
 
     public List<Member> findSimilarMembers(Member me) {
-        // 1) 내 태그
+        // 1) 내 태그 (단건 조회)
         Set<String> myTagNames = memberTagRepository.findByMemberId(me.getId())
                 .stream()
                 .map(MemberTag::getTagName)
                 .collect(Collectors.toSet());
 
-        // 2) 후보 회원
+        // 2) 후보 회원 (본인 제외)
         List<Member> candidates = memberTagRepository.findAllMembersExcept(me.getId());
         if (candidates.isEmpty()) return List.of();
 
-        List<Long> candidateIds = candidates.stream().map(Member::getId).toList();
+        List<Long> candidateIds = candidates.stream()
+                .map(Member::getId)
+                .toList();
 
         // 3) 후보들의 태그를 한 번에 IN 조회 → N+1 제거
         Map<Long, Set<String>> tagsByMember = memberTagRepository.findByMemberIdIn(candidateIds)
@@ -47,7 +49,6 @@ public class MemberSimilarityUtil {
                 Set<String> otherTags = tagsByMember.getOrDefault(other.getId(), Collections.emptySet());
                 if (!otherTags.isEmpty()) {
                     int common = 0;
-                    // 더 작은 집합을 순회
                     Set<String> smaller = (myTagNames.size() <= otherTags.size()) ? myTagNames : otherTags;
                     Set<String> larger  = (smaller == myTagNames) ? otherTags : myTagNames;
                     for (String t : smaller) if (larger.contains(t)) common++;
@@ -56,7 +57,7 @@ public class MemberSimilarityUtil {
             }
         }
 
-        // 5) 태그로도 없으면 → 트랙 기반: 후보들의 트랙을 "한 번에" IN 조회
+        // 5) 태그로도 없으면 → 트랙 기반: 후보들의 트랙을 한 번에 IN 조회
         if (similarityMap.isEmpty()) {
             Set<Long> myTrackIds = memberTrackRepository.findAllByMember(me)
                     .stream()
