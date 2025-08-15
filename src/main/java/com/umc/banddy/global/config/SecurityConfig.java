@@ -4,6 +4,7 @@ import com.umc.banddy.global.security.jwt.JwtRequestFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @EnableWebSecurity
 @Configuration
@@ -31,12 +33,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/member", "/member/login", "/member/check-nickname",
+                                "/member", "/member/login", "/member/check-nickname", "/auth/send", "/auth/verify", "/member/survey",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-resources", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
@@ -56,17 +60,18 @@ public class SecurityConfig {
         CorsConfiguration wsConfig = new CorsConfiguration();
         wsConfig.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://localhost:4040",     // 테스트 용
+                "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com"
         ));
-        wsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS"));
-        wsConfig.setAllowedHeaders(Arrays.asList("*"));
+        wsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setAllowCredentials(false);
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site", "https://umc-banddy.vercel.app",  "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("*", "Authorization"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/ws/**", wsConfig);
