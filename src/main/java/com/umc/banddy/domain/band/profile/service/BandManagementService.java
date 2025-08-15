@@ -81,7 +81,7 @@ public class BandManagementService {
                 ? s3Uploader.upload(image, "band-profile-images") : null;
 
         Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
+                .orElseGet(() -> trackService.saveTracksBySpotifyId(request.getRepresentativeSong()));
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
@@ -265,7 +265,7 @@ public class BandManagementService {
         }
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
+                    .orElseGet(() -> trackService.saveTracksBySpotifyId(request.getRepresentativeSong()));
             band.setRepresentativeTrack(track);
         }
         if(request.getName() != null) {

@@ -241,4 +241,17 @@ public class TrackService {
         return result;
     }
 
+    /**
+     * Spotify ID를 받아 저장하고 반환
+     */
+    @Transactional
+    public Track saveTracksBySpotifyId(String spotifyIds) {
+
+        if (spotifyIds== null || spotifyIds.trim().isEmpty()){
+            return null;
+        }
+        return trackRepository.findBySpotifyId(spotifyIds.trim())
+                .orElseGet(() -> fetchAndSaveTrackFromSpotify(spotifyIds.trim()));
+    }
+
 }
