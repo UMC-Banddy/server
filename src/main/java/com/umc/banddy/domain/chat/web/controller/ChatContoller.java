@@ -100,8 +100,7 @@ public class ChatContoller {
     public ResponseEntity<ApiResponse<CursorChatMessageResponse>> getChatMessages(
             @NotNull @Positive @PathVariable Long roomId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(required = false, defaultValue = "20") Integer limit,
-            HttpServletRequest request
+            @RequestParam(required = false, defaultValue = "20") Integer limit
     ) {
         // 초기 요청인 경우(Long.MAX_VALUE = 9_223_372_036_854_775_807)
         long effectiveCursor = (cursor == null) ? Long.MAX_VALUE : cursor;
