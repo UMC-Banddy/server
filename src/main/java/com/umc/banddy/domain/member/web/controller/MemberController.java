@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.HashMap;
+import com.umc.banddy.domain.member.domain.Member;
 
 @Tag(name = "member", description = "회원 관련 API")
 @RestController
@@ -27,11 +28,16 @@ public class MemberController {
     @Operation(summary = "회원가입", description = "회원가입 api")
     @PostMapping
     public ResponseEntity<Map<String, String>> signup(@RequestBody @Valid SignupRequest request) {
-        memberCommandService.signup(request);
+        Member savedMember = memberCommandService.signup(request);
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "회원가입이 완료되었습니다.");
+        response.put("memberId", String.valueOf(savedMember.getId()));
+        response.put("email", savedMember.getEmail());
+
         return ResponseEntity.ok(response);
     }
+
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인을 시도합니다.")
     @PostMapping("/login")
