@@ -62,13 +62,15 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://localhost:3000",
                 "http://localhost:4040",     // 테스트 용
-                "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com"
+                "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com",
+                "https://www.banddy.click"
         ));
         wsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         wsConfig.setAllowCredentials(true);   // WS에는 자격증명 허용
 
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site", "https://umc-banddy.vercel.app",  "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com"));
+        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:3000","http://localhost:4040", "https://banddy.site", "https://umc-banddy.vercel.app",
+                "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com",  "https://www.banddy.click"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*", "Authorization"));
         config.setAllowCredentials(true);
