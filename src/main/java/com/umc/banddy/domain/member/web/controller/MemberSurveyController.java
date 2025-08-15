@@ -9,6 +9,7 @@ import com.umc.banddy.domain.music.artist.domain.Artist;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,17 +37,22 @@ public class MemberSurveyController {
             @RequestPart("request") String requestJson,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             @RequestPart(value = "mediaFile", required = false) MultipartFile mediaFile,
-            @RequestHeader(value = "Authorization", required = false) String accessToken
+            HttpServletRequest httpRequest //
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             MemberSurveyRequest request = objectMapper.readValue(requestJson, MemberSurveyRequest.class);
+
+            // 필요하다면 토큰 읽기 (없으면 null)
+            String accessToken = httpRequest.getHeader("Authorization");
+
             memberSurveyService.saveSurveyInfo(accessToken, request, profileImage, mediaFile);
             return ResponseEntity.ok().build();
         } catch (JsonProcessingException e) {
             return ResponseEntity.badRequest().build(); // 잘못된 JSON
         }
     }
+
 
     // 사전 테스트 장르 조회
     @Operation(summary = "사전 테스트 장르 조회")
