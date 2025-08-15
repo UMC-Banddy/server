@@ -13,7 +13,9 @@ public class MyProfileConverter {
     public static MyProfileResponse toMyProfileResponse(
             Member member,
             List<MemberTag> tags,
-            List<MemberTrack> savedTracks
+            List<MemberTrack> savedTracks,
+            List<MyProfileResponse.SessionInfo> sessions,
+            List<String> interestedGenres
     ) {
         List<String> tagNames = tags.stream()
                 .map(MemberTag::getTagName)
@@ -22,16 +24,23 @@ public class MyProfileConverter {
         List<MyProfileResponse.SavedTrack> trackResponses = savedTracks.stream()
                 .map(t -> new MyProfileResponse.SavedTrack(
                         t.getTrack().getTitle(),
-                        t.getTrack().getImageUrl()))
+                        t.getTrack().getImageUrl(),
+                        t.getTrack().getExternalUrl()
+                ))
                 .collect(Collectors.toList());
 
-        return new MyProfileResponse(
-                member.getId(),
-                member.getNickname(),
-                member.getProfileImageUrl(),
-                member.getBio(),
-                tagNames,
-                trackResponses
-        );
+        return MyProfileResponse.builder()
+                .memberId(member.getId())
+                .nickname(member.getNickname())
+                .profileImageUrl(member.getProfileImageUrl())
+                .bio(member.getBio())
+                .age(member.getAge())
+                .gender(member.getGender() != null ? member.getGender().name() : null)
+                .region(member.getRegion())
+                .sessions(sessions)
+                .interestedGenres(interestedGenres)
+                .tags(tagNames)
+                .savedTracks(trackResponses)
+                .build();
     }
 }

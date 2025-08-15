@@ -2,7 +2,9 @@ package com.umc.banddy.domain.mypage.profile.service;
 
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.enums.Gender;
+import com.umc.banddy.domain.member.repository.MemberGenreRepository;
 import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.domain.member.repository.MemberSessionRepository;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
 import com.umc.banddy.domain.music.track.repository.MemberTrackRepository;
 import com.umc.banddy.domain.other.profile.domain.mapping.MemberTag;
@@ -24,6 +26,8 @@ public class MyProfileService {
     private final MemberRepository memberRepository;
     private final MemberTrackRepository memberTrackRepository;
     private final MemberTagRepository memberTagRepository;
+    private final MemberSessionRepository memberSessionRepository;
+    private final MemberGenreRepository memberGenreRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
     // 내 프로필 조회
@@ -40,7 +44,25 @@ public class MyProfileService {
                 .limit(3)
                 .toList();
 
-        return MyProfileConverter.toMyProfileResponse(member, tags, savedTracks);
+        List<MyProfileResponse.SessionInfo> sessionInfos =
+                memberSessionRepository.findByMemberId(memberId).stream()
+                        .map(ms -> new MyProfileResponse.SessionInfo(
+                                ms.getSession().getName(),
+                                ms.getLevel()
+                        ))
+                        .toList();
+
+        List<String> interestedGenres = memberGenreRepository.findByMemberId(memberId).stream()
+                .map(mg -> mg.getGenre().getName())
+                .toList();
+
+        return MyProfileConverter.toMyProfileResponse(
+                member,
+                tags,
+                savedTracks,
+                sessionInfos,
+                interestedGenres
+        );
     }
 
     // 내 프로필 수정
