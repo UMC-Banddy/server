@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/member", "/member/login", "/member/check-nickname", "/auth/send", "/auth/verify",
+                                "/member", "/member/login", "/member/check-nickname", "/auth/send", "/auth/verify", "/member/survey",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-resources", "/webjars/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

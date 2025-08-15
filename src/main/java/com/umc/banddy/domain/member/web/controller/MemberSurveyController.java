@@ -36,7 +36,7 @@ public class MemberSurveyController {
             @RequestPart("request") String requestJson,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
             @RequestPart(value = "mediaFile", required = false) MultipartFile mediaFile,
-            @RequestHeader("Authorization") String accessToken
+            @RequestHeader(value = "Authorization", required = false) String accessToken
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
