@@ -28,7 +28,7 @@ public class BandManagementController {
 
 
     @Operation(summary = "밴드 모집방 만들기" ,description = """
-    - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
+    - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 🎸" , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
         - session은 모집할 세션, currnetSession 밴드에 속한 멤버의 세션을 의미
     - 장르 타입 "Metal", "New age", "Pop", "Punk", "R&B", "Rock", "Grunge", "Indie Rock", "Jazz", "Shoegaze", "EMO", "Psychedelia", "Dream Pop", "Nu Metal", "J-pop", "Tiwan Indie"
     - 모집방 상태 타입 "RECRUITING","ACTIVE","ENDED"
@@ -55,7 +55,7 @@ public class BandManagementController {
 
 
     @Operation(summary = "밴드 모집방 수정하기",description = """
-    - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
+    - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 🎸" , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
         - session은 모집할 세션, currnetSession 밴드에 속한 멤버의 세션을 의미
     - 장르 타입 "Metal", "New age", "Pop", "Punk", "R&B", "Rock", "Grunge", "Indie Rock", "Jazz", "Shoegaze", "EMO", "Psychedelia", "Dream Pop", "Nu Metal", "J-pop", "Tiwan Indie"
     - 모집방 상태 타입 "RECRUITING","ACTIVE","ENDED"
@@ -95,7 +95,7 @@ public class BandManagementController {
 
 
     @Operation(summary = "밴드 지원하기",description = """
-    - ** 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 " , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
+    - ** 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 🎸" , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
     """)
     @PostMapping("/bands/{bandId}/join")
     public ResponseEntity<ApiResponse<BasicChatRoomInfo>> createBandApplication(

@@ -5,10 +5,5 @@ public interface BaseErrorCode {
     ErrorReasonDTO getReason();
 
     ErrorReasonDTO getReasonHttpStatus();
-
-    String getCode();
-
-    String getMessage();
-
-    org.springframework.http.HttpStatus getHttpStatus();
 }
+
