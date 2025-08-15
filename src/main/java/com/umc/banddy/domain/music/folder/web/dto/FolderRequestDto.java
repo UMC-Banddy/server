@@ -3,8 +3,10 @@ package com.umc.banddy.domain.music.folder.web.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+
 @Getter
 @Builder
 public class FolderRequestDto {
     private String name;
+    private String color;
 }

@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class FolderResponseDto {
     private Long folderId;
     private String name;
+    private String color;
 }

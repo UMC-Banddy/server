@@ -2,12 +2,20 @@ package com.umc.banddy.domain.music.track.repository;
 
 import com.umc.banddy.domain.music.track.domain.Track;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface TrackRepository extends JpaRepository<Track, Long> {
     Optional<Track> findBySpotifyId(String spotifyId);
+
+    List<Track> findByIdIn(List<Long> trackIds);
+
+    List<Track> findBySpotifyIdIn(List<String> spotifyIds);
+
+    public interface TrackIdSpotifyId {
+        Long getId();
+        String getSpotifyId();
+    }
+    List<TrackIdSpotifyId> findTrackMapBySpotifyIdIn(List<String> spotifyIds);
 }

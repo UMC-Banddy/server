@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -16,5 +18,4 @@ public class AlbumResponseDto {
     private String artist;
     private String imageUrl;
     private String externalUrl;
-    //private Long memberAlbumId; // 저장한 경우에만 값 세팅, 아니면 null
 }

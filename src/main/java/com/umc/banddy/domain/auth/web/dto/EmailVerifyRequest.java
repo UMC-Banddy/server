@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class EmailVerifyRequest {
-
+    private String email;
     @NotBlank
     private String code;
 }

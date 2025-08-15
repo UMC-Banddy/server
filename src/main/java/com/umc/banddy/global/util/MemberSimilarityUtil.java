@@ -18,39 +18,83 @@ public class MemberSimilarityUtil {
     private final MemberTagRepository memberTagRepository;
     private final MemberTrackRepository memberTrackRepository;
 
-    /**
-     * 기준 유저와 유사한 유저들을 간단한 기준으로 찾아냄 (예: 태그 기반)
-     */
     public List<Member> findSimilarMembers(Member me) {
-        List<MemberTag> myTags = memberTagRepository.findByMember(me);
-        Set<String> myTagNames = myTags.stream()
+        // 1) 내 태그 (단건 조회)
+        Set<String> myTagNames = memberTagRepository.findByMemberId(me.getId())
+                .stream()
                 .map(MemberTag::getTagName)
                 .collect(Collectors.toSet());
 
-        // 모든 유저 가져오기
-        List<Member> allMembers = memberTagRepository.findAllMembersExcept(me.getId());
+        // 2) 후보 회원 (본인 제외)
+        List<Member> candidates = memberTagRepository.findAllMembersExcept(me.getId());
+        if (candidates.isEmpty()) return List.of();
 
-        // 유사도 점수 매핑
+        List<Long> candidateIds = candidates.stream()
+                .map(Member::getId)
+                .toList();
+
+        // 3) 후보들의 태그를 한 번에 IN 조회 → N+1 제거
+        Map<Long, Set<String>> tagsByMember = memberTagRepository.findByMemberIdIn(candidateIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        mt -> mt.getMember().getId(),
+                        Collectors.mapping(MemberTag::getTagName, Collectors.toSet())
+                ));
+
         Map<Member, Integer> similarityMap = new HashMap<>();
 
-        for (Member other : allMembers) {
-            List<MemberTag> otherTags = memberTagRepository.findByMember(other);
-            Set<String> otherTagNames = otherTags.stream()
-                    .map(MemberTag::getTagName)
-                    .collect(Collectors.toSet());
-
-            int common = 0;
-            for (String tag : otherTagNames) {
-                if (myTagNames.contains(tag)) common++;
+        // 4) 태그 기반 유사도
+        if (!myTagNames.isEmpty()) {
+            for (Member other : candidates) {
+                Set<String> otherTags = tagsByMember.getOrDefault(other.getId(), Collections.emptySet());
+                if (!otherTags.isEmpty()) {
+                    int common = 0;
+                    Set<String> smaller = (myTagNames.size() <= otherTags.size()) ? myTagNames : otherTags;
+                    Set<String> larger  = (smaller == myTagNames) ? otherTags : myTagNames;
+                    for (String t : smaller) if (larger.contains(t)) common++;
+                    if (common > 0) similarityMap.put(other, common);
+                }
             }
-
-            if (common > 0) similarityMap.put(other, common);  // 공통 태그 ≥ 1인 유저만
         }
 
+        // 5) 태그로도 없으면 → 트랙 기반: 후보들의 트랙을 한 번에 IN 조회
+        if (similarityMap.isEmpty()) {
+            Set<Long> myTrackIds = memberTrackRepository.findAllByMember(me)
+                    .stream()
+                    .map(mt -> mt.getTrack().getId())
+                    .collect(Collectors.toSet());
+
+            if (!myTrackIds.isEmpty()) {
+                Map<Long, Set<Long>> tracksByMember = memberTrackRepository.findByMemberIdIn(candidateIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                mt -> mt.getMember().getId(),
+                                Collectors.mapping(mt -> mt.getTrack().getId(), Collectors.toSet())
+                        ));
+
+                for (Member other : candidates) {
+                    Set<Long> otherTrackIds = tracksByMember.getOrDefault(other.getId(), Collections.emptySet());
+                    if (!otherTrackIds.isEmpty()) {
+                        int commonTracks = 0;
+                        Set<Long> smaller = (myTrackIds.size() <= otherTrackIds.size()) ? myTrackIds : otherTrackIds;
+                        Set<Long> larger  = (smaller == myTrackIds) ? otherTrackIds : myTrackIds;
+                        for (Long id : smaller) if (larger.contains(id)) commonTracks++;
+                        if (commonTracks > 0) similarityMap.put(other, commonTracks);
+                    }
+                }
+            }
+        }
+
+        // 6) 스코어 없으면 후보에서 최대 10명 리턴
+        if (similarityMap.isEmpty()) {
+            return candidates.stream().limit(10).toList();
+        }
+
+        // 7) 점수 내림차순 상위 10명
         return similarityMap.entrySet().stream()
-                .sorted((a, b) -> b.getValue() - a.getValue())  // 유사도 내림차순 정렬
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
                 .limit(10)
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

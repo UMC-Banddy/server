@@ -1,8 +1,12 @@
 package com.umc.banddy.domain.other.profile.converter;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.music.album.converter.AlbumConverter;
+import com.umc.banddy.domain.music.album.domain.MemberAlbum;
+import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
 import com.umc.banddy.domain.music.artist.domain.MemberArtist;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
+import com.umc.banddy.domain.member.domain.mapping.MemberGenre;
 import com.umc.banddy.domain.other.profile.domain.mapping.*;
 import com.umc.banddy.domain.other.profile.web.dto.MemberTagResponse;
 import com.umc.banddy.domain.other.profile.web.dto.OtherProfileResponse;
@@ -10,7 +14,6 @@ import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
 import com.umc.banddy.domain.member.domain.mapping.MemberKeyword;
 import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OtherProfileConverter {
 
@@ -20,6 +23,7 @@ public class OtherProfileConverter {
             List<MemberSession> sessions,
             List<MemberArtist> artists,
             List<MemberKeyword> keywords,
+            List<MemberGenre> genres,
             String instagramUrl,
             String youtubeUrl,
             boolean isFriend,
@@ -33,12 +37,19 @@ public class OtherProfileConverter {
                 .profileImageUrl(member.getProfileImageUrl())
                 .age(member.getAge())
                 .gender(member.getGender().name())
+                .region(member.getRegion())
+                .district(member.getDistrict())
                 .tags(tags.stream().map(MemberTag::getTag).toList())
                 .sessions(sessions.stream()
-                        .map(s -> new OtherProfileResponse.Session(
-                                s.getSession().getName(),
-                                s.getSession().getIcon()
-                        ))
+                        .map(s -> {
+                            if (s.getSession() == null) {
+                                return new OtherProfileResponse.Session("알 수 없음", null);
+                            }
+                            return new OtherProfileResponse.Session(
+                                    s.getSession().getName(),
+                                    s.getSession().getIcon()
+                            );
+                        })
                         .toList())
                 .favoriteArtists(artists.stream()
                         .map(a -> new OtherProfileResponse.Artist(
@@ -47,6 +58,9 @@ public class OtherProfileConverter {
                         .toList())
                 .traits(keywords.stream()
                         .map(k -> k.getKeyword().getContent())
+                        .toList())
+                .genres(genres.stream()
+                        .map(g -> g.getGenre().getName())
                         .toList())
                 .instagramUrl(instagramUrl)
                 .youtubeUrl(youtubeUrl)
@@ -78,5 +92,12 @@ public class OtherProfileConverter {
                 .memberId(memberId)
                 .tags(tagList)
                 .build();
+    }
+
+    // 저장 앨범 AlbumResponseDto 변환
+    public static List<AlbumResponseDto> toAlbumResponseDtoList(List<MemberAlbum> memberAlbums) {
+        return memberAlbums.stream()
+                .map(ma -> AlbumConverter.toAlbumResponseDto(ma.getAlbum(), ma.getId()))
+                .toList();
     }
 }

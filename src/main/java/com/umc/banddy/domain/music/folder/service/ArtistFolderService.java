@@ -18,12 +18,15 @@ import com.umc.banddy.domain.music.folder.web.dto.FolderRequestDto;
 import com.umc.banddy.domain.music.folder.web.dto.FolderResponseDto;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
+import com.umc.banddy.global.apiPayload.exception.handler.FolderHandler;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
+import jakarta.mail.Folder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,12 +40,22 @@ public class ArtistFolderService {
     private final ArtistRepository artistRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
+    private static final Set<String> ALLOWED_FOLDER_COLORS = Set.of(
+            "GRAY", "YELLOW", "GREEN", "RED", "ORANGE", "BLUE"
+    );
+
     // 폴더 생성
     @Transactional
     public FolderResponseDto createFolder(FolderRequestDto requestDto, String token) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        String color = requestDto.getColor();
+        if (color == null || !ALLOWED_FOLDER_COLORS.contains(color)) {
+            throw new FolderHandler(ErrorStatus.FOLDER_INVALID_COLOR);
+        }
+
         ArtistFolder folder = ArtistFolderConverter.toArtistFolder(requestDto, member);
         ArtistFolder saved = artistFolderRepository.save(folder);
         return ArtistFolderConverter.toFolderResponseDto(saved);
@@ -101,6 +114,7 @@ public class ArtistFolderService {
                             .name(ma.getArtist().getName())
                             .genre(ma.getArtist().getGenre())
                             .imageUrl(ma.getArtist().getImageUrl())
+                            .externalUrl(ma.getArtist().getExternalUrl())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -144,10 +158,40 @@ public class ArtistFolderService {
                             .name(ma.getArtist().getName())
                             .genre(ma.getArtist().getGenre())
                             .imageUrl(ma.getArtist().getImageUrl())
+                            .externalUrl(ma.getArtist().getExternalUrl())
                             .build();
                 })
                 .collect(Collectors.toList());
     }
 
+    // 폴더 수정
+    @Transactional
+    public FolderResponseDto updateFolder(Long folderId, FolderRequestDto requestDto, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+        ArtistFolder folder = artistFolderRepository.findById(folderId)
+                .orElseThrow(() -> new FolderHandler(ErrorStatus.FOLDER_NOT_FOUND));
 
+        // 권한 체크
+        if (!folder.getMember().getId().equals(memberId)) {
+            throw new GeneralException(ErrorStatus._FORBIDDEN);
+        }
+
+        // 이름 수정
+        if (requestDto.getName() != null) {
+            folder.setName(requestDto.getName());
+        }
+
+        // 색상 수정 및 유효성 검사
+        if (requestDto.getColor() != null) {
+            if (!ALLOWED_FOLDER_COLORS.contains(requestDto.getColor())) {
+                throw new FolderHandler(ErrorStatus.FOLDER_INVALID_COLOR);
+            }
+            folder.setColor(requestDto.getColor());
+        }
+
+        ArtistFolder updated = artistFolderRepository.save(folder);
+        return ArtistFolderConverter.toFolderResponseDto(updated);
+    }
 }

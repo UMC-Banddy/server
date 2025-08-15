@@ -1,73 +1,129 @@
 package com.umc.banddy.domain.chat.web.controller;
 
 
-import com.umc.banddy.domain.chat.domain.ChatMessage;
-import com.umc.banddy.domain.chat.domain.enums.RoomType;
+import com.umc.banddy.domain.chat.service.ChatMessageService;
 import com.umc.banddy.domain.chat.service.ChatService;
-import com.umc.banddy.domain.chat.web.dto.ChatMessageRequest;
-import com.umc.banddy.domain.chat.web.dto.ChatMessageResponse;
+import com.umc.banddy.domain.chat.service.WebsocketService;
+import com.umc.banddy.domain.chat.web.dto.message.ChatMessageRequest;
+import com.umc.banddy.domain.chat.web.dto.MessageAuthenticationHeader;
+import com.umc.banddy.domain.chat.web.dto.message.GroupChatMessageRequest;
+import com.umc.banddy.domain.chat.web.dto.message.PrivateChatMessageRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
 
 import java.security.Principal;
-import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
 public class WebsocketController {
 
-    private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
+    private final ChatMessageService chatMessageService;
+    private final WebsocketService websocketService;
 
     @MessageMapping("/chat/sendMessage/{roomId}")
     public void sendMessage(
             Principal principal,
             @Valid @Payload ChatMessageRequest messageRequest,
-            @DestinationVariable Long roomId
+            @NotNull @Positive @DestinationVariable Long roomId
     ) {
-
-        // 채팅 메세지 저장
-        ChatMessage chatMessage = chatService.saveMessage(principal, messageRequest, roomId);
-
-        // 응답 생성
-        ChatMessageResponse chatMessageResponse = chatService.chatToResponse(chatMessage);
-
-        // 전송 로직 분기
-        // 그룹 채팅
-        // roomType 검증에 대해서는 db 검증을 거칠지, 메세지에서 첨부된 값을 신뢰할지 고민이 필요
-        if (messageRequest.getRoomType().equals(RoomType.GROUP)) {
-            // GROUP: 토픽 브로드캐스트
-            messagingTemplate.convertAndSend(
-                    "/topic/rooms/" + roomId,
-                    chatMessageResponse
-            );
-        } else if (messageRequest.getRoomType().equals(RoomType.PRIVATE)
-                || messageRequest.getRoomType().equals(RoomType.BAND)) {
-
-            Long receiverId = Optional.ofNullable(messageRequest.getReceiverId())
-                    .orElseThrow(() -> new IllegalArgumentException("receiverId가 필요합니다."));
-            // PRIVATE, BAND: 세션 단위로 유저에게 개별 전송
-            messagingTemplate.convertAndSendToUser(
-                    chatService.findReceiverEmail(receiverId),
-                    "/queue/rooms/" + roomId,
-                    chatMessageResponse
-            );
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendChatMessage(roomId, auth.getMemberId(),messageRequest);
     }
 
-//    @MessageMapping("/chat/addUser/{roomId}")
-//    public void addUser(
-//            //Principal principal, // 나중에 사용자 인증정보 활용시 추가
-//            @Payload ChatMessageRequest messageRequest,
-//            @DestinationVariable Long roomId
+//    // 채팅방 구독
+//    @MessageMapping("/chat/subscribe/{roomId}")
+//    public void subscribeChatRoom(
+//            Principal principal,
+//            @NotNull @Positive @DestinationVariable Long roomId
 //    ) {
-//        return;
+//        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+//        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, auth.getMemberId());
+//        ChatRoom chatRoom = pair.getLeft();
+//        Member member = pair.getRight();
+//        websocketService.topicMessage(
+//                chatRoom.getId(),
+//                toWsMessage(toTimeMark(chatRoom,member), MessageType.MARk_AS_READ)
+//        );
+//    }
+//
+//    // 채팅방 구독 해제
+//    @MessageMapping("/chat/unsubscribe/{roomId}")
+//    public void unsubscribeChatRoom(
+//            @AuthenticationPrincipal MessageAuthenticationHeader principal,
+//            @NotNull @Positive @DestinationVariable Long roomId
+//    ) {
+//        Pair<ChatRoom, Member> pair = chatService.verifedChatRoomAndMember(roomId, principal.getMemberId());
+//
+//        ChatRoom chatRoom = pair.getLeft();
+//        Member member = pair.getRight();
+//
+//        // 구독 해제 시점 갱신
+//        ChatRoomParticipant participant = chatService.markLastRead(chatRoom,member);
+//
+//        TimeMark timeMark = TimeMark.builder()
+//                .memberId(member.getId())
+//                .nickname(member.getNickname())
+//                .roomId(chatRoom.getId())
+//                .timestamp(participant.getLastReadAt())
+//                .build();
+//
+//        websocketService.topicMessage(
+//                chatRoom.getId(),
+//                toWsMessage(timeMark, MessageType.MARK_AS_UNREAD)
+//        );
 //    }
 
+
+    // 그룹 메세지 전송
+    @MessageMapping("/chat/private.sendMessage/{roomId}")
+    public void sendPrivateMessage(
+            Principal principal,
+            @Valid @Payload PrivateChatMessageRequest messageRequest,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendPrivateMessage(roomId, auth, messageRequest);
     }
+
+    // 개인 메세지 전송
+    @MessageMapping("/chat/group.sendMessage/{roomId}")
+    public void sendGroupMessage(
+            Principal principal,
+            @Valid @Payload GroupChatMessageRequest messageRequest,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendGroupMessage(roomId, auth, messageRequest);
+    }
+
+    // 개인 타임마크 전송
+    @MessageMapping("/chat/private.lastRead/{roomId}")
+    public void sendPrivateLastRead(
+            Principal principal,
+            @NotNull @Positive Long messageId,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        System.out.println("Participant ID: " + auth.getName());
+        chatMessageService.sendPrivateLastRead(roomId, auth, messageId);
+    }
+
+    // 그룹 타임마크 전송
+    @MessageMapping("/chat/group.lastRead/{roomId}")
+    public void sendGroupLastRead(
+            Principal principal,
+            @NotNull @Positive Long messageId,
+            @NotNull @Positive @DestinationVariable Long roomId
+    ) {
+        MessageAuthenticationHeader auth = (MessageAuthenticationHeader) principal;
+        chatMessageService.sendGroupLastRead(roomId, auth, messageId);
+    }
+
 }

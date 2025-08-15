@@ -1,6 +1,9 @@
 package com.umc.banddy.domain.music.album.web.controller;
 
+import com.umc.banddy.domain.music.album.repository.AlbumVisibilityRequest;
+import com.umc.banddy.domain.music.album.repository.AlbumVisibilityResponse;
 import com.umc.banddy.domain.music.album.service.AlbumService;
+import com.umc.banddy.domain.music.album.web.dto.AlbumDetailResponse;
 import com.umc.banddy.domain.music.album.web.dto.AlbumRequestDto;
 import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
 import com.umc.banddy.domain.music.album.web.dto.AlbumToggleResponseDto;
@@ -69,14 +72,28 @@ public class AlbumController {
     }
 
     // 특정 앨범 상세 조회
-    @Operation(summary = "앨범 상세 조회", description = "아카이브에 저장한 특정 앨범을 상세 조회합니다.")
+    @Operation(summary = "앨범 상세 조회", description = "아카이브에 저장한 특정 앨범을 상세 조회합니다. (앨범 수록곡 포함)")
     @GetMapping("/{albumId}")
-    public ResponseEntity<ApiResponse<AlbumResponseDto>> getAlbumDetail(
+    public ResponseEntity<ApiResponse<AlbumDetailResponse>> getAlbumDetail(
             @PathVariable Long albumId,
             HttpServletRequest request
     ) {
         String token = JwtTokenUtil.extractToken(request);
-        AlbumResponseDto result = albumService.getAlbumDetail(albumId, token);
+        AlbumDetailResponse result = albumService.getAlbumDetail(albumId, token);
         return ResponseEntity.ok(ApiResponse.onSuccess(result));
     }
+
+    // 앨범 공개 여부 수정
+    @Operation(summary = "앨범 잠금 상태 변경", description = "앨범의 공개/비공개 상태를 변경합니다.")
+    @PatchMapping("/{albumId}/visibility")
+    public ResponseEntity<ApiResponse<AlbumVisibilityResponse>> updateAlbumVisibility(
+            @PathVariable Long albumId,
+            @RequestBody AlbumVisibilityRequest requestDto,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        AlbumVisibilityResponse result = albumService.updateAlbumVisibility(albumId, requestDto.getIsPrivate(), token);
+        return ResponseEntity.ok(ApiResponse.onSuccess(result));
+    }
+
 }

@@ -1,50 +1,63 @@
 package com.umc.banddy.domain.mypage.notification.converter;
 
-import com.umc.banddy.domain.mypage.notification.domain.ChatNotification;
-import com.umc.banddy.domain.mypage.notification.domain.FriendNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.FriendNotification;
+import com.umc.banddy.domain.mypage.notification.domain.mapping.BandNotification;
+import com.umc.banddy.domain.mypage.notification.web.dto.BandNotificationResponse;
+import com.umc.banddy.domain.mypage.notification.web.dto.ChatNotificationResponse;
+import com.umc.banddy.domain.mypage.notification.web.dto.FriendNotificationResponse;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
 import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
-import com.umc.banddy.domain.band.notification.domain.mapping.BandNotification;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class NotificationConverter {
 
     public static NotificationResponse fromChat(ChatNotification n) {
-        String profileImage = n.getReceiver().getProfileImageUrl();
-
-        return NotificationResponse.builder()
-                .notificationId(n.getId())
-                .title("새 메시지가 도착했습니다.")
+        var sender = n.getNotification().getSender();
+        return ChatNotificationResponse.builder()
+                .notificationId(n.getNotification().getId())
+                .title(sender.getNickname() + "님이 채팅을 요청했습니다")
                 .type(NotificationType.CHAT)
-                .imageUrl(profileImage)
-                .createdAt(n.getCreatedAt())
+                .message(n.getMessage())
+                .imageUrl(sender.getProfileImageUrl())
+                .createdAt(n.getNotification().getCreatedAt())
+                .isRead(n.getNotification().getIsRead())
+                .senderId(sender.getId())
                 .build();
     }
 
     public static NotificationResponse fromFriend(FriendNotification n) {
-        String profileImage = n.getSender().getProfileImageUrl();
-
-        return NotificationResponse.builder()
-                .notificationId(n.getId())
-                .title(n.getSender().getNickname() + "님이 친구 요청을 보냈습니다.")
+        var sender = n.getNotification().getSender();
+        return FriendNotificationResponse.builder()
+                .notificationId(n.getNotification().getId())
+                .title(sender.getNickname() + "님이 친구 요청을 보냈습니다.")
                 .type(NotificationType.FRIEND)
-                .imageUrl(profileImage)
-                .createdAt(n.getCreatedAt())
+                .message(n.getMessage())
+                .imageUrl(sender.getProfileImageUrl())
+                .createdAt(n.getNotification().getCreatedAt())
+                .senderId(sender.getId())
+                .isRead(n.getNotification().getIsRead())
+                .friendRequestId(n.getFriendRequest().getId())
                 .build();
     }
 
-    public static NotificationResponse fromBand(BandNotification n) {
-        return NotificationResponse.builder()
-                .notificationId(n.getId())
-                .title(n.getTitle())
-                .type(NotificationType.BAND)
-                .imageUrl(n.getBand().getProfileImageUrl())
-                .createdAt(n.getCreatedAt())
-                .build();
-    }
+//    public static NotificationResponse fromBand(BandNotification n) {
+//        var sender = n.getNotification().getSender();
+//        return BandNotificationResponse.builder()
+////                .notificationId(n.getNotification().getId())
+////                .title(n.getTitle())
+////                .type(NotificationType.BAND)
+////                .imageUrl(n.getBand().getProfileImageUrl())
+////                .createdAt(n.getNotification().getCreatedAt())
+////                .isRead(n.getNotification().getIsRead())
+////                .senderId(sender.getId())
+//                .build();
+//    }
 
+    //통합
     public static List<NotificationResponse> mergeAndSort(
             List<ChatNotification> chat,
             List<FriendNotification> friend,
@@ -53,9 +66,14 @@ public class NotificationConverter {
         List<NotificationResponse> result = new ArrayList<>();
         chat.forEach(c -> result.add(fromChat(c)));
         friend.forEach(f -> result.add(fromFriend(f)));
-        band.forEach(b -> result.add(fromBand(b)));
+       // band.forEach(b -> result.add(fromBand(b)));
 
-        result.sort((a, b) -> b.createdAt().compareTo(a.createdAt()));
+        result.sort(
+                Comparator.comparing(
+                        NotificationResponse::getCreatedAt,             // ← getCreatedAt() 사용
+                        Comparator.nullsLast(Comparator.naturalOrder()) // null 안전
+                ).reversed()
+        );
         return result;
     }
 }

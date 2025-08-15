@@ -3,33 +3,51 @@ package com.umc.banddy.domain.auth.service;
 import com.umc.banddy.domain.auth.web.dto.EmailSendRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyRequest;
 import com.umc.banddy.domain.auth.web.dto.EmailVerifyResponse;
+import com.umc.banddy.domain.member.enums.Status;
+import com.umc.banddy.domain.member.repository.MemberRepository;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.time.Duration;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
+    private static final Duration CODE_TTL = Duration.ofMinutes(5);
+
     private final JavaMailSender mailSender;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final MemberRepository memberRepository;
 
-    // 기존 Map<String, String> → 인증번호 + 생성시간 저장용 객체로 변경
-    private final Map<String, VerificationData> verificationStore = new ConcurrentHashMap<>();
-
+    // 인증번호 전송
     public void sendCode(EmailSendRequest request) {
-        String code = generateCode();
+        final String email = normalize(request.getEmail());
 
-        // key = code (이메일 없이 인증번호로만 저장) 기존 코드에서 변경..
-        verificationStore.put(code, new VerificationData(code));
+        // 이미 가입된 이메일인지 확인 (ACTIVE + INACTIVE 모두 차단)
+        if (memberRepository.existsByEmailAndStatusIn(email, List.of(Status.ACTIVE, Status.INACTIVE))) {
+            throw new AuthHandler(ErrorStatus.EMAIL_ALREADY_EXISTS);
+        }
 
+        // 새 코드 생성
+        final String code = generateCode();
+
+        // Redis 저장 방식 변경: email -> code (덮어쓰기)
+        //    재발급 시 기존 코드가 즉시 무효화됨
+        ValueOperations<String, String> ops = redisTemplate.opsForValue();
+        ops.set(emailKey(email), code, CODE_TTL);
+
+        // 이메일 발송
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(request.getEmail());
+        message.setTo(email);
         message.setSubject("[Banddy] 회원가입 인증번호입니다.");
         message.setText(
                 "안녕하세요, 밴디입니다.\n" +
@@ -38,41 +56,41 @@ public class EmailVerificationService {
                         "이 인증번호는 5분간 유효합니다.\n" +
                         "감사합니다."
         );
-
         mailSender.send(message);
     }
 
+    // 인증번호 검증
     public EmailVerifyResponse verifyCode(EmailVerifyRequest request) {
-        // 이메일이 아닌 인증번호로 찾음
-        VerificationData data = verificationStore.get(request.getCode());
+        final String email = normalize(request.getEmail());
+        final String inputCode = request.getCode();
 
-        if (data == null || data.isExpired()) {
-            return new EmailVerifyResponse(false, "인증번호가 만료되었거나 존재하지 않습니다.");
+        String savedCode = redisTemplate.opsForValue().get(emailKey(email));
+
+        // 만료
+        if (savedCode == null) {
+            throw new AuthHandler(ErrorStatus.VERIFICATION_CODE_EXPIRED);
+        }
+        // 불일치
+        if (!savedCode.equals(inputCode)) {
+            throw new AuthHandler(ErrorStatus.VERIFICATION_CODE_WRONG);
         }
 
-        verificationStore.remove(request.getCode()); // 인증 성공 시 제거
+        // 인증 성공 → 일회성 사용: 즉시 삭제
+        redisTemplate.delete(emailKey(email));
+
         return new EmailVerifyResponse(true, "인증이 완료되었습니다.");
     }
 
-    private String generateCode() {
-        return String.valueOf(new Random().nextInt(90000) + 10000);
+
+    private String emailKey(String email) {
+        return "email:verify:" + email;
     }
 
-    private static class VerificationData {
-        private final String code;
-        private final LocalDateTime createdAt;
+    private String normalize(String s) {
+        return s == null ? null : s.trim().toLowerCase();
+    }
 
-        public VerificationData(String code) {
-            this.code = code;
-            this.createdAt = LocalDateTime.now();
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public boolean isExpired() {
-            return createdAt.plusMinutes(5).isBefore(LocalDateTime.now());
-        }
+    private String generateCode() {
+        return String.valueOf(new Random().nextInt(90000) + 10000);  // 10000~99999
     }
 }

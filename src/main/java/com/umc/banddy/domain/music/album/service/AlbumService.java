@@ -6,10 +6,9 @@ import com.umc.banddy.domain.music.album.converter.AlbumConverter;
 import com.umc.banddy.domain.music.album.domain.Album;
 import com.umc.banddy.domain.music.album.domain.MemberAlbum;
 import com.umc.banddy.domain.music.album.repository.AlbumRepository;
+import com.umc.banddy.domain.music.album.repository.AlbumVisibilityResponse;
 import com.umc.banddy.domain.music.album.repository.MemberAlbumRepository;
-import com.umc.banddy.domain.music.album.web.dto.AlbumRequestDto;
-import com.umc.banddy.domain.music.album.web.dto.AlbumResponseDto;
-import com.umc.banddy.domain.music.album.web.dto.AlbumToggleResponseDto;
+import com.umc.banddy.domain.music.album.web.dto.*;
 import com.umc.banddy.domain.music.folder.domain.FolderAlbums;
 import com.umc.banddy.domain.music.folder.repository.FolderAlbumsRepository;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Paging;
+import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 
 import java.util.Arrays;
 import java.util.List;
@@ -119,7 +120,7 @@ public class AlbumService {
 
     // 특정 앨범 상세 조회
     @Transactional(readOnly = true)
-    public AlbumResponseDto getAlbumDetail(Long albumId, String token) {
+    public AlbumDetailResponse getAlbumDetail(Long albumId, String token) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -127,8 +128,50 @@ public class AlbumService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.ALBUM_NOT_FOUND));
         var memberAlbumOpt = memberAlbumRepository.findByMemberAndAlbum(member, album);
         Long memberAlbumId = memberAlbumOpt.map(MemberAlbum::getId).orElse(null);
-        return AlbumConverter.toAlbumResponseDto(album, memberAlbumId);
+
+        SpotifyApi spotifyApi = spotifyTokenManager.getSpotifyApi();
+        Paging<TrackSimplified> trackPaging;
+        try {
+            trackPaging = spotifyApi.getAlbumsTracks(album.getSpotifyId())
+                    .limit(30)
+                    .build()
+                    .execute();
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus.SPOTIFY_RESOURCE_NOT_FOUND);
+        }
+
+        int total = trackPaging.getTotal();
+        List<TrackDto> trackList = Arrays.stream(trackPaging.getItems())
+                .map(track -> TrackDto.builder()
+                        .spotifyId(track.getId())
+                        .name(track.getName())
+                        .trackNumber(track.getTrackNumber())
+                        .discNumber(track.getDiscNumber())
+                        .explicit(track.getIsExplicit())
+                        .spotifyUrl(track.getExternalUrls().get("spotify"))
+                        .duration(formatDuration(track.getDurationMs()))
+                        .build())
+                .collect(Collectors.toList());
+
+        return AlbumDetailResponse.builder()
+                .albumId(album.getId())
+                .spotifyId(album.getSpotifyId())
+                .name(album.getName())
+                .artist(album.getArtist())
+                .imageUrl(album.getImageUrl())
+                .externalUrl(album.getExternalUrl())
+                .total(total)
+                .tracks(trackList)
+                .build();
     }
+
+    private String formatDuration(int durationMs) {
+        int totalSeconds = durationMs / 1000;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
+    }
+
 
     // Spotify API에서 앨범 정보 fetch & 저장
     private Album fetchAndSaveAlbumFromSpotify(String spotifyId) {
@@ -162,4 +205,35 @@ public class AlbumService {
         }
     }
 
+    // 앨범 잠금 상태 수정
+    @Transactional
+    public AlbumVisibilityResponse updateAlbumVisibility(Long albumId, Boolean isPrivate, String token) {
+        Long memberId = jwtTokenUtil.getMemberIdFromToken(token);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.ALBUM_NOT_FOUND));
+
+        MemberAlbum memberAlbum = memberAlbumRepository.findByMemberAndAlbum(member, album)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.ALBUM_NOT_SAVED_BY_MEMBER));
+
+        memberAlbum.setIsPrivate(isPrivate); // 잠금 상태 변경
+
+        return AlbumVisibilityResponse.builder()
+                .memberId(member.getId())
+                .isPrivate(isPrivate)
+                .build();
+    }
+
+    // 상대방 공개앨범 조회
+    @Transactional(readOnly = true)
+    public List<AlbumResponseDto> getSavedAlbumsByOtherMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+        return memberAlbumRepository.findAllByMemberAndIsPrivateFalse(member).stream()
+                .map(ma -> AlbumConverter.toAlbumResponseDto(ma.getAlbum(), ma.getId()))
+                .collect(Collectors.toList());
+    }
 }

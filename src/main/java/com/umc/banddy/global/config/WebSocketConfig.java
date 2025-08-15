@@ -46,20 +46,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .withSockJS(); // SockJS 적용
 
-        // 순수 WebSocket 전용 엔드포인트
-        registry.addEndpoint("/ws-raw")
-                .setAllowedOriginPatterns("*");
+//        // 순수 WebSocket 전용 엔드포인트
+//        registry.addEndpoint("/ws")
+//                .setAllowedOriginPatterns("*");
     }
 
     // 메세지 브로커 설정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes("/app");
-        config.enableSimpleBroker("/topic", "/queue","/user/queue")
-                .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]              .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]
-                .setTaskScheduler(this.messageBrokerTaskScheduler);; // 메시지 브로커 설정
+        config.enableSimpleBroker("/topic", "/queue")
+                .setHeartbeatValue(new long[] {10000, 20000})   // [클라이언트->서버: 10초, 서버->클라이언트: 20초]
+                .setTaskScheduler(this.messageBrokerTaskScheduler); // 메시지 브로커 설정
         // topic 구독자에게 브로드캐스트, queue는 특정 사용자에게 메시지 전송, /user/queue는 개인 메시지 전송을 위한 설정
+        config.setUserDestinationPrefix("/user");
     }
+
 
     // 클라이언트로부터 수신 받은 메세지 인터셉터
     @Override
@@ -73,14 +75,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                if(StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
                    String token = headerAccessor.getFirstNativeHeader("Authorization");
-                   System.out.println("jwt 토큰: " + token);
 
                    if (token != null && token.startsWith("Bearer ")) {
                        token = token.substring(7);  // 'Bearer ' 잘라냄
                    }
 
                    if (token == null || token.isEmpty() || !jwtTokenUtil.validateToken(token)) {
-                       System.out.println("Authorization header 없음 또는 JWT 검증 실패");
                        throw new IllegalArgumentException("Authorization header 없음 또는 JWT 검증 실패");
                    } else {
                        Principal principal = new MessageAuthenticationHeader(
@@ -88,7 +88,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                jwtTokenUtil.getEmailFromToken(token)
                        );
                        headerAccessor.setUser(principal);
-                       System.out.println("Principal 설정됨: " + principal.getName());
                    }
                }
                return message;

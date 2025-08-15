@@ -2,6 +2,10 @@ package com.umc.banddy.domain.mypage.similarartist.web.controller;
 
 import com.umc.banddy.domain.mypage.similarartist.service.SimilarArtistService;
 import com.umc.banddy.domain.mypage.similarartist.web.dto.SimilarArtistResponse;
+import com.umc.banddy.domain.mypage.similarartist.web.dto.ArtistSuggestionQuestionResponse;
+import com.umc.banddy.global.apiPayload.ApiResponse;
+import com.umc.banddy.global.apiPayload.exception.GeneralException;
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,18 +26,25 @@ public class SimilarArtistController {
 
     @GetMapping("/similar")
     public ResponseEntity<List<SimilarArtistResponse>> getSimilarArtists(HttpServletRequest request) {
-        String token = JwtTokenUtil.extractToken(request);
-        if (token == null || token.isBlank()) return ResponseEntity.badRequest().build();
-
-        Long memberId;
-        try {
-            memberId = jwtTokenUtil.getMemberIdFromToken(token);
-        } catch (Exception e) {
-            return ResponseEntity.status(401).build();
-        }
-
+        Long memberId = extractMemberIdOrThrow(request);
         List<SimilarArtistResponse> response = similarArtistService.getArtistsSavedBySimilarUsers(memberId);
         return ResponseEntity.ok(response);
     }
-}
 
+    // 한 줄 추천 질문
+    @GetMapping("/question")
+    public ApiResponse<ArtistSuggestionQuestionResponse> getArtistHintQuestion(HttpServletRequest request) {
+        Long memberId = extractMemberIdOrThrow(request);
+        return ApiResponse.onSuccess(similarArtistService.getArtistSearchHintQuestion(memberId));
+    }
+
+    private Long extractMemberIdOrThrow(HttpServletRequest request) {
+        String token = JwtTokenUtil.extractToken(request);
+        if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        try {
+            return jwtTokenUtil.getMemberIdFromToken(token);
+        } catch (Exception e) {
+            throw new GeneralException(ErrorStatus._UNAUTHORIZED);
+        }
+    }
+}

@@ -5,6 +5,7 @@ import com.umc.banddy.domain.member.domain.Session;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "band_session")
@@ -12,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Setter
 public class BandSession extends BaseEntity {
 
     @Id
@@ -27,6 +29,14 @@ public class BandSession extends BaseEntity {
     private Session session;
 
     @Column(name = "session_status")
-    private String sessionStatus;
+    private String sessionStatus; // 나중에 enum으로 변경 고려
+
+    @Column(
+            name = "is_deleted",
+            nullable = false,
+            columnDefinition = "TINYINT(1) DEFAULT 0"
+    )
+    @Builder.Default
+    private boolean isDeleted = false;
 }
 

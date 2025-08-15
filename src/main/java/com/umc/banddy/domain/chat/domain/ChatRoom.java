@@ -1,38 +1,46 @@
 package com.umc.banddy.domain.chat.domain;
 
+import com.umc.banddy.domain.band.profile.domain.mapping.BandChat;
 import com.umc.banddy.domain.chat.domain.enums.RoomType;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
 @AllArgsConstructor
 @Builder
-@NoArgsConstructor(access = PROTECTED)
+@Setter
+@NoArgsConstructor
 public class ChatRoom extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = true)
+    private String name; // 그룹채팅에서만 사용
 
-    @Column(nullable = false)
-    private String imageUrl; //erd에 없음
+    @Column(nullable = true)
+    private String imageUrl; // 그룹 썸네일 용도
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoomType roomType;
 
-    @OneToMany
-    @JoinColumn(name = "chat_room_id")
-    private java.util.List<ChatRoomParticipant> participants;
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatRoomParticipant> participants = new ArrayList<>();
+
+    @OneToOne(mappedBy = "chatRoom", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    private BandChat bandChat;
 
 }

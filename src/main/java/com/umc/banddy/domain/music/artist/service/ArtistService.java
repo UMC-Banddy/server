@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import se.michaelthelin.spotify.SpotifyApi;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,7 +125,7 @@ public class ArtistService {
                 .orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
         Artist artist = artistRepository.findBySpotifyId(requestDto.getSpotifyId())
-                .orElseGet(() -> artistRepository.save(ArtistConverter.toArtist(requestDto)));
+                .orElseGet(() -> fetchAndSaveArtistFromSpotify(requestDto.getSpotifyId()));
 
         var memberArtistOpt = memberArtistRepository.findByMemberAndArtist(member, artist);
         boolean isSaved;
@@ -168,6 +169,21 @@ public class ArtistService {
         var memberArtistOpt = memberArtistRepository.findByMemberAndArtist(member, artist);
         Long memberArtistId = memberArtistOpt.map(MemberArtist::getId).orElse(null);
         return ArtistConverter.toArtistResponseDto(artist, memberArtistId);
+    }
+
+    /**
+     * 여러 아티스트의 Spotify ID를 받아 모두 저장하고 반환
+     */
+    @Transactional
+    public List<Artist> saveArtistsBySpotifyIds(List<String> spotifyIds) {
+        List<Artist> result = new ArrayList<>();
+        for (String id : spotifyIds) {
+            if (id == null || id.trim().isEmpty()) continue;
+            Artist artist = artistRepository.findBySpotifyId(id.trim())
+                    .orElseGet(() -> fetchAndSaveArtistFromSpotify(id.trim()));
+            result.add(artist);
+        }
+        return result;
     }
 
 }

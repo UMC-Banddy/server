@@ -7,8 +7,8 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
 public class OtherProfileResponse {
     private Long memberId;
     private String nickname;
@@ -17,18 +17,17 @@ public class OtherProfileResponse {
     private int age;
     private String gender;
     private String region;
+    private String district;
     private List<String> tags;
-
     private List<Session> sessions;
     private List<Artist> favoriteArtists;
     private List<String> traits;
-
     private String youtubeUrl;
     private String instagramUrl;
-
     private boolean isFriend;
     private boolean isBlocked;
     private boolean canRequestChat;
+    private List<String> genres;
 
     @Getter
     @AllArgsConstructor
@@ -42,5 +41,14 @@ public class OtherProfileResponse {
     public static class Artist {
         private String name;
         private String imageUrl;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class Album {
+        private Long albumId;
+        private String title;
+        private String artist;
+        private String coverImageUrl;
     }
 }

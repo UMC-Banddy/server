@@ -27,4 +27,11 @@ public class MemberAlbum extends BaseEntity {
     @JoinColumn(name = "album_id")
     private Album album;
 
+    @Builder.Default
+    @Column(name = "locked", nullable = false)
+    private Boolean isPrivate = false;
+
+    public void setIsPrivate(Boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
 }

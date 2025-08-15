@@ -40,5 +40,8 @@ out/
 .DS_Store
 
 ### .env ###
-.env
+src/main/resources/.env
 
+.env
+*.env
+.env.*

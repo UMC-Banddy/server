@@ -1,15 +1,21 @@
 package com.umc.banddy.domain.band.profile.domain;
 
+import com.umc.banddy.domain.band.profile.domain.mapping.BandSession;
+import com.umc.banddy.domain.band.profile.domain.mapping.MemberBand;
+import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.domain.Session;
+import com.umc.banddy.domain.music.track.domain.Track;
 import com.umc.banddy.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -18,6 +24,9 @@ public class Band extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "band")
+    private List<MemberBand> members;
 
     // 이미지, 기본 정보
     @Column(name = "profile_image_url")
@@ -36,18 +45,21 @@ public class Band extends BaseEntity {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Column(name = "auto_Close")
+    private Boolean autoClose; // 모집 종료일에 자동 종료 여부
+
     @Column(name = "age_start")
     private Integer ageStart;
 
     @Column(name = "age_end")
     private Integer ageEnd;
 
-    private String job;
+//    private String job;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
-    private List<Session> sessions;
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    @Enumerated(EnumType.STRING)
+//    @CollectionTable(name = "band_session", joinColumns = @JoinColumn(name = "band_id"))
+//    private List<Session> sessions;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", length = 10)
@@ -73,5 +85,21 @@ public class Band extends BaseEntity {
     @Column(name = "female_count")
     private Integer femaleCount;
 
-}
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "track_id", nullable = true)
+    private Track representativeTrack;
 
+    // 매니저 채팅용
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "member_id", nullable = true)
+    private Member manager;
+
+    // 매니저 채팅용
+    @Column(name = "pinned_at", nullable = true)
+    private LocalDateTime pinnedAt;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "band", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BandSession> bandSessions = new ArrayList<>();
+}

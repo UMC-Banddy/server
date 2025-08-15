@@ -1,5 +1,7 @@
 package com.umc.banddy.global.security.jwt;
 
+import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
+import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -30,15 +33,26 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtTokenUtil.validateToken(token)) {
-                String email = jwtTokenUtil.getEmailFromToken(token);
+            try {
+                if (jwtTokenUtil.validateToken(token)) {
+                    String email = jwtTokenUtil.getEmailFromToken(token);
 
-                User principal = new User(email, "", Collections.emptyList());
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        principal, null, principal.getAuthorities());
+                    User principal = new User(email, "", Collections.emptyList());
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // 유효하지 않은 토큰일 경우 401 응답
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
+                    return;
+                }
+
+            } catch (Exception e) {
+                // 토큰 파싱 중 오류 발생 시에도 401 응답
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT Token Parsing Failed");
+                return;
             }
         }
 

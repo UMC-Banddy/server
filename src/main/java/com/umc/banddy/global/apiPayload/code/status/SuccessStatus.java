@@ -38,3 +38,4 @@ public enum SuccessStatus implements BaseCode {
                 ;
     }
 }
+

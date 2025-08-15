@@ -2,6 +2,9 @@ spring:
   application:
     name: banddy
 
+  profiles:
+    active: s3
+
   config:
     import: optional:file:./.env[.properties]
 
@@ -26,6 +29,7 @@ spring:
         hbm2ddl:
           auto: update
         default_batch_fetch_size: 1000
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -34,7 +38,47 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+    # 레디스
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
+    cache:
+      type: redis
+      cache-names:
+        - emailAuthCode
+        - roomParticipants
+      redis:
+        time-to-live: 300000
+
+  servlet:
+    multipart:
+      enabled: true
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.security: DEBUG
 
 spotify:
   client-id: ${SPOTIFY_CLIENT_ID}
   client-secret: ${SPOTIFY_CLIENT_SECRET}
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: ${S3_BUCKET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+

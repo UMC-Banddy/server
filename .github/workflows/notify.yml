@@ -1,0 +1,37 @@
+name: Notify Discord on develop/main Events
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      
+
+jobs:
+  discord_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          ACTOR="${{ github.actor }}"
+          BRANCH="${{ github.ref_name }}"
+          REPO_URL="https://github.com/${{ github.repository }}"
+          EXTERNAL_URL="https://ap-northeast-2.console.aws.amazon.com/ec2/home?region=ap-northeast-2#Instances:"
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            ACTION="push"
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            ACTION="PR merge"
+          else
+            ACTION="$EVENT_NAME"
+          fi
+
+          MESSAGE="${BRANCH} 브랜치에 ${ACTION} 발생\n➡️ ${REPO_URL}\n➡️ ${EXTERNAL_URL}"
+
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"$MESSAGE\"}" \
+            $DISCORD_WEBHOOK_URL

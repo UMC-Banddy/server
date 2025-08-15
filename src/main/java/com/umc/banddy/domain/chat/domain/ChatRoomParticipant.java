@@ -2,6 +2,7 @@ package com.umc.banddy.domain.chat.domain;
 
 import com.umc.banddy.domain.chat.domain.enums.Role;
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.member.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,19 +23,30 @@ public class ChatRoomParticipant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LocalDateTime lastReadAt; //erd에 없음
+    private Status status;
 
-    @ManyToOne
+    @Column(nullable = true)
+    private LocalDateTime pinnedAt; //erd에 없음
+
+    @Builder.Default
+    @Column(name = "last_read_at", nullable = false)
+    private LocalDateTime lastReadAt = LocalDateTime.now(); //erd에 없음, 삭제 예쩡
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Long lastReadMessageId = 0L; //erd에 없음
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 }

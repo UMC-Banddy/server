@@ -1,0 +1,49 @@
+package com.umc.banddy.domain.chat.repository;
+
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.umc.banddy.domain.chat.domain.QChatMessage;
+import com.umc.banddy.domain.chat.web.dto.message.CursorChatMessage;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+@RequiredArgsConstructor
+public class ChatCustomRepository {
+
+    private final JPAQueryFactory queryFactory;
+
+    // 페이징
+    public List<CursorChatMessage> findByRoomIdWithCursorAsDto(Long roomId, Long cursor, int limit) {
+        return queryFactory
+                .select(Projections.constructor(
+                        CursorChatMessage.class,
+                        QChatMessage.chatMessage.id,
+                        QChatMessage.chatMessage.member.id,
+                        QChatMessage.chatMessage.member.nickname,
+                        QChatMessage.chatMessage.content,
+                        QChatMessage.chatMessage.createdAt
+                ))
+                .from(QChatMessage.chatMessage)
+                .where(
+                        QChatMessage.chatMessage.chatRoom.id.eq(roomId),
+                        ltCursor(cursor)
+                )
+                .orderBy(QChatMessage.chatMessage.id.desc())
+                .limit(limit + 1)
+                .fetch();
+    }
+
+
+    private BooleanExpression ltCursor(Long cursor) {
+        return (cursor != null && cursor > 0)
+                ? QChatMessage.chatMessage.id.lt(cursor)
+                : null;
+    }
+
+    //
+
+}
