@@ -5,6 +5,7 @@ import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import com.umc.banddy.domain.member.enums.Gender;
 import com.umc.banddy.domain.member.enums.Level;
 import com.umc.banddy.domain.member.enums.SessionType;
+import com.umc.banddy.domain.member.repository.MemberGenreRepository;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.track.domain.mapping.MemberTrack;
 import com.umc.banddy.domain.member.repository.SessionRepository;
@@ -33,6 +34,7 @@ public class MyProfileService {
     private final MemberTrackRepository memberTrackRepository;
     private final MemberTagRepository memberTagRepository;
     private final MemberSessionRepository memberSessionRepository;
+    private final MemberGenreRepository memberGenreRepository;
     private final SessionRepository sessionRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -47,7 +49,25 @@ public class MyProfileService {
 
         List<MemberTrack> savedTracks = memberTrackRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
 
-        return MyProfileConverter.toMyProfileResponse(member, tags, savedTracks);
+        List<MyProfileResponse.SessionInfo> sessionInfos =
+                memberSessionRepository.findByMemberId(memberId).stream()
+                        .map(ms -> new MyProfileResponse.SessionInfo(
+                                ms.getSession().getName(),
+                                ms.getLevel().toString()
+                        ))
+                        .toList();
+
+        List<String> interestedGenres = memberGenreRepository.findByMemberId(memberId).stream()
+                .map(mg -> mg.getGenre().getName()) // Genre 엔티티의 필드명에 맞게
+                .toList();
+
+        return MyProfileConverter.toMyProfileResponse(
+                member,
+                tags,
+                savedTracks,
+                sessionInfos,
+                interestedGenres
+        );
     }
 
     @Transactional
@@ -65,7 +85,6 @@ public class MyProfileService {
                 .age(dto.getAge() != null ? dto.getAge() : member.getAge())
                 .gender(dto.getGender() != null ? Gender.valueOf(dto.getGender()) : member.getGender())
                 .region(dto.getRegion() != null ? dto.getRegion() : member.getRegion())
-                .district(dto.getDistrict() != null ? dto.getDistrict() : member.getDistrict())
                 .bio(dto.getBio() != null ? dto.getBio() : member.getBio())
                 .profileImageUrl(dto.getProfileImage() != null ? dto.getProfileImage() : member.getProfileImageUrl())
                 .mediaUrl(dto.getMediaUrl() != null ? dto.getMediaUrl() : member.getMediaUrl())
