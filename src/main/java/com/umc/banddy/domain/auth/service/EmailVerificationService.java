@@ -22,25 +22,30 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
+    private static final Duration CODE_TTL = Duration.ofMinutes(5);
+
     private final JavaMailSender mailSender;
     private final RedisTemplate<String, String> redisTemplate;
     private final MemberRepository memberRepository;
 
     // 인증번호 전송
     public void sendCode(EmailSendRequest request) {
-        String email = request.getEmail().trim().toLowerCase();
+        final String email = normalize(request.getEmail());
 
         // 이미 가입된 이메일인지 확인 (ACTIVE + INACTIVE 모두 차단)
         if (memberRepository.existsByEmailAndStatusIn(email, List.of(Status.ACTIVE, Status.INACTIVE))) {
             throw new AuthHandler(ErrorStatus.EMAIL_ALREADY_EXISTS);
         }
 
-        String code = generateCode();
+        // 새 코드 생성
+        final String code = generateCode();
 
-        // Redis에 저장: key = code, value = email, TTL = 5분
+        // Redis 저장 방식 변경: email -> code (덮어쓰기)
+        //    재발급 시 기존 코드가 즉시 무효화됨
         ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        ops.set(code, email, Duration.ofMinutes(5));
+        ops.set(emailKey(email), code, CODE_TTL);
 
+        // 이메일 발송
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("[Banddy] 회원가입 인증번호입니다.");
@@ -51,22 +56,38 @@ public class EmailVerificationService {
                         "이 인증번호는 5분간 유효합니다.\n" +
                         "감사합니다."
         );
-
         mailSender.send(message);
     }
 
     // 인증번호 검증
     public EmailVerifyResponse verifyCode(EmailVerifyRequest request) {
-        String email = redisTemplate.opsForValue().get(request.getCode());
+        final String email = normalize(request.getEmail());
+        final String inputCode = request.getCode();
 
-        if (email == null) {
+        String savedCode = redisTemplate.opsForValue().get(emailKey(email));
+
+        // 만료
+        if (savedCode == null) {
             throw new AuthHandler(ErrorStatus.VERIFICATION_CODE_EXPIRED);
         }
+        // 불일치
+        if (!savedCode.equals(inputCode)) {
+            throw new AuthHandler(ErrorStatus.VERIFICATION_CODE_WRONG);
+        }
 
-        // 인증번호 일회성 사용 → 즉시 삭제
-        redisTemplate.delete(request.getCode());
+        // 인증 성공 → 일회성 사용: 즉시 삭제
+        redisTemplate.delete(emailKey(email));
 
         return new EmailVerifyResponse(true, "인증이 완료되었습니다.");
+    }
+
+
+    private String emailKey(String email) {
+        return "email:verify:" + email;
+    }
+
+    private String normalize(String s) {
+        return s == null ? null : s.trim().toLowerCase();
     }
 
     private String generateCode() {
