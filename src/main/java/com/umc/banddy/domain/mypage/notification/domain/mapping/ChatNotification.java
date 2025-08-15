@@ -16,7 +16,7 @@ public class ChatNotification extends BaseEntity {
     @Id
     private Long notificationId;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE)
     @MapsId
     @JoinColumn(name = "notification_id")
     private Notification notification;

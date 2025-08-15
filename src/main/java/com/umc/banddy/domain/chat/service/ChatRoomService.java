@@ -733,4 +733,11 @@ public class ChatRoomService {
         chatNotificationRepository.save(chatNotification);
     }
 
+    public void deleteChatRequest(Long chatNotificationId) {
+        ChatNotification chatNotification = chatNotificationRepository.findById(chatNotificationId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NOTIFICATION_NOT_FOUND));
+        chatNotificationRepository.delete(chatNotification);
+    }
+
+
 }

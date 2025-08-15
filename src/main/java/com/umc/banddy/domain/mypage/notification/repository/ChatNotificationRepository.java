@@ -7,6 +7,7 @@ import com.umc.banddy.domain.mypage.notification.domain.mapping.ChatNotification
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatNotificationRepository extends JpaRepository<ChatNotification, Long> {
 
@@ -15,6 +16,6 @@ public interface ChatNotificationRepository extends JpaRepository<ChatNotificati
 
     boolean existsByNotificationSenderIdAndNotificationReceiverIdAndNotificationIsRead(Long senderId, Long receiverId, ReadStatus isRead);
 
-
+    Optional<ChatNotification> findByNotificationSenderIdAndNotificationReceiverId(Long senderId, Long receiverId) ;
 }
 

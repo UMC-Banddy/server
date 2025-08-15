@@ -190,7 +190,7 @@ public class ChatMessageService {
 
         return CursorChatMessageResponse.builder()
                 .messages(ccm)
-                .hasNext(ccm.size() == limit)
+                .hasNext(ccm.size() == limit +1)
                 .lastMessageId(ccm.isEmpty() ? null : ccm.get(ccm.size() - 1).getMessageId())
                 .build();
     }

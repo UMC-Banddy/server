@@ -17,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
 @AllArgsConstructor
 @Builder
 @NoArgsConstructor(access = PROTECTED)
-public class ChatMessage extends BaseEntity {
+public class  ChatMessage extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
