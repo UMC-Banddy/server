@@ -3,6 +3,7 @@ package com.umc.banddy.domain.member.service;
 import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.member.web.dto.SignupRequest;
+import com.umc.banddy.domain.member.web.dto.SignupResponse;
 import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class MemberCommandService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void signup(SignupRequest request) {
+    public Member signup(SignupRequest request) {
         if (memberRepository.existsByEmail(request.getEmail())) {
             throw new AuthHandler(ErrorStatus.EMAIL_ALREADY_EXISTS);
         }
@@ -43,8 +44,9 @@ public class MemberCommandService {
                 .status(Status.ACTIVE)
                 .build();
 
-        memberRepository.save(member);
+        return memberRepository.save(member);
     }
+
     public NicknameCheckResponse checkNickname(String nickname) {
         boolean exists = memberRepository.existsByNickname(nickname);
         if (exists) {
