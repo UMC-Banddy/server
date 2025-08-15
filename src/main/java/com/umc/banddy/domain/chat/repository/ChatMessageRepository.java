@@ -60,15 +60,15 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage,Long> {
     }
 
     @Query("""
-        select r.id             as roomId,
-               count(c)         as unreadCount
-        from   ChatMessage c
-        join   c.chatRoom r
-        join   r.participants p
-        where  p.member    = :member
-          and  c.createdAt > p.lastReadAt
-        group  by r.id
-    """)
+    select r.id             as roomId,
+           count(c)         as unreadCount
+    from   ChatMessage c
+    join   c.chatRoom r
+    join   r.participants p
+    where  p.member    = :member
+      and  c.id > p.lastReadMessageId
+    group  by r.id
+""")
     List<UnreadCountProjection> findUnreadCountsByMember(
             @Param("member") Member member
     );
