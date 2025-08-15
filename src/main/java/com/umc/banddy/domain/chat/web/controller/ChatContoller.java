@@ -100,14 +100,11 @@ public class ChatContoller {
     public ResponseEntity<ApiResponse<CursorChatMessageResponse>> getChatMessages(
             @NotNull @Positive @PathVariable Long roomId,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(required = false, defaultValue = "20") Integer limit,
-            HttpServletRequest request
+            @RequestParam(required = false, defaultValue = "20") Integer limit
     ) {
         // 초기 요청인 경우(Long.MAX_VALUE = 9_223_372_036_854_775_807)
         long effectiveCursor = (cursor == null) ? Long.MAX_VALUE : cursor;
 
-        String token = JwtTokenUtil.extractToken(request);
-        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         return ResponseEntity.ok(ApiResponse.onSuccess(chatMessageService.getChatMessages(roomId, effectiveCursor, limit)));
     }
 
@@ -175,7 +172,15 @@ public class ChatContoller {
         String token = JwtTokenUtil.extractToken(request);
         Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
         chatRoomService.ChatRequest(requestRequset.getTargetMemberId(),currentMemberId, requestRequset.getMessage());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.onSuccess(null));
+    }
+    @Operation(summary = "채팅 요청 삭제")
+    @DeleteMapping("/requests/{requestId}")
+    public ResponseEntity<ApiResponse<Void>> deleteChatRequest(
+            @NotNull @Positive @PathVariable Long requestId
+    ) {
+        chatRoomService.deleteChatRequest(requestId);
+        return ResponseEntity.ok(ApiResponse.onSuccess(null));
     }
 
 }

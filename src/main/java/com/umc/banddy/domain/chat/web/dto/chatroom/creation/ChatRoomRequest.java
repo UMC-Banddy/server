@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.chat.web.dto.chatroom.creation;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,6 @@ import java.util.List;
 @Builder
 public class ChatRoomRequest {
 
-    private List<Long> memberIds;
+    private List<@Positive Long> memberIds;
     private String roomName;
 }

@@ -3,6 +3,7 @@ package com.umc.banddy.domain.mypage.notification.web.controller;
 import com.umc.banddy.domain.mypage.notification.enums.NotificationType;
 import com.umc.banddy.domain.mypage.notification.service.NotificationService;
 import com.umc.banddy.domain.mypage.notification.web.dto.NotificationResponse;
+import com.umc.banddy.global.apiPayload.ApiResponse;
 import com.umc.banddy.global.apiPayload.exception.GeneralException;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
@@ -24,20 +25,20 @@ public class NotificationController {
     private final JwtTokenUtil jwtTokenUtil;
 
     @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getNotifications(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotifications(HttpServletRequest request) {
         Long memberId = extractMemberIdOrThrow(request);
         List<NotificationResponse> notifications = notificationService.getAllNotifications(memberId);
-        return ResponseEntity.ok(notifications);
+        return ResponseEntity.ok(ApiResponse.onSuccess(notifications));
     }
 
     @PatchMapping("/read")
-    public ResponseEntity<Void> markAsRead(
+    public ResponseEntity<ApiResponse<Void>> markAsRead(
             @RequestParam("type") NotificationType type,
             @RequestParam("notificationId") Long notificationId
     ) {
         validateIdOrThrow(notificationId);
         notificationService.markNotificationAsRead(type, notificationId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.onSuccess(null));
     }
 
     private Long extractMemberIdOrThrow(HttpServletRequest request) {

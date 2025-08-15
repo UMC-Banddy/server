@@ -81,6 +81,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // Notification
     NOTIFICATION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "NOTIFICATION4000", "이미 존재하는 알림입니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST , "NOTIFICATION4001", "해당 알림을 찾을 수 없습니다."),
 
     // Participant
     PARTICIPANT_NOT_FOUND(HttpStatus.NOT_FOUND, "CHAT4005", "해당 채팅방의 참여자를 찾을 수 없습니다."),
@@ -103,6 +104,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // Refresh Token
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_008", "Refresh Token이 만료되었습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_009", "유효하지 않은 Refresh Token입니다.");
+
+
 
 
 

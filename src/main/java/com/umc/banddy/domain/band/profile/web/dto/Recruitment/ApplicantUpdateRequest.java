@@ -1,8 +1,10 @@
 package com.umc.banddy.domain.band.profile.web.dto.Recruitment;
 
+import com.umc.banddy.domain.chat.domain.enums.PassFail;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public class ApplicantUpdateRequest {
     public static class ApplicantUpdateDto {
 
         @NotNull
+        @Positive
         @Schema(description = "채팅방 ID", example = "15")
         private Long roomId;
 
