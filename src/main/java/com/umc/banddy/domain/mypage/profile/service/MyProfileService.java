@@ -19,6 +19,10 @@ import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileUpdateRequest;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -97,26 +101,40 @@ public class MyProfileService {
 
         // 세션 업데이트
         if (dto.getAvailableSessions() != null) {
-            memberSessionRepository.deleteByMemberId(memberId);
-            memberSessionRepository.flush(); // 삭제 즉시 반영
+            List<MemberSession> existingSessions = memberSessionRepository.findByMemberId(memberId);
 
-            Set<String> sessionTypes = new HashSet<>();
+            Map<SessionType, MemberSession> existingMap = existingSessions.stream()
+                    .collect(Collectors.toMap(MemberSession::getSessionType, ms -> ms));
+
+            Set<SessionType> newSessionTypes = new HashSet<>();
+
 
             for (MyProfileUpdateRequest.SessionInfo sessionInfo : dto.getAvailableSessions()) {
-                String trimmedType = sessionInfo.getSessionType().trim();
-                if (!sessionTypes.add(trimmedType)) {
-                    throw new IllegalArgumentException("중복된 세션 타입이 있습니다: " + trimmedType);
-                }
+                SessionType type = SessionType.valueOf(sessionInfo.getSessionType().trim());
+                Level level = Level.valueOf(sessionInfo.getLevel().trim());
 
-                try {
+                newSessionTypes.add(type);
+
+                if (existingMap.containsKey(type)) {
+
+                    MemberSession existing = existingMap.get(type);
+                    existing.setLevel(level);
+                    memberSessionRepository.save(existing);
+                } else {
+
                     MemberSession newSession = MemberSession.builder()
-                            .member(updated)
-                            .sessionType(SessionType.valueOf(trimmedType))
-                            .level(Level.valueOf(sessionInfo.getLevel().trim()))
+                            .member(member)
+                            .sessionType(type)
+                            .level(level)
                             .build();
                     memberSessionRepository.save(newSession);
-                } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException("올바르지 않은 세션 타입 또는 레벨입니다: " + sessionInfo.getSessionType());
+                }
+            }
+
+
+            for (SessionType oldType : existingMap.keySet()) {
+                if (!newSessionTypes.contains(oldType)) {
+                    memberSessionRepository.delete(existingMap.get(oldType));
                 }
             }
         }

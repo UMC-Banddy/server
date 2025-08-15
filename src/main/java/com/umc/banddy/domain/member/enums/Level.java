@@ -1,5 +1,8 @@
 package com.umc.banddy.domain.member.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum Level {
     BEGINNER("초보"),
     INTERMEDIATE("중수"),
@@ -11,8 +14,12 @@ public enum Level {
         this.label = label;
     }
 
-    public String getLabel() {
-        return label;
+    public static Level fromLabel(String label) {
+        for (Level level : values()) {
+            if (level.label.equals(label)) {
+                return level;
+            }
+        }
+        throw new IllegalArgumentException("Unknown level label: " + label);
     }
 }
-
