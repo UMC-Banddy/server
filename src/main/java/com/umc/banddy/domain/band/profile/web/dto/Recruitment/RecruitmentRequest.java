@@ -24,6 +24,8 @@ public class RecruitmentRequest {
     private Boolean autoClose;
     private String description;
 
+    private String fileUrl;          // 업로드된 파일 S3 URL
+    private String originalFilename; // 사용자가 업로드한 원래 이름
 
     private List<String> session;
 

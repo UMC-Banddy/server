@@ -5,6 +5,7 @@ import com.umc.banddy.domain.band.profile.web.dto.Recruitment.*;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.web.dto.chatroom.BasicChatRoomInfo;
 import com.umc.banddy.global.apiPayload.ApiResponse;
+import com.umc.banddy.global.infra.S3PresignedUrl;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -25,7 +27,31 @@ public class BandManagementController {
     private final JwtTokenUtil jwtTokenUtil;
     private final BandManagementService bandManagementService;
     private final ChatRoomService chatRoomService;
+    private final S3PresignedUrl presigner;
 
+
+    @PostMapping("/audio/presign")
+    @Operation(summary = "음성 파일 업로드용 Presigned URL 발급")
+    public ResponseEntity<ApiResponse<?>> presignAudio(
+            @RequestParam String filename,
+            @RequestParam String contentType,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+
+        String prefix = String.format("audios/%d/%tY/%<tm/%<td", currentMemberId, new java.util.Date());
+
+        var res = presigner.presignUrl(prefix, filename, contentType);
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(Map.of(
+                "uploadUrl", res.uploadUrl(),    // PUT할 presigned URL
+                "fileUrl", res.fileUrl(),        // 저장 후 접근 가능한 공개 URL
+                "originalFilename", filename,
+                "contentType", res.contentType(),
+                "expiresAt", res.expiresAt()
+        )));
+    }
 
     @Operation(summary = "밴드 모집방 만들기" ,description = """
     - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 🎸" , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
@@ -72,7 +98,7 @@ public class BandManagementController {
   """)
     @PatchMapping(path = "/recruitments", consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<RecruitmentResponse>> updateBand(
-            @RequestPart(value = "data")                RecruitmentUpdateRequest recruit ,
+            @RequestPart(value = "data")  RecruitmentUpdateRequest recruit ,
             @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {
