@@ -1,6 +1,8 @@
 package com.umc.banddy.global.infra;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
 import java.util.UUID;
 
 @Profile("s3")
@@ -34,4 +38,6 @@ public class S3Uploader {
             throw new RuntimeException("S3 업로드 실패", e);
         }
     }
+
+
 }

@@ -5,6 +5,7 @@ import com.umc.banddy.domain.band.profile.web.dto.Recruitment.*;
 import com.umc.banddy.domain.chat.service.ChatRoomService;
 import com.umc.banddy.domain.chat.web.dto.chatroom.BasicChatRoomInfo;
 import com.umc.banddy.global.apiPayload.ApiResponse;
+import com.umc.banddy.global.infra.S3PresignedUrl;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodArgumentResolver;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -25,7 +27,23 @@ public class BandManagementController {
     private final JwtTokenUtil jwtTokenUtil;
     private final BandManagementService bandManagementService;
     private final ChatRoomService chatRoomService;
+    private final S3PresignedUrl presigner;
 
+    @PostMapping("/audio/presign")
+    public ResponseEntity<?> presignAudio(@RequestParam String filename,
+                                          @RequestParam String contentType,
+                                          @RequestParam Long memberId) {
+
+        String prefix = String.format("audios/%d/%tY/%<tm/%<td", memberId, new java.util.Date());
+        var res = presigner.presignUrl(prefix, filename, contentType);
+        return ResponseEntity.ok(Map.of(
+                "uploadUrl", res.uploadUrl(),
+                "key", res.key(),
+                "originalFilename", filename,
+                "contentType", res.contentType(),
+                "expiresAt", res.expiresAt()
+        ));
+    }
 
     @Operation(summary = "밴드 모집방 만들기" ,description = """
     - 세션 타입 "🎤 보컬 🎤" , "🎸 일렉 기타 🎸" , "🪕 어쿠스틱 기타 🪕" ,"🎵 베이스 🎵" , "🥁 드럼 🥁" , "🎹 키보드 🎹" , "🎻 바이올린 🎻" , "🎺 트럼펫 🎺"
