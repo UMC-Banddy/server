@@ -29,20 +29,28 @@ public class BandManagementController {
     private final ChatRoomService chatRoomService;
     private final S3PresignedUrl presigner;
 
-    @PostMapping("/audio/presign")
-    public ResponseEntity<?> presignAudio(@RequestParam String filename,
-                                          @RequestParam String contentType,
-                                          @RequestParam Long memberId) {
 
-        String prefix = String.format("audios/%d/%tY/%<tm/%<td", memberId, new java.util.Date());
+    @PostMapping("/audio/presign")
+    @Operation(summary = "음성 파일 업로드용 Presigned URL 발급")
+    public ResponseEntity<ApiResponse<?>> presignAudio(
+            @RequestParam String filename,
+            @RequestParam String contentType,
+            HttpServletRequest request
+    ) {
+        String token = JwtTokenUtil.extractToken(request);
+        Long currentMemberId = jwtTokenUtil.getMemberIdFromToken(token);
+
+        String prefix = String.format("audios/%d/%tY/%<tm/%<td", currentMemberId, new java.util.Date());
+
         var res = presigner.presignUrl(prefix, filename, contentType);
-        return ResponseEntity.ok(Map.of(
-                "uploadUrl", res.uploadUrl(),
-                "key", res.key(),
+
+        return ResponseEntity.ok(ApiResponse.onSuccess(Map.of(
+                "uploadUrl", res.uploadUrl(),    // PUT할 presigned URL
+                "fileUrl", res.fileUrl(),        // 저장 후 접근 가능한 공개 URL
                 "originalFilename", filename,
                 "contentType", res.contentType(),
                 "expiresAt", res.expiresAt()
-        ));
+        )));
     }
 
     @Operation(summary = "밴드 모집방 만들기" ,description = """
@@ -90,7 +98,7 @@ public class BandManagementController {
   """)
     @PatchMapping(path = "/recruitments", consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<RecruitmentResponse>> updateBand(
-            @RequestPart(value = "data")                RecruitmentUpdateRequest recruit ,
+            @RequestPart(value = "data")  RecruitmentUpdateRequest recruit ,
             @RequestPart(value = "image", required = false) MultipartFile image,
             HttpServletRequest request
     ) {

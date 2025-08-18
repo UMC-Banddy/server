@@ -86,6 +86,8 @@ public class BandManagementService {
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
                 .profileImageUrl(profileImageUrl)
+                .fileUrl(request.getFileUrl())
+                .originalFilename(request.getOriginalFilename())
                 .representativeSong(null) // 일단 null로 설정
                 .representativeTrack(track)
                 .name(request.getName())
@@ -259,6 +261,11 @@ public class BandManagementService {
             band.setStatus(request.getStatus());
         }
 
+        if(request.getFileUrl() != null && request.getOriginalFilename() != null) {
+            band.setOriginalFilename(request.getOriginalFilename());
+            band.setFileUrl(request.getFileUrl());
+        }
+
         if(image != null && !image.isEmpty()) {
             String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
             band.setProfileImageUrl(profileImageUrl);
@@ -307,8 +314,6 @@ public class BandManagementService {
 
         if(request.getSession() != null || request.getCurrentSessions() != null){
             List<BandSession> existingSessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(request.getBandId());
-            Map<String, BandSession> existingMap = existingSessions.stream()
-                    .collect(Collectors.toMap(bs -> bs.getSession().getName() + "_" + bs.getSessionStatus(), Function.identity()));
 
             Set<String> recruitingNames = request.getSession() != null ? new HashSet<>(request.getSession()) : new HashSet<>();
             Set<String> participatingNames = request.getCurrentSessions() != null ? new HashSet<>(request.getCurrentSessions()) : new HashSet<>();

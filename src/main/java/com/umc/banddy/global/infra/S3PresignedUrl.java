@@ -24,15 +24,14 @@ public class S3PresignedUrl {
     private String bucket;
 
     /**
-     * Presigned PUT URL 발급 (업로드 용)
+     * Presigned PUT URL 발급 (업로드 용, 퍼블릭 접근 가능)
      *
-     * @param keyPrefix        저장 경로 prefix (예: voices/123/2025/08/19)
-     * @param originalFilename 원본 파일명 (UI 표시용)
+     * @param keyPrefix        저장 경로 prefix (예: audios/123/2025/08/19)
+     * @param originalFilename 원본 파일명 (확장자 추출용)
      * @param contentType      업로드할 Content-Type (audio/m4a 등)
      */
     public PresignResult presignUrl(String keyPrefix, String originalFilename, String contentType) {
         try {
-            // 입력값 검증
             if (originalFilename == null || originalFilename.isBlank()) {
                 throw new IllegalArgumentException("파일명이 비어 있습니다.");
             }
@@ -43,49 +42,49 @@ public class S3PresignedUrl {
                 throw new IllegalArgumentException("keyPrefix가 비어 있습니다.");
             }
 
-            // 확장자 추출 (없으면 예외)
+            // 확장자 추출
+            String ext = "";
             int dot = originalFilename.lastIndexOf(".");
-            if (dot == -1 || dot == originalFilename.length() - 1) {
-                throw new IllegalArgumentException("파일 확장자가 없습니다: " + originalFilename);
+            if (dot != -1 && dot < originalFilename.length() - 1) {
+                ext = originalFilename.substring(dot).toLowerCase();
             }
-            String ext = originalFilename.substring(dot).toLowerCase();
 
             // key = prefix/UUID + ext
-            String key = keyPrefix + "/" + UUID.randomUUID() + ext;
+            String objectKey = keyPrefix + "/" + UUID.randomUUID() + ext;
 
             // URL 만료 (10분)
             Date expiration = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
 
-            GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, key)
+            // Presigned URL (PUT 업로드용)
+            GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, objectKey)
                     .withMethod(HttpMethod.PUT)
                     .withExpiration(expiration);
+
             req.addRequestParameter("Content-Type", contentType);
 
-            URL url = amazonS3.generatePresignedUrl(req);
+            URL uploadUrl = amazonS3.generatePresignedUrl(req);
+
+            // 업로드 후 접근 가능한 퍼블릭 URL
+            String fileUrl = String.format("https://%s.s3.ap-northeast-2.amazonaws.com/%s", bucket, objectKey);
 
             return new PresignResult(
-                    url.toString(),
-                    key,
+                    uploadUrl.toString(),
+                    fileUrl,
                     originalFilename,
                     contentType,
                     expiration.getTime()
             );
 
         } catch (AmazonS3Exception e) {
-            // S3 관련 에러
             throw new RuntimeException("S3 Presigned URL 생성 실패: " + e.getErrorMessage(), e);
-        } catch (IllegalArgumentException e) {
-            // 잘못된 입력값
-            throw e;
         } catch (Exception e) {
-            // 기타 예외
-            throw new RuntimeException("Presigned URL 생성 중 알 수 없는 오류 발생", e);
+            throw new RuntimeException("Presigned URL 생성 중 오류 발생", e);
         }
     }
 
     public record PresignResult(
             String uploadUrl,
-            String key,
+            String fileUrl,
             String originalFilename,
             String contentType,
             long expiresAt

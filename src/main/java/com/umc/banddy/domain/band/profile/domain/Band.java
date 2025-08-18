@@ -85,6 +85,12 @@ public class Band extends BaseEntity {
     @Column(name = "female_count")
     private Integer femaleCount;
 
+    @Column(name = "file_url", nullable = true)
+    private String fileUrl; // 업로드된 파일 S3 URL
+
+    @Column(name = "original_filename", nullable = true)
+    private String originalFilename; // 사용자가 업로드한 원래 이름
+
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "track_id", nullable = true)
     private Track representativeTrack;

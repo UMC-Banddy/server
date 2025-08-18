@@ -38,6 +38,4 @@ public class S3Uploader {
             throw new RuntimeException("S3 업로드 실패", e);
         }
     }
-
-
 }
