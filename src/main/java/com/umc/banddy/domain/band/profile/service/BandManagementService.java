@@ -662,9 +662,6 @@ public class BandManagementService {
             }
         });
 
-        //
-
-
 
         return getApplicationList(bandId, memberId);
     }
@@ -721,8 +718,8 @@ public class BandManagementService {
         Map<String, String> snsLinkMap = snsLinks.stream()
                 .collect(Collectors.toMap(BandSns::getPlatform, BandSns::getSnsLink));
 
-        BandInquiryResponse.representativeSong repSong = Optional.ofNullable(band.getRepresentativeTrack())
-                .map(track -> BandInquiryResponse.representativeSong.builder()
+        BandInquiryResponse.RepresentativeSong repSong = Optional.ofNullable(band.getRepresentativeTrack())
+                .map(track -> BandInquiryResponse.RepresentativeSong.builder()
                         .spotifyId(track.getSpotifyId())
                         .artist(track.getArtist())
                         .trackTitle(track.getTitle())
@@ -732,6 +729,10 @@ public class BandManagementService {
 
         return BandInquiryResponse.builder()
                 .representativeSong(repSong)
+                .representativeSongFile(BandInquiryResponse.RepresentativeSongFile.builder()
+                        .originalFilename(band.getOriginalFilename())
+                        .fileUrl(band.getFileUrl())
+                        .build())
                 .profileImageUrl(band.getProfileImageUrl())
                 .status(band.getStatus())
                 .name(band.getName())
