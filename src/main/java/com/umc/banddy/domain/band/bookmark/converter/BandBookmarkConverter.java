@@ -20,6 +20,7 @@ public class BandBookmarkConverter {
                 .isSoundOn(bookmark.isSoundOn())
                 .memberSummary(memberSummary)
                 .memberCount(totalCount)
+                .soundUrl(bookmark.getBand().getFileUrl())
                 .build();
     }
 

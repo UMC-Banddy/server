@@ -24,7 +24,7 @@ public class S3PresignedUrl {
     private String bucket;
 
     /**
-     * Presigned PUT URL 발급 (업로드 용, 퍼블릭 접근 가능)
+     * Presigned PUT URL 발급 (업로드 용)
      *
      * @param keyPrefix        저장 경로 prefix (예: audios/123/2025/08/19)
      * @param originalFilename 원본 파일명 (확장자 추출용)
@@ -42,7 +42,7 @@ public class S3PresignedUrl {
                 throw new IllegalArgumentException("keyPrefix가 비어 있습니다.");
             }
 
-            // 확장자 추출
+            // 확장자 추출 (없으면 "")
             String ext = "";
             int dot = originalFilename.lastIndexOf(".");
             if (dot != -1 && dot < originalFilename.length() - 1) {
@@ -59,12 +59,11 @@ public class S3PresignedUrl {
             GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, objectKey)
                     .withMethod(HttpMethod.PUT)
                     .withExpiration(expiration);
-
             req.addRequestParameter("Content-Type", contentType);
 
             URL uploadUrl = amazonS3.generatePresignedUrl(req);
 
-            // 업로드 후 접근 가능한 퍼블릭 URL
+            // 공개 URL (fileUrl)
             String fileUrl = String.format("https://%s.s3.ap-northeast-2.amazonaws.com/%s", bucket, objectKey);
 
             return new PresignResult(
@@ -83,8 +82,8 @@ public class S3PresignedUrl {
     }
 
     public record PresignResult(
-            String uploadUrl,
-            String fileUrl,
+            String uploadUrl,      // 업로드용 presigned URL
+            String fileUrl,        // 업로드 후 접근 가능한 공개 URL
             String originalFilename,
             String contentType,
             long expiresAt
