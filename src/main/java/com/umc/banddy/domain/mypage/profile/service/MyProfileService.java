@@ -16,6 +16,7 @@ import com.umc.banddy.domain.member.repository.MemberSessionRepository;
 import com.umc.banddy.domain.mypage.profile.converter.MyProfileConverter;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileResponse;
 import com.umc.banddy.domain.mypage.profile.web.dto.MyProfileUpdateRequest;
+import com.umc.banddy.global.infra.S3Uploader;
 import com.umc.banddy.global.security.jwt.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,7 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +41,7 @@ public class MyProfileService {
     private final MemberTagRepository memberTagRepository;
     private final MemberSessionRepository memberSessionRepository;
     private final MemberGenreRepository memberGenreRepository;
+    private final S3Uploader s3Uploader;
     private final SessionRepository sessionRepository;
     private final JwtTokenUtil jwtTokenUtil;
 
@@ -75,10 +78,17 @@ public class MyProfileService {
     }
 
     @Transactional
-    public void updateMyProfile(HttpServletRequest request, MyProfileUpdateRequest dto) {
+    public void updateMyProfile(HttpServletRequest request,
+                                MyProfileUpdateRequest dto,
+                                MultipartFile profileImage) {
         Long memberId = jwtTokenUtil.getMemberIdFromToken(JwtTokenUtil.extractToken(request));
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원을 찾을 수 없습니다."));
+
+        String uploadedUrl = null;
+        if (profileImage != null && !profileImage.isEmpty()) {
+            uploadedUrl = s3Uploader.upload(profileImage, "profile"); // S3 경로
+        }
 
         Member updated = Member.builder()
                 .id(member.getId())
@@ -90,7 +100,7 @@ public class MyProfileService {
                 .gender(dto.getGender() != null ? Gender.valueOf(dto.getGender()) : member.getGender())
                 .region(dto.getRegion() != null ? dto.getRegion() : member.getRegion())
                 .bio(dto.getBio() != null ? dto.getBio() : member.getBio())
-                .profileImageUrl(dto.getProfileImage() != null ? dto.getProfileImage() : member.getProfileImageUrl())
+                .profileImageUrl(uploadedUrl != null ? uploadedUrl : member.getProfileImageUrl())
                 .mediaUrl(dto.getMediaUrl() != null ? dto.getMediaUrl() : member.getMediaUrl())
                 .status(member.getStatus())
                 .role(member.getRole())
@@ -98,6 +108,7 @@ public class MyProfileService {
                 .build();
 
         memberRepository.save(updated);
+
 
         // 세션 업데이트
         if (dto.getAvailableSessions() != null) {

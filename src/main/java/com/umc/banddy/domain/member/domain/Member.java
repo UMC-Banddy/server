@@ -71,14 +71,15 @@ public class Member extends BaseEntity {
         this.refreshToken = refreshToken;
     }
 
-    public void updateProfile(String profileImageUrl, String bio, String mediaUrl) {
+    public void updateProfile(String profileImageUrl, String nickname, String bio) {
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+        if (nickname != null) this.nickname = nickname;
         if (bio != null) this.bio = bio;
-        if (mediaUrl != null) this.mediaUrl = mediaUrl;
     }
 
     public void deactivate() {
         this.status = Status.INACTIVE;
         this.inactiveDate = LocalDate.now();
     }
+
 }

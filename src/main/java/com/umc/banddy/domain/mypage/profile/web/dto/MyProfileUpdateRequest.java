@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,8 +21,6 @@ public class MyProfileUpdateRequest {
     private String region;
     private String district;
     private String bio;
-
-    private String profileImage;
     private String mediaUrl;
 
     private List<SessionInfo> availableSessions;

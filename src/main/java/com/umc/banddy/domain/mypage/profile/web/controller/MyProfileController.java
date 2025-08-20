@@ -13,6 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -33,17 +36,20 @@ public class MyProfileController {
         return ResponseEntity.ok(ApiResponse.onSuccess(response));
     }
 
-    @PutMapping
+    @PutMapping(value = "/me/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "내 프로필 수정", description = "내 프로필 정보를 수정합니다.")
     public ResponseEntity<ApiResponse<String>> updateMyProfile(
-            @RequestBody MyProfileUpdateRequest request,
+            @RequestPart("data") MyProfileUpdateRequest request, // JSON 파트
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage, // 파일 파트
             HttpServletRequest httpRequest
     ) {
         if (request == null) throw new GeneralException(ErrorStatus._BAD_REQUEST);
         String token = JwtTokenUtil.extractToken(httpRequest);
         if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
         try { jwtTokenUtil.getMemberIdFromToken(token); } catch (Exception e) { throw new GeneralException(ErrorStatus._UNAUTHORIZED); }
-        myProfileService.updateMyProfile(httpRequest, request);
+
+        myProfileService.updateMyProfile(httpRequest, request, profileImage);
         return ResponseEntity.ok(ApiResponse.onSuccess("프로필 수정 완료"));
     }
+
 }
