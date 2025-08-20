@@ -4,16 +4,17 @@ import com.umc.banddy.domain.member.domain.Member;
 import com.umc.banddy.domain.member.repository.MemberRepository;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.repository.MemberArtistRepository;
-import com.umc.banddy.domain.music.track.domain.Track;
-import com.umc.banddy.domain.music.track.repository.MemberTrackRepository;
 import com.umc.banddy.domain.mypage.similarartist.converter.SimilarArtistConverter;
-import com.umc.banddy.domain.mypage.similarartist.web.dto.SimilarArtistResponse;
 import com.umc.banddy.domain.mypage.similarartist.web.dto.ArtistSuggestionQuestionResponse;
+import com.umc.banddy.domain.mypage.similarartist.web.dto.SimilarArtistResponse;
 import com.umc.banddy.global.util.MemberSimilarityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,15 +25,30 @@ public class SimilarArtistService {
     private final MemberArtistRepository memberArtistRepository;
     private final MemberSimilarityUtil similarityUtil;
 
-    // 유사한 유저들이 저장한 아티스트 상위 5개
     public List<SimilarArtistResponse> getArtistsSavedBySimilarUsers(Long loginMemberId) {
         Member loginMember = memberRepository.findById(loginMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         List<Member> similarMembers = similarityUtil.findSimilarMembers(loginMember);
-        List<Artist> artists = memberArtistRepository.findTopSavedArtistsByMembers(similarMembers, loginMemberId, 5);
 
-        return artists.stream()
+        similarMembers = similarMembers.stream()
+                .filter(m -> !m.getId().equals(loginMemberId))
+                .distinct()
+                .toList();
+
+        if (similarMembers.isEmpty()) {
+            return List.of();
+        }
+
+        List<Artist> topArtists = memberArtistRepository
+                .findTopSavedArtistsByMembers(similarMembers, loginMemberId, PageRequest.of(0, 5));
+
+        Set<Long> myArtistIds = new HashSet<>(memberArtistRepository.findArtistIdsSavedByMember(loginMemberId));
+        List<Artist> filtered = topArtists.stream()
+                .filter(a -> !myArtistIds.contains(a.getId()))
+                .toList();
+
+        return filtered.stream()
                 .map(SimilarArtistConverter::toResponse)
                 .collect(Collectors.toList());
     }
@@ -44,9 +60,9 @@ public class SimilarArtistService {
 
         List<SimilarArtistResponse> list = getArtistsSavedBySimilarUsers(loginMemberId);
 
-        String artistName = list.isEmpty() ? null : list.get(0).getName(); // 하나만 집는다
+        String artistName = list.isEmpty() ? null : list.get(0).getName();
         String question = (artistName != null && !artistName.isBlank())
-                ? me.getNickname() + " 님이 좋아하는 " + artistName + "의 곡은 어때요?"
+                ? me.getNickname() + " 님과 취향이 비슷한 사람들이 좋아한 " + artistName + "의 곡은 어때요?"
                 : me.getNickname() + " 님이 좋아할 만한 아티스트를 찾아볼까요?";
 
         return ArtistSuggestionQuestionResponse.builder()
@@ -55,5 +71,4 @@ public class SimilarArtistService {
                 .memberNickname(me.getNickname())
                 .build();
     }
-
 }
