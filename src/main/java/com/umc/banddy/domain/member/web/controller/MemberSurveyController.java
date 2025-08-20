@@ -6,6 +6,7 @@ import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.service.MemberSurveyService;
 import com.umc.banddy.domain.member.web.dto.MemberSurveyRequest;
 import com.umc.banddy.domain.music.artist.domain.Artist;
+import com.umc.banddy.domain.member.web.dto.MemberSurveyResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +34,7 @@ public class MemberSurveyController {
     // 사전 테스트 정보 저장
     @Operation(summary = "사전 테스트 정보 저장")
     @PostMapping(value = "/{memberId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> saveSurvey(
+    public ResponseEntity<MemberSurveyResponse> saveSurvey(
             @PathVariable Long memberId,
             @RequestPart("request") String requestJson,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
@@ -43,14 +44,12 @@ public class MemberSurveyController {
         try {
             MemberSurveyRequest request = objectMapper.readValue(requestJson, MemberSurveyRequest.class);
 
-            memberSurveyService.saveSurveyInfo(memberId, request, profileImage, mediaFile);
-            return ResponseEntity.ok().build();
+            MemberSurveyResponse response = memberSurveyService.saveSurveyInfo(memberId, request, profileImage, mediaFile);
+            return ResponseEntity.ok(response);
         } catch (JsonProcessingException e) {
-            return ResponseEntity.badRequest().build(); // 잘못된 JSON
+            return ResponseEntity.badRequest().build();
         }
     }
-
-
 
     // 사전 테스트 장르 조회
     @Operation(summary = "사전 테스트 장르 조회")
