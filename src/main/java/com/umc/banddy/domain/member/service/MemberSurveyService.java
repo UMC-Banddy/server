@@ -2,6 +2,7 @@ package com.umc.banddy.domain.member.service;
 
 import com.umc.banddy.domain.member.domain.Genre;
 import com.umc.banddy.domain.member.web.dto.MemberSurveyRequest;
+import com.umc.banddy.domain.member.web.dto.MemberSurveyResponse;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.member.enums.KeywordCategory;
 import com.umc.banddy.domain.member.web.dto.SimpleKeywordDto;
@@ -12,10 +13,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberSurveyService {
 
-    void saveSurveyInfo(Long memberId,
-                        MemberSurveyRequest request,
-                        MultipartFile profileImage,
-                        MultipartFile mediaFile);
+    MemberSurveyResponse saveSurveyInfo(Long memberId,
+                                        MemberSurveyRequest request,
+                                        MultipartFile profileImage,
+                                        MultipartFile mediaFile);
 
     List<Genre> getAllGenres();
     List<Artist> getAllArtists();

@@ -24,8 +24,7 @@ public class MemberSurveyRequest {
     private String mediaUrl;
 
     @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
+    @NoArgsConstructor   @AllArgsConstructor
     @Builder
     public static class SessionRequest {
         private String sessionName;

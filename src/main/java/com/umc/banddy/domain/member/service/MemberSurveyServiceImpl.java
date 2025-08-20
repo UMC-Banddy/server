@@ -11,6 +11,7 @@ import com.umc.banddy.domain.member.web.dto.SimpleSessionDto;
 import com.umc.banddy.domain.member.enums.KeywordCategory;
 import com.umc.banddy.domain.member.web.dto.KeywordRequestGroup;
 import com.umc.banddy.domain.member.web.dto.MemberSurveyRequest;
+import com.umc.banddy.domain.member.web.dto.MemberSurveyResponse;
 import com.umc.banddy.domain.member.web.dto.MemberSurveyRequest.SessionRequest;
 import com.umc.banddy.domain.music.artist.domain.Artist;
 import com.umc.banddy.domain.music.artist.domain.MemberArtist;
@@ -46,8 +47,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
     @Override
     @Transactional
-    public void saveSurveyInfo(Long memberId, MemberSurveyRequest request,
-                               MultipartFile profileImage, MultipartFile mediaFile) {
+    public MemberSurveyResponse saveSurveyInfo(Long memberId, MemberSurveyRequest request,
+                                               MultipartFile profileImage, MultipartFile mediaFile) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -143,8 +144,26 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                             .platform(link.getPlatform())
                             .build()));
         }
+        return MemberSurveyResponse.builder()
+                .nickname(member.getNickname())
+                .age(member.getAge())
+                .gender(member.getGender() != null ? member.getGender().name() : null)
+                .region(member.getRegion())
+                .bio(member.getBio())
+                .genres(member.getMemberGenres().stream()
+                        .map(mg -> mg.getGenre().getName())
+                        .toList())
+                .artists(member.getMemberArtists().stream()
+                        .map(ma -> ma.getArtist().getName())
+                        .toList())
+                .sessions(member.getMemberSessions().stream()
+                        .map(ms -> MemberSurveyResponse.SessionDto.builder()
+                                .name(ms.getSession().getName())
+                                .level(ms.getLevel().name())
+                                .build())
+                        .toList())
+                .build();
     }
-
 
     @Override
     public List<Genre> getAllGenres() {
