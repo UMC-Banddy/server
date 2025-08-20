@@ -615,7 +615,6 @@ public class BandManagementService {
                 .sorted()
                 .toList();
 
-
         return ApplicationListResponse.builder()
                 .bandName(band.getName())
                 .bandImage(band.getProfileImageUrl())
@@ -671,9 +670,9 @@ public class BandManagementService {
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
 
-        if(!band.getManager().getId().equals(memberId)){
-            throw new GeneralException(ErrorStatus._FORBIDDEN);
-        }
+//        if(!band.getManager().getId().equals(memberId)){
+//            throw new GeneralException(ErrorStatus._FORBIDDEN);
+//        }
 
         List<BandGenre> genres = bandGenreRepository.findByBandId(bandId);
         List<String> genreNames = genres.stream()
