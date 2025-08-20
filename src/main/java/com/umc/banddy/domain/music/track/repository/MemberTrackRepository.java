@@ -30,6 +30,12 @@ public interface MemberTrackRepository extends JpaRepository<MemberTrack, Long> 
               FROM MemberTrack mt
              WHERE mt.member IN :members
                AND mt.member.id <> :excludeMemberId
+               AND NOT EXISTS (
+                   SELECT 1
+                     FROM MemberTrack my
+                    WHERE my.member.id = :excludeMemberId
+                      AND my.track = mt.track
+               )
              GROUP BY mt.track
              ORDER BY COUNT(mt.track) DESC
             """)

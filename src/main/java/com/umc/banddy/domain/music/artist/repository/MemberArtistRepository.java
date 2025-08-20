@@ -21,7 +21,16 @@ public interface MemberArtistRepository extends JpaRepository<MemberArtist, Long
 
     List<MemberArtist> findByMemberId(Long memberId);
 
-    // 본인 제외 조건 추가된 버전
+
+    // 내가 저장한 아티스트 ID 목록
+    @Query("""
+        SELECT ma.artist.id
+        FROM MemberArtist ma
+        WHERE ma.member.id = :memberId
+    """)
+    List<Long> findArtistIdsSavedByMember(@Param("memberId") Long memberId);
+
+    // 본인 제외 조건 추가
     @Query("""
             SELECT ma.artist
               FROM MemberArtist ma
