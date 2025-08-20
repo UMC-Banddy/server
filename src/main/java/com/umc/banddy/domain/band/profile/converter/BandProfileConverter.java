@@ -146,4 +146,8 @@ public class BandProfileConverter {
 
         return new BandSuggestionResponse(suggestion, genre, artistName);
     }
+
+    public static BandSuggestionResponse toStaticSuggestion() {
+        return new BandSuggestionResponse("밴드에 맞는 곡을 찾아볼까요?", null, null);
+    }
 }
