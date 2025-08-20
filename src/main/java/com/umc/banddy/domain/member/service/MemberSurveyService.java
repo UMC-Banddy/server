@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberSurveyService {
 
-    void saveSurveyInfo(String accessToken,
+    void saveSurveyInfo(Long memberId,
                         MemberSurveyRequest request,
                         MultipartFile profileImage,
                         MultipartFile mediaFile);

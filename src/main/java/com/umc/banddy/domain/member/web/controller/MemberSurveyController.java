@@ -32,26 +32,24 @@ public class MemberSurveyController {
 
     // 사전 테스트 정보 저장
     @Operation(summary = "사전 테스트 정보 저장")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{memberId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> saveSurvey(
+            @PathVariable Long memberId,
             @RequestPart("request") String requestJson,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-            @RequestPart(value = "mediaFile", required = false) MultipartFile mediaFile,
-            HttpServletRequest httpRequest //
+            @RequestPart(value = "mediaFile", required = false) MultipartFile mediaFile
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             MemberSurveyRequest request = objectMapper.readValue(requestJson, MemberSurveyRequest.class);
 
-            // 필요하다면 토큰 읽기 (없으면 null)
-            String accessToken = httpRequest.getHeader("Authorization");
-
-            memberSurveyService.saveSurveyInfo(accessToken, request, profileImage, mediaFile);
+            memberSurveyService.saveSurveyInfo(memberId, request, profileImage, mediaFile);
             return ResponseEntity.ok().build();
         } catch (JsonProcessingException e) {
             return ResponseEntity.badRequest().build(); // 잘못된 JSON
         }
     }
+
 
 
     // 사전 테스트 장르 조회
