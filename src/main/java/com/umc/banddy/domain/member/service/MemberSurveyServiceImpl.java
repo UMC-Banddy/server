@@ -46,11 +46,10 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
     @Override
     @Transactional
-    public void saveSurveyInfo(String accessToken, MemberSurveyRequest request,
+    public void saveSurveyInfo(Long memberId, MemberSurveyRequest request,
                                MultipartFile profileImage, MultipartFile mediaFile) {
 
-        String email = jwtTokenUtil.getEmailFromToken(accessToken);
-        Member member = memberRepository.findByEmail(email)
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
         // S3 업로드
