@@ -81,11 +81,13 @@ public class BandManagementService {
                 ? s3Uploader.upload(image, "band-profile-images") : null;
 
         Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
+                .orElseGet(() -> trackService.saveTracksBySpotifyId(request.getRepresentativeSong()));
 
         Band band = Band.builder()
                 .status(BandStatus.RECRUITING)
                 .profileImageUrl(profileImageUrl)
+                .fileUrl(request.getFileUrl())
+                .originalFilename(request.getOriginalFilename())
                 .representativeSong(null) // 일단 null로 설정
                 .representativeTrack(track)
                 .name(request.getName())
@@ -259,13 +261,18 @@ public class BandManagementService {
             band.setStatus(request.getStatus());
         }
 
+        if(request.getFileUrl() != null && request.getOriginalFilename() != null) {
+            band.setOriginalFilename(request.getOriginalFilename());
+            band.setFileUrl(request.getFileUrl());
+        }
+
         if(image != null && !image.isEmpty()) {
             String profileImageUrl = s3Uploader.upload(image, "band-profile-images");
             band.setProfileImageUrl(profileImageUrl);
         }
         if(request.getRepresentativeSong() != null) {
             Track track = trackRepository.findBySpotifyId(request.getRepresentativeSong())
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.TRACK_NOT_FOUND));
+                    .orElseGet(() -> trackService.saveTracksBySpotifyId(request.getRepresentativeSong()));
             band.setRepresentativeTrack(track);
         }
         if(request.getName() != null) {
@@ -307,8 +314,6 @@ public class BandManagementService {
 
         if(request.getSession() != null || request.getCurrentSessions() != null){
             List<BandSession> existingSessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(request.getBandId());
-            Map<String, BandSession> existingMap = existingSessions.stream()
-                    .collect(Collectors.toMap(bs -> bs.getSession().getName() + "_" + bs.getSessionStatus(), Function.identity()));
 
             Set<String> recruitingNames = request.getSession() != null ? new HashSet<>(request.getSession()) : new HashSet<>();
             Set<String> participatingNames = request.getCurrentSessions() != null ? new HashSet<>(request.getCurrentSessions()) : new HashSet<>();
@@ -610,7 +615,6 @@ public class BandManagementService {
                 .sorted()
                 .toList();
 
-
         return ApplicationListResponse.builder()
                 .bandName(band.getName())
                 .bandImage(band.getProfileImageUrl())
@@ -657,9 +661,6 @@ public class BandManagementService {
             }
         });
 
-        //
-
-
 
         return getApplicationList(bandId, memberId);
     }
@@ -669,9 +670,9 @@ public class BandManagementService {
         Band band = bandRepository.findById(bandId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
 
-        if(!band.getManager().getId().equals(memberId)){
-            throw new GeneralException(ErrorStatus._FORBIDDEN);
-        }
+//        if(!band.getManager().getId().equals(memberId)){
+//            throw new GeneralException(ErrorStatus._FORBIDDEN);
+//        }
 
         List<BandGenre> genres = bandGenreRepository.findByBandId(bandId);
         List<String> genreNames = genres.stream()
@@ -716,8 +717,8 @@ public class BandManagementService {
         Map<String, String> snsLinkMap = snsLinks.stream()
                 .collect(Collectors.toMap(BandSns::getPlatform, BandSns::getSnsLink));
 
-        BandInquiryResponse.representativeSong repSong = Optional.ofNullable(band.getRepresentativeTrack())
-                .map(track -> BandInquiryResponse.representativeSong.builder()
+        BandInquiryResponse.RepresentativeSong repSong = Optional.ofNullable(band.getRepresentativeTrack())
+                .map(track -> BandInquiryResponse.RepresentativeSong.builder()
                         .spotifyId(track.getSpotifyId())
                         .artist(track.getArtist())
                         .trackTitle(track.getTitle())
@@ -727,6 +728,10 @@ public class BandManagementService {
 
         return BandInquiryResponse.builder()
                 .representativeSong(repSong)
+                .representativeSongFile(BandInquiryResponse.RepresentativeSongFile.builder()
+                        .originalFilename(band.getOriginalFilename())
+                        .fileUrl(band.getFileUrl())
+                        .build())
                 .profileImageUrl(band.getProfileImageUrl())
                 .status(band.getStatus())
                 .name(band.getName())

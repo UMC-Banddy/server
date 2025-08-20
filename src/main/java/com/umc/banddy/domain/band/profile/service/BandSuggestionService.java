@@ -15,7 +15,20 @@ public class BandSuggestionService {
     private final BandArtistRepository bandArtistRepository;
 
     public BandSuggestionResponse getSuggestion(Long bandId) {
+        if (bandId == null) {
+            return BandProfileConverter.toStaticSuggestion();
+        }
+
         var artists = bandArtistRepository.findByBandId(bandId);
+        if (artists == null || artists.isEmpty()) {
+            return BandProfileConverter.toStaticSuggestion();
+        }
+
         return BandProfileConverter.toSuggestionResponse(artists);
     }
+
+    public BandSuggestionResponse getStaticSuggestion() {
+        return BandProfileConverter.toStaticSuggestion();
+    }
 }
+

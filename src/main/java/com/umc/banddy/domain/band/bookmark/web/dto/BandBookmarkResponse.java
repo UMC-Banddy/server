@@ -16,4 +16,5 @@ public class BandBookmarkResponse {
     private boolean isSoundOn;
     private String memberSummary;
     private int memberCount;
+    private String soundUrl;
 }

@@ -22,7 +22,9 @@ public class BandInquiryResponse {
 
     private String profileImageUrl;
 
-    private representativeSong representativeSong;
+    private RepresentativeSong representativeSong;
+
+    private RepresentativeSongFile representativeSongFile;
 
     private String name;
 
@@ -64,7 +66,16 @@ public class BandInquiryResponse {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class representativeSong{
+    public static class RepresentativeSongFile{
+        private String originalFilename;
+        private String fileUrl;
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RepresentativeSong{
         private String spotifyId;
         private String artist;
         private String trackTitle;
@@ -87,11 +98,6 @@ public class BandInquiryResponse {
         private String title;
         private String imageUrl;
     }
-
-
-
-
-
 
 
 }

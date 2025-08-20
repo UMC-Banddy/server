@@ -15,9 +15,8 @@ public class WebConfig implements WebMvcConfigurer {
     public WebConfig(OctetStreamReadMsgConverter octetStreamReadMsgConverter) {
         this.octetStreamReadMsgConverter = octetStreamReadMsgConverter;
     }
-
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(octetStreamReadMsgConverter);
     }
 }

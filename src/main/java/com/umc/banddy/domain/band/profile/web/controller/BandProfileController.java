@@ -47,6 +47,12 @@ public class BandProfileController {
         return bandSuggestionService.getSuggestion(bandId);
     }
 
+    // 밴드 없는 경우 고정 문구 반환
+    @GetMapping("/question")
+    public BandSuggestionResponse getStaticSuggestion() {
+        return bandSuggestionService.getStaticSuggestion();
+    }
+
     private Long extractMemberIdOrThrow(HttpServletRequest request) {
         String token = JwtTokenUtil.extractToken(request);
         if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
