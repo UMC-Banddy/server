@@ -1,12 +1,18 @@
 package com.umc.banddy.domain.member.domain;
 
+import com.umc.banddy.domain.member.domain.mapping.MemberGenre;
+import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import com.umc.banddy.domain.member.enums.Gender;
 import com.umc.banddy.domain.member.enums.Status;
 import com.umc.banddy.domain.member.enums.Role;
 import com.umc.banddy.domain.member.listener.MemberEntityListener;
+import com.umc.banddy.domain.music.artist.domain.MemberArtist;
 import com.umc.banddy.global.entity.BaseEntity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -66,6 +72,15 @@ public class Member extends BaseEntity {
 
 
     private LocalDate inactiveDate;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberGenre> memberGenres = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberArtist> memberArtists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberSession> memberSessions = new ArrayList<>();
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
