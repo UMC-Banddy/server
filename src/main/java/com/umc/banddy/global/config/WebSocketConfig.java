@@ -42,7 +42,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // STOMP 엔드포인트 설정
-                .setAllowedOriginPatterns("*") // CORS 설정: 임시 모든 출처 허용
+                .setAllowedOriginPatterns(                "http://localhost:5173",
+                        "http://localhost:3000",
+                        "http://localhost:4040",
+                        "https://banddy.site",
+                        "https://umc-banddy.vercel.app",
+                        "http://umc-banddy-hosting.s3-website.ap-northeast-2.amazonaws.com",
+                        "https://www.banddy.click",
+                        "https://banddy.click"
+                )
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .withSockJS(); // SockJS 적용
 
