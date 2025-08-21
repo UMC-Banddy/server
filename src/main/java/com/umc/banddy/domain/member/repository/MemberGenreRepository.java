@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface MemberGenreRepository extends JpaRepository<MemberGenre, Long> {
     List<MemberGenre> findByMemberId(Long memberId);
 
+    void deleteByMemberId(Long memberId);
+
     @Query("""
         select mg.genre.id
         from MemberGenre mg

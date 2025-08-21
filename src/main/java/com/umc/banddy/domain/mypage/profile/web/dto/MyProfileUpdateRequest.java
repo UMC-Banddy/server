@@ -21,7 +21,6 @@ public class MyProfileUpdateRequest {
     private String district;
     private String bio;
 
-    private String profileImage;
     private String mediaUrl;
 
     private List<SessionInfo> availableSessions;
