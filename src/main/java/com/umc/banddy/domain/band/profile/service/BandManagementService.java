@@ -665,20 +665,19 @@ public class BandManagementService {
         return getApplicationList(bandId, memberId);
     }
 
-    public BandInquiryResponse getRecruitment(Long memberId, Long bandId){
-
-        Band band = bandRepository.findById(bandId)
+    public BandInquiryResponse getRecruitment(Long memberId, Long bandId) {
+        Band band = bandRepository.findBandDetailById(bandId)
                 .orElseThrow(() -> new GeneralException(ErrorStatus.BAND_NOT_FOUND));
 
-//        if(!band.getManager().getId().equals(memberId)){
-//            throw new GeneralException(ErrorStatus._FORBIDDEN);
-//        }
+        return buildBandInquiryResponse(band);
+    }
 
-        List<BandGenre> genres = bandGenreRepository.findByBandId(bandId);
+    public BandInquiryResponse buildBandInquiryResponse(Band band) {
+        List<BandGenre> genres = bandGenreRepository.findByBandId(band.getId());
         List<String> genreNames = genres.stream()
                 .map(bg -> bg.getGenre().getName())
                 .toList();
-        List<BandSession> sessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(bandId);
+        List<BandSession> sessions = bandSessionRepository.findByBandIdAndIsDeletedFalse(band.getId());
         List<String> session = new ArrayList<>();
         List<String> currentSessions = new ArrayList<>();
 
@@ -690,7 +689,7 @@ public class BandManagementService {
             }
         }
 
-        List<BandArtist> artists = bandArtistRepository.findByBandId(bandId);
+        List<BandArtist> artists = bandArtistRepository.findByBandId(band.getId());
         List<BandInquiryResponse.Artist> artistList = artists.stream()
                 .map(ba -> BandInquiryResponse.Artist.builder()
                         .name(ba.getArtist().getName())
@@ -699,7 +698,7 @@ public class BandManagementService {
                         .build())
                 .toList();
 
-        List<BandTrack> tracks = bandTrackRepository.findByBandId(bandId);
+        List<BandTrack> tracks = bandTrackRepository.findByBandId(band.getId());
         List<BandInquiryResponse.Track> trackList = tracks.stream()
                 .map(bt -> BandInquiryResponse.Track.builder()
                         .title(bt.getTrack().getTitle())
@@ -708,12 +707,12 @@ public class BandManagementService {
                         .build())
                 .toList();
 
-        List<BandJob> jobs = bandJobRepository.findJobsByBandId(bandId);
+        List<BandJob> jobs = bandJobRepository.findJobsByBandId(band.getId());
         List<String> jobList = jobs.stream()
                 .map(BandJob::getJob)
                 .toList();
 
-        List<BandSns> snsLinks = bandSnsRepository.findByBandId(bandId);
+        List<BandSns> snsLinks = bandSnsRepository.findByBandId(band.getId());
         Map<String, String> snsLinkMap = snsLinks.stream()
                 .collect(Collectors.toMap(BandSns::getPlatform, BandSns::getSnsLink));
 
@@ -752,6 +751,17 @@ public class BandManagementService {
                 .tracks(trackList)
                 .jobs(jobList)
                 .snsLink(snsLinkMap)
+                .build();
+    }
+    public BandInfoListResponse getRecruitmentBand(Long memberId){
+
+        List<Band> bands = bandRepository.findAllRecruitingNotManagedBy(memberId);
+
+        return BandInfoListResponse.builder()
+                .bandInquiryList(
+                        bands.stream()
+                        .map(this::buildBandInquiryResponse)
+                        .toList())
                 .build();
     }
 
