@@ -31,6 +31,7 @@ public class MemberSurveyRequest {
     public static class SessionRequest {
         private Long sessionId;   // 세션 아이디
         private String level;     // 레벨 (BEGINNER, INTERMEDIATE, ADVANCED 등)
+        private SessionType sessionType;
     }
 
 }
