@@ -21,6 +21,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import java.security.Principal;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @Configuration
@@ -76,12 +80,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
        registration.interceptors(new ChannelInterceptor() {
 
+           private final Map<String, Set<String>> subscriptions = new ConcurrentHashMap<>();
+
            // 웹소켓 메세지는 시큐리티 체인을 통과하지 않아 인증 로직 구현
            // connect 요청시 한번만 jwt 토큰을 검증함
            @Override
            public Message<?> preSend(Message<?> message, MessageChannel channel) {
                StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-               if(StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
+               if(StompCommand.CONNECT.equals(Objects.requireNonNull(headerAccessor).getCommand())) {
                    String token = headerAccessor.getFirstNativeHeader("Authorization");
 
                    if (token != null && token.startsWith("Bearer ")) {
@@ -98,6 +104,30 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                        headerAccessor.setUser(principal);
                    }
                }
+               else if (StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())) {
+                   String destination = headerAccessor.getDestination();
+                   Principal principal = headerAccessor.getUser();
+
+                   if (principal == null || destination == null) return message;
+
+                   String userId = principal.getName(); // 보통 memberId or email
+
+                   subscriptions.putIfAbsent(userId, ConcurrentHashMap.newKeySet());
+
+                   Set<String> userSubs = subscriptions.get(userId);
+                   if (userSubs.contains(destination)) {
+                       throw new IllegalStateException("이미 구독 중인 채팅방: " + destination);
+                   }
+
+                   userSubs.add(destination);
+               }
+               else if (StompCommand.DISCONNECT.equals(headerAccessor.getCommand())) {
+                   Principal principal = headerAccessor.getUser();
+                   if (principal != null) {
+                       subscriptions.remove(principal.getName());
+                   }
+               }
+
                return message;
            }
        });
