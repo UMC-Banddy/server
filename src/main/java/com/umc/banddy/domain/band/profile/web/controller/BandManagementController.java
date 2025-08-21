@@ -160,7 +160,7 @@ public class BandManagementController {
         return ResponseEntity.ok(ApiResponse.onSuccess(bandManagementService.updateApplicant(currentMemberId, applicantUpdateRequest, bandId)));
     }
     @Operation(summary = "모집중인 밴드 정보 불러오기")
-    @PatchMapping("/recruitments/recruiting")
+    @GetMapping("/recruitments/recruiting")
     public ResponseEntity<ApiResponse<BandInfoListResponse>> getRecruitmentingBand(
             HttpServletRequest request
     ){
