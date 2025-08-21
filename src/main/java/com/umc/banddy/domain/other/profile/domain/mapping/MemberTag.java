@@ -25,7 +25,7 @@ public class MemberTag {
     @JoinColumn(name = "member_id", nullable = false)   // ✅ NOT NULL 권장
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 

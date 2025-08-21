@@ -1,6 +1,7 @@
 package com.umc.banddy.domain.other.profile.repository;
 
 import com.umc.banddy.domain.member.domain.Member;
+import com.umc.banddy.domain.other.profile.domain.Tag;
 import com.umc.banddy.domain.other.profile.domain.mapping.MemberTag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,7 +24,7 @@ public interface MemberTagRepository extends JpaRepository<MemberTag, Long> {
     // 지울 tag_id들만 선별 삭제
     void deleteByMemberIdAndTagIdIn(Long memberId, Collection<Long> tagIds);
 
-    boolean existsByMemberIdAndTagId(Long memberId, Long tagId);
+    boolean existsByMemberAndTag(Member member, Tag tag);
 
     // 현재 회원을 제외한, 태그가 존재하는 모든 회원 조회 (유사도 비교용)
     @Query("""
