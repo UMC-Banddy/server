@@ -115,7 +115,7 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                                         .member(member)
                                         .session(session)
                                         .level(Level.valueOf(sessionReq.getLevel().toUpperCase()))
-                                        .sessionType(session.getType())
+                                        .sessionType(sessionReq.getSessionType())
                                         .build()
                         ));
             }

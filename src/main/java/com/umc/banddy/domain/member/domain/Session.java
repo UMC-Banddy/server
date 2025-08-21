@@ -22,8 +22,5 @@ public class Session extends BaseEntity {
     @Column
     private String icon;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SessionType type;  // ✅ 추가
 }
 
