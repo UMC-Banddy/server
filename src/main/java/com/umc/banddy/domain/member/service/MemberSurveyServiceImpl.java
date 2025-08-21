@@ -3,6 +3,7 @@ package com.umc.banddy.domain.member.service;
 import com.umc.banddy.domain.member.domain.*;
 import com.umc.banddy.domain.member.domain.mapping.*;
 import com.umc.banddy.domain.member.enums.Level;
+import com.umc.banddy.domain.member.enums.SessionType;
 import com.umc.banddy.global.apiPayload.code.status.ErrorStatus;
 import com.umc.banddy.global.apiPayload.exception.handler.AuthHandler;
 import com.umc.banddy.domain.member.repository.*;
@@ -47,21 +48,13 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
 
     @Override
     @Transactional
-    public MemberSurveyResponse saveSurveyInfo(Long memberId, MemberSurveyRequest request,
-                                               MultipartFile profileImage, MultipartFile mediaFile) {
+    public MemberSurveyResponse saveSurveyInfo(Long memberId, MemberSurveyRequest request) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new AuthHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-        // S3 업로드
-        String profileImageUrl = (profileImage != null && !profileImage.isEmpty())
-                ? s3Uploader.upload(profileImage, "profile-images") : null;
-
-        String mediaUrl = (mediaFile != null && !mediaFile.isEmpty())
-                ? s3Uploader.upload(mediaFile, "media-files") : null;
-
-        // 프로필 업데이트
-        member.updateProfile(profileImageUrl, request.getBio(), mediaUrl);
+        // ✅ JSON으로 받은 URL과 bio 바로 사용
+        member.updateProfile(request.getProfileImageUrl(), request.getBio(), request.getMediaUrl());
 
         // 장르 저장
         if (request.getGenreNames() != null) {
@@ -116,14 +109,18 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
         // 세션 저장
         if (request.getSessions() != null) {
             for (SessionRequest sessionReq : request.getSessions()) {
-                sessionRepository.findByName(sessionReq.getSessionName()).ifPresent(session ->
-                        memberSessionRepository.save(MemberSession.builder()
-                                .member(member)
-                                .session(session)
-                                .level(Level.valueOf(sessionReq.getLevel()))
-                                .build()));
+                sessionRepository.findById(sessionReq.getSessionId())
+                        .ifPresent(session -> memberSessionRepository.save(
+                                MemberSession.builder()
+                                        .member(member)
+                                        .session(session)
+                                        .level(Level.valueOf(sessionReq.getLevel().toUpperCase()))
+                                        .sessionType(session.getType())
+                                        .build()
+                        ));
             }
         }
+
 
         // 아티스트 저장
         if (request.getArtistIds() != null) {
