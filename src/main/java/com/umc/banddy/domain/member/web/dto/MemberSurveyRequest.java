@@ -1,5 +1,6 @@
 package com.umc.banddy.domain.member.web.dto;
 
+import com.umc.banddy.domain.member.enums.SessionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,10 +25,12 @@ public class MemberSurveyRequest {
     private String mediaUrl;
 
     @Getter
-    @NoArgsConstructor   @AllArgsConstructor
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     public static class SessionRequest {
-        private String sessionName;
-        private String level;
+        private Long sessionId;   // 세션 아이디
+        private String level;     // 레벨 (BEGINNER, INTERMEDIATE, ADVANCED 등)
     }
+
 }
