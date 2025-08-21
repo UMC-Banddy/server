@@ -153,6 +153,18 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                 .artists(member.getMemberArtists().stream()
                         .map(ma -> ma.getArtist().getName())
                         .toList())
+                .artistInfos(member.getMemberArtists().stream()
+                        .map(ma -> {
+                            var a = ma.getArtist();
+                            return MemberSurveyResponse.ArtistDto.builder()
+                                    .id(a.getId())
+                                    .name(a.getName())
+                                    .imageUrl(a.getImageUrl())
+                                    .externalUrl(a.getExternalUrl())
+                                    .genre(a.getGenre())
+                                    .build();
+                        })
+                        .toList())
                 .sessions(member.getMemberSessions().stream()
                         .map(ms -> MemberSurveyResponse.SessionDto.builder()
                                 .name(ms.getSession().getName())
