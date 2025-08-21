@@ -11,8 +11,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -33,17 +35,14 @@ public class MyProfileController {
         return ResponseEntity.ok(ApiResponse.onSuccess(response));
     }
 
-    @PutMapping
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "내 프로필 수정", description = "내 프로필 정보를 수정합니다.")
-    public ResponseEntity<ApiResponse<String>> updateMyProfile(
-            @RequestBody MyProfileUpdateRequest request,
-            HttpServletRequest httpRequest
+    public ResponseEntity<ApiResponse<MyProfileResponse>> updateMyProfile(
+            HttpServletRequest request,
+            @RequestPart("data") MyProfileUpdateRequest dto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) {
-        if (request == null) throw new GeneralException(ErrorStatus._BAD_REQUEST);
-        String token = JwtTokenUtil.extractToken(httpRequest);
-        if (token == null || token.isBlank()) throw new GeneralException(ErrorStatus._UNAUTHORIZED);
-        try { jwtTokenUtil.getMemberIdFromToken(token); } catch (Exception e) { throw new GeneralException(ErrorStatus._UNAUTHORIZED); }
-        myProfileService.updateMyProfile(httpRequest, request);
-        return ResponseEntity.ok(ApiResponse.onSuccess("프로필 수정 완료"));
+        MyProfileResponse updated = myProfileService.updateMyProfile(request, dto, profileImage);
+        return ResponseEntity.ok(ApiResponse.onSuccess(updated)); // ✅ onSuccess 사용
     }
 }

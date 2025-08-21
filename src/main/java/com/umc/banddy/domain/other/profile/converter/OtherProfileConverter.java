@@ -14,9 +14,18 @@ import com.umc.banddy.domain.other.profile.web.dto.SavedTrackResponse;
 import com.umc.banddy.domain.member.domain.mapping.MemberKeyword;
 import com.umc.banddy.domain.member.domain.mapping.MemberSession;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class OtherProfileConverter {
 
+    private static List<String> toTagNames(List<MemberTag> tags) {
+        return tags == null ? List.of()
+                : tags.stream()
+                .map(mt -> mt.getTag() != null ? mt.getTag().getName() : null)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
     public static OtherProfileResponse toDto(
             Member member,
             List<MemberTag> tags,
@@ -39,7 +48,7 @@ public class OtherProfileConverter {
                 .gender(member.getGender().name())
                 .region(member.getRegion())
                 .district(member.getDistrict())
-                .tags(tags.stream().map(MemberTag::getTag).toList())
+                .tags(toTagNames(tags))
                 .sessions(sessions.stream()
                         .map(s -> {
                             if (s.getSession() == null) {
@@ -84,8 +93,10 @@ public class OtherProfileConverter {
     }
 
     public static MemberTagResponse toMemberTagResponse(Long memberId, List<MemberTag> tags) {
-        List<String> tagList = tags.stream()
-                .map(MemberTag::getTag)
+        List<String> tagList = tags == null ? List.of()
+                : tags.stream()
+                .map(mt -> mt.getTag() != null ? mt.getTag().getName() : null)
+                .filter(Objects::nonNull)
                 .toList();
 
         return MemberTagResponse.builder()
