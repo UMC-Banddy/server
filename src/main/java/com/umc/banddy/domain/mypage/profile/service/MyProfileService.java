@@ -68,19 +68,15 @@ public class MyProfileService {
         List<MyProfileResponse.SessionInfo> sessionInfos =
                 memberSessionRepository.findByMemberId(memberId).stream()
                         .map(ms -> {
-                            // session 엔티티가 null이면 enum 이름으로 대체
                             String name = (ms.getSession() != null && ms.getSession().getName() != null)
                                     ? ms.getSession().getName()
                                     : (ms.getSessionType() != null ? ms.getSessionType().name() : null);
 
                             String level = (ms.getLevel() != null) ? ms.getLevel().name() : null;
-
-                            // name이 null이면 제외
                             return (name == null) ? null : new MyProfileResponse.SessionInfo(name, level);
                         })
                         .filter(Objects::nonNull)
                         .toList();
-
 
         List<String> interestedGenres = memberGenreRepository.findByMemberId(memberId).stream()
                 .map(mg -> mg.getGenre().getName())
@@ -104,13 +100,13 @@ public class MyProfileService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."));
 
-        // 1) 프로필 이미지 S3 업로드 → URL 반영
+        // 1) 프로필 이미지
         String uploadedProfileUrl = null;
         if (profileImage != null && !profileImage.isEmpty()) {
             uploadedProfileUrl = s3Uploader.upload(profileImage, "profiles/" + memberId);
         }
 
-        // 2) 멤버 기본 필드 업데이트 (null-safe)
+        // 2) 멤버 기본 필드
         Member updated = Member.builder()
                 .id(member.getId())
                 .email(member.getEmail())
@@ -129,62 +125,42 @@ public class MyProfileService {
                 .build();
         memberRepository.save(updated);
 
-        // 3) 세션(악기) 갱신: replace but idempotent
+        // 3) 세션 갱신
         if (dto.getAvailableSessions() != null) {
-            List<MemberSession> existingSessions = memberSessionRepository.findByMemberId(memberId);
-            Map<SessionType, MemberSession> existingMap = existingSessions.stream()
-                    .collect(Collectors.toMap(MemberSession::getSessionType, ms -> ms));
+            memberSessionRepository.deleteByMemberId(memberId);
 
-            // 목표 세트
-            Set<SessionType> targetTypes = new HashSet<>();
-            dto.getAvailableSessions().forEach(si -> {
+            for (MyProfileUpdateRequest.SessionInfo si : dto.getAvailableSessions()) {
                 SessionType type = SessionType.valueOf(si.getSessionType().trim().toUpperCase());
                 Level level = Level.valueOf(si.getLevel().trim().toUpperCase());
-                targetTypes.add(type);
 
-                MemberSession exist = existingMap.get(type);
-                if (exist != null) {
-                    if (exist.getLevel() != level) {
-                        exist.setLevel(level);
-                        memberSessionRepository.save(exist);
-                    }
-                } else {
+                try {
                     memberSessionRepository.save(MemberSession.builder()
                             .member(member)
                             .sessionType(type)
                             .level(level)
                             .build());
-                }
-            });
-            // 제거 대상만 삭제
-            for (SessionType oldType : existingMap.keySet()) {
-                if (!targetTypes.contains(oldType)) {
-                    memberSessionRepository.delete(existingMap.get(oldType));
+                } catch (DataIntegrityViolationException e) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "중복된 세션: " + si.getSessionType());
                 }
             }
         }
 
-        // 4) 장르 갱신: 입력 정규화 + 검증(없는 값 400) + replace
+        // 4) 장르 갱신
         if (dto.getGenres() != null) {
-            List<String> input = normalizeDistinct(dto.getGenres()); // trim + blank skip + distinct(원본순서 유지)
-
-            // 존재 검증 (화이트리스트 정책)
+            List<String> input = normalizeDistinct(dto.getGenres());
             List<String> missing = new ArrayList<>();
             Map<String, Genre> foundMap = new LinkedHashMap<>();
+
             for (String name : input) {
-                // 필요 시 findByNameIgnoreCase 로 변경
                 Genre g = genreRepository.findByName(name).orElse(null);
                 if (g == null) missing.add(name);
                 else foundMap.put(name, g);
             }
             if (!missing.isEmpty()) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "존재하지 않는 장르: " + String.join(", ", missing)
-                );
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "존재하지 않는 장르: " + String.join(", ", missing));
             }
 
-            // replace
             memberGenreRepository.deleteByMemberId(memberId);
             for (Genre g : foundMap.values()) {
                 memberGenreRepository.save(MemberGenre.builder()
@@ -194,11 +170,9 @@ public class MyProfileService {
             }
         }
 
-        // 5) 아티스트 갱신: 사전등록만 허용 + replace (spotify_id NOT NULL 제약 회피)
+        // 5) 아티스트 갱신
         if (dto.getArtists() != null) {
             List<String> input = normalizeDistinct(dto.getArtists());
-
-            // 배치 조회(없으면 개별 조회로 대체 가능)
             List<Artist> found = artistRepository.findByNameIgnoreCaseIn(input);
             Map<String, Artist> byLower = found.stream()
                     .collect(Collectors.toMap(a -> a.getName().trim().toLowerCase(), a -> a,
@@ -207,18 +181,14 @@ public class MyProfileService {
             List<String> missing = input.stream()
                     .filter(n -> !byLower.containsKey(n.toLowerCase()))
                     .toList();
-
             if (!missing.isEmpty()) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "존재하지 않는 아티스트: " + String.join(", ", missing) + " (사전 등록 필요)"
-                );
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "존재하지 않는 아티스트: " + String.join(", ", missing));
             }
 
-            // replace
             memberArtistRepository.deleteByMemberId(memberId);
             for (String n : input) {
-                Artist a = byLower.get(n.toLowerCase()); // 반드시 존재
+                Artist a = byLower.get(n.toLowerCase());
                 memberArtistRepository.save(MemberArtist.builder()
                         .member(member)
                         .artist(a)
@@ -226,67 +196,33 @@ public class MyProfileService {
             }
         }
 
-        // 6) 태그(키워드) 갱신: 정규화 + 중복제거 + 없으면 생성 허용 + 차집합 갱신(idempotent)
+        // 6) 키워드 갱신 (Tag)
         if (dto.getKeywords() != null) {
             List<String> input = normalizeDistinct(dto.getKeywords());
+            memberTagRepository.deleteByMemberId(memberId);
 
-            // 목표 Tag 엔티티 확보(없으면 생성 허용)
-            Map<String, Tag> lowerToTag = new LinkedHashMap<>();
             for (String name : input) {
-                String lowered = name.toLowerCase();
-                Tag t = tagRepository.findByName(name).orElse(null); // 필요 시 ignoreCase 메서드로 교체
-                if (t == null) {
-                    t = tagRepository.save(Tag.builder().name(name).build());
+                Tag tag = tagRepository.findByNameIgnoreCase(name).orElse(null);
+                if (tag == null) {
+                    // saveAndFlush 로 id 강제 생성
+                    tag = tagRepository.saveAndFlush(Tag.builder().name(name).build());
                 }
-                lowerToTag.put(lowered, t);
-            }
 
-            // 현재 보유 관계 조회
-            List<MemberTag> currentEntities = memberTagRepository.findByMemberId(memberId);
-            Set<Long> current = currentEntities.stream()
-                    .map(mt -> mt.getTag().getId())
-                    .collect(Collectors.toSet());
-
-            // 목표 집합
-            // id → Tag 매핑도 만들어둔다(추가 시 사용)
-            Map<Long, Tag> idToTag = lowerToTag.values().stream()
-                    .collect(Collectors.toMap(Tag::getId, t -> t));
-
-            Set<Long> target = new LinkedHashSet<>(idToTag.keySet());
-
-            // 차집합
-            Set<Long> toAdd = new LinkedHashSet<>(target);
-            toAdd.removeAll(current);
-
-            Set<Long> toRemove = new LinkedHashSet<>(current);
-            toRemove.removeAll(target);
-
-            // 제거: 현재 엔티티 중 tag_id가 toRemove인 것만 삭제
-            if (!toRemove.isEmpty()) {
-                for (MemberTag mt : currentEntities) {
-                    Long tid = mt.getTag().getId();
-                    if (toRemove.contains(tid)) {
-                        memberTagRepository.delete(mt);
-                    }
+                if (tag.getId() == null) {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Tag ID 생성 실패");
                 }
-            }
 
-            // 추가: 현재에 없는 것만 안전하게 삽입 (동시성 대비 예외 무해화)
-            for (Long tagId : toAdd) {
                 try {
-                    memberTagRepository.save(
-                            MemberTag.builder()
-                                    .member(member)
-                                    .tag(idToTag.get(tagId))
-                                    .build()
-                    );
-                } catch (DataIntegrityViolationException ignore) {
-                    // UNIQUE(member_id, tag_id) 레이스 충돌 무해화
+                    memberTagRepository.save(MemberTag.builder()
+                            .member(member)
+                            .tag(tag)
+                            .build());
+                } catch (DataIntegrityViolationException e) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "중복된 키워드: " + name);
                 }
             }
         }
 
-        // 7) 최종 결과 반환
         return getMyProfile(request);
     }
 
@@ -306,16 +242,13 @@ public class MyProfileService {
         }
     }
 
-    /**
-     * 문자열 리스트 정규화: null/blank 제거 + trim + 입력 중복 제거(원래 순서 유지)
-     */
     private List<String> normalizeDistinct(List<String> arr) {
         if (arr == null) return List.of();
         return arr.stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
                 .filter(s -> !s.isBlank())
-                .collect(Collectors.toCollection(LinkedHashSet::new)) // 순서 유지 + 중복 제거
+                .collect(Collectors.toCollection(LinkedHashSet::new))
                 .stream().toList();
     }
 }
