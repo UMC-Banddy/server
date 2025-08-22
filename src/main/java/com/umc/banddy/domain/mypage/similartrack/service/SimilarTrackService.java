@@ -22,25 +22,44 @@ public class SimilarTrackService {
     private final MemberTrackRepository memberTrackRepository;
     private final MemberSimilarityUtil similarityUtil;
 
-    //유사 유저들이 저장한 트랙 인기순 상위 5개
     public List<SimilarTrackResponse> getTracksSavedBySimilarUsers(Long loginMemberId) {
         Member loginMember = memberRepository.findById(loginMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
+        // 1) 기존 유틸로 유사 유저
         var similarUsers = similarityUtil.findSimilarMembers(loginMember);
-        if (similarUsers == null || similarUsers.isEmpty()) {
-            return List.of();
-        }
 
-        List<Track> tracks = memberTrackRepository.findTopSavedTracksByMembers(
-                similarUsers,            // 유사 회원 목록
-                loginMemberId,              // 현재 로그인한 회원 ID
-                PageRequest.of(0, 5)     // 상위 5개
-        );
+        List<Track> tracks;
+
+        if (similarUsers != null && !similarUsers.isEmpty()) {
+            tracks = memberTrackRepository.findTopSavedTracksByMembers(
+                    similarUsers,
+                    loginMemberId,
+                    PageRequest.of(0, 5)
+            );
+
+            // 2) 유틸 결과가 비어있거나 곡이 안 나오면 저장 트랙 겹침 기반 fallback
+            if (tracks.isEmpty()) {
+                tracks = fallbackByTrackOverlap(loginMemberId);
+            }
+        } else {
+            // 3) 처음부터 유사 유저가 안 잡히면 fallback
+            tracks = fallbackByTrackOverlap(loginMemberId);
+        }
 
         return tracks.stream()
                 .map(SimilarTrackConverter::toResponse)
                 .collect(Collectors.toList());
     }
 
+    private List<Track> fallbackByTrackOverlap(Long loginMemberId) {
+        // 내 저장곡과 "최소 1곡" 이상 겹치는 유저 상위 50명 내에서 추천곡 Top 5
+        List<Long> similarIds = memberTrackRepository.findSimilarMemberIdsByTrackOverlap(
+                loginMemberId, 1L, PageRequest.of(0, 50));
+
+        if (similarIds.isEmpty()) return List.of();
+
+        return memberTrackRepository.findTopSavedTracksByMemberIds(
+                similarIds, loginMemberId, PageRequest.of(0, 5));
+    }
 }
