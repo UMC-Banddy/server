@@ -18,6 +18,8 @@ import java.util.Map;
 @Builder
 public class BandInquiryResponse {
 
+    private Long bandId;
+
     private BandStatus status;
 
     private String profileImageUrl;

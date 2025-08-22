@@ -726,6 +726,7 @@ public class BandManagementService {
                 .orElse(null);
 
         return BandInquiryResponse.builder()
+                .bandId(band.getId())
                 .representativeSong(repSong)
                 .representativeSongFile(BandInquiryResponse.RepresentativeSongFile.builder()
                         .originalFilename(band.getOriginalFilename())
