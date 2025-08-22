@@ -11,5 +11,9 @@ import java.util.Optional;
 public interface SessionRepository extends JpaRepository<Session, Long> {
     Optional<Session> findByName(String name);
 
+    Optional<Session> findByNameIgnoreCase(String name);
+
+    Optional<Session> findBySessionType(SessionType sessionType);
+
     List<Session> findByNameIn(Collection<String> names);
 }

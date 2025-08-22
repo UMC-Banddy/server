@@ -22,5 +22,9 @@ public class Session extends BaseEntity {
     @Column
     private String icon;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "session_type", nullable = false, length = 40, unique = true)
+    private SessionType sessionType;
+
 }
 
