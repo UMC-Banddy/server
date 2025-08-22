@@ -141,6 +141,8 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                             .platform(link.getPlatform())
                             .build()));
         }
+        List<MemberArtist> memberArtists = memberArtistRepository.findByMemberId(memberId);
+
         return MemberSurveyResponse.builder()
                 .nickname(member.getNickname())
                 .age(member.getAge())
@@ -150,10 +152,10 @@ public class MemberSurveyServiceImpl implements MemberSurveyService {
                 .genres(member.getMemberGenres().stream()
                         .map(mg -> mg.getGenre().getName())
                         .toList())
-                .artists(member.getMemberArtists().stream()
+                .artists(memberArtists.stream()
                         .map(ma -> ma.getArtist().getName())
                         .toList())
-                .artistInfos(member.getMemberArtists().stream()
+                .artistInfos(memberArtists.stream()
                         .map(ma -> {
                             var a = ma.getArtist();
                             return MemberSurveyResponse.ArtistDto.builder()
